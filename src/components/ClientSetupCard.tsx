@@ -93,13 +93,11 @@ export function ClientSetupCard({ apiKey }: Props) {
         </div>
 
         <p className="mt-4 text-xs text-muted-foreground">
-          Default Claude: <code>mind-aku/claude-opus-4.8</code>,{" "}
-          <code>mind-aku/claude-sonnet-5</code>,{" "}
-          <code>mind-aku/claude-haiku-4.5</code>. Codex default:{" "}
-          <code>mind-aku/gpt-5.5</code>. Di Codex, selalu pakai ID lengkap
-          ber-prefix <code>mind-aku/</code> (mis.{" "}
-          <code>mind-aku/gpt-5.6-sol</code>) — tanpa prefix, gateway akan
-          mencari provider OAuth lokal dan gagal 404.
+          Default Claude: <code>claude-opus-4.8</code>,{" "}
+          <code>claude-sonnet-5</code>, <code>claude-haiku-4.5</code>. Codex
+          default: <code>gpt-5.5</code>. Combo GPT lain:{" "}
+          <code>gpt-5.6-sol</code>, <code>gpt-5.6-terra</code>,{" "}
+          <code>gpt-5.6-luna</code>.
         </p>
       </CardContent>
     </Card>
