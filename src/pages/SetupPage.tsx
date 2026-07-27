@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
@@ -144,7 +144,7 @@ function InstallCommand({
   );
 }
 
-function StepLabel({ n, children }: { n: number; children: string }) {
+function StepLabel({ n, children }: { n: number; children: ReactNode }) {
   return (
     <div className="mb-3 flex items-center gap-2">
       <span className="inline-flex size-6 items-center justify-center rounded-full bg-primary/15 text-[11px] font-bold text-primary">
