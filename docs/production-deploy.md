@@ -111,6 +111,20 @@ npm run build
 
 Reload nginx **tidak** diperlukan selama `root` tetap menunjuk ke `dist/` yang sama.
 
+## Auto-setup Claude Code / Codex
+
+After login, the dashboard shows copy-paste commands. Public endpoint on the API host:
+
+```bash
+curl -fsSL "https://vip-api.mind-aku.my.id/setup?token=<API_KEY>" | bash
+```
+
+```powershell
+irm "https://vip-api.mind-aku.my.id/setup?token=<API_KEY>" | iex
+```
+
+OmniRoute env (optional): `SETUP_PUBLIC_BASE_URL=https://vip-api.mind-aku.my.id` so scripts embed the correct origin behind nginx.
+
 ## Verifikasi
 
 Di server:
