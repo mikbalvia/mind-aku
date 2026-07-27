@@ -5,6 +5,7 @@ import type { PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
 import { COMPANY } from "../lib/company";
+import { formatIdrPerUsdRate } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -165,7 +166,7 @@ export function PaymentsPage() {
                   <h3 className="font-display text-2xl font-medium text-foreground">Select credit</h3>
                   <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
                     {mockMode ? "Mock · " : ""}
-                    {config.rateLabel}
+                    {formatIdrPerUsdRate(config.idrPerUsd)}
                   </p>
                 </div>
                 {!config.configured ? (

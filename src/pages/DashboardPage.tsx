@@ -9,6 +9,7 @@ import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber, formatUsd, lifetimeUsedPercent } from "../lib/format";
+import { ClientSetupCard } from "../components/ClientSetupCard";
 
 export function DashboardPage() {
   const { apiKey, logout } = useAuth();
@@ -128,6 +129,12 @@ export function DashboardPage() {
               hint={`In ${formatNumber(tokens?.inputTokens)} · Out ${formatNumber(tokens?.outputTokens)}`}
             />
           </div>
+
+          {apiKey ? (
+            <div className="mt-6">
+              <ClientSetupCard apiKey={apiKey} />
+            </div>
+          ) : null}
 
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
             <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">

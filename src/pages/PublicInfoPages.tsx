@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Atmosphere } from "../components/Atmosphere";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "../lib/company";
-import { AI_BASE_URL, PUBLIC_WEB_URL } from "../config";
+import { AI_BASE_URL, OMNIROUTE_BASE_URL, PUBLIC_WEB_URL } from "../config";
 
 type PublicPage = "faq" | "refund" | "terms" | "contact";
 
@@ -47,6 +47,11 @@ function Content({ page }: { page: PublicPage }) {
     <h3>Di mana saya bisa mengecek sisa kuota?</h3><p>Masuk ke <Link to="/login">portal Mind Aku</Link>, masukkan API Key, lalu buka dashboard untuk melihat saldo, usage, dan request.</p>
     <h2>Penggunaan API</h2>
     <h3>Apa Base URL yang digunakan?</h3><p><code>{AI_BASE_URL}</code></p>
+    <h3>Bagaimana auto-setup Claude Code / Codex?</h3>
+    <p>Setelah login di portal, salin perintah dari kartu Auto setup. Atau jalankan (ganti <code>YOUR_TOKEN</code> dengan API Key):</p>
+    <p><code>curl -fsSL &quot;{OMNIROUTE_BASE_URL}/setup?token=YOUR_TOKEN&quot; | bash</code></p>
+    <p>Windows PowerShell: <code>irm &quot;{OMNIROUTE_BASE_URL}/setup?token=YOUR_TOKEN&quot; | iex</code></p>
+    <p>Script mengarahkan Claude Code dan Codex ke gateway Mind Aku memakai combo model (Claude Opus/Sonnet/Haiku dan GPT).</p>
     <h3>Apakah API Key boleh dibagikan?</h3><p>Tidak. API Key bersifat pribadi dan menjadi tanggung jawab pemilik. Jangan membagikannya ke pihak lain.</p>
     <h3>Bagaimana jika kuota habis?</h3><p>Anda dapat membeli tambahan limit melalui menu Top up pada console atau menghubungi admin untuk perpanjangan paket.</p>
     <h2>Pembayaran dan dukungan</h2>

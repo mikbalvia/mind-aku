@@ -17,6 +17,9 @@ This app is **frontend-only**. All data comes from OmniRoute.
 API keys are stored in `sessionStorage` and sent as `Authorization: Bearer <key>`.
 
 Payment docs: [docs/sumopod-payment-gateway.md](docs/sumopod-payment-gateway.md).
+
+Production (nginx, mind-aku.my.id): [docs/production-deploy.md](docs/production-deploy.md).
+
 ## Prerequisites
 
 1. OmniRoute running (default `http://localhost:20128`)

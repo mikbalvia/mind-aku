@@ -1,3 +1,8 @@
+/** Label for payment FX from live `idrPerUsd` (API `/api/v1/me/payments/config`). */
+export function formatIdrPerUsdRate(idrPerUsd: number): string {
+  return `1 USD = ${idrPerUsd.toLocaleString("id-ID")} IDR`;
+}
+
 export function formatUsd(value: number | null | undefined, fractionDigits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
   return new Intl.NumberFormat("en-US", {

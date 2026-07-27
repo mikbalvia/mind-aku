@@ -12,7 +12,7 @@ Quick-start reference for integrating SumoPod into OmniRoute + the client portal
 | `SUMOPOD_WEBHOOK_TOKEN` | `whtok_…` | Verify inbound webhooks (`X-Webhook-Token`) |
 | `SUMOPOD_WEBHOOK_SECRET` | `whsec_…` | Optional Svix signature verification |
 | `SUMOPOD_API_BASE` | `https://api-pay.sumopod.com` | API base (optional) |
-| `PAYMENT_IDR_PER_USD` | `2000` | Fallback FX if settings unset |
+| `PAYMENT_IDR_PER_USD` | `1500` | Fallback FX if settings unset |
 | `PAYMENT_MOCK` | `true` (local only) | Skip SumoPod; allow simulate complete |
 | `PAYMENT_SUCCESS_RETURN_URL` | `http://localhost:5173/payments/success` | Default redirect after pay |
 | `PAYMENT_CANCEL_RETURN_URL` | `http://localhost:5173/payments/cancel` | Default cancel redirect |
@@ -39,16 +39,18 @@ The client portal Top up page shows **Simulate top-up** when `mockEnabled` is tr
 
 Lifetime quota on OmniRoute is denominated in **USD**. Customers pay in **IDR**.
 
-Default: **1 USD = 2000 IDR** (`paymentIdrPerUsd = 2000`).
+The **Top up** page shows `1 USD = … IDR` from `idrPerUsd` in `GET /api/v1/me/payments/config` (not hardcoded in the portal). Update the rate in OmniRoute (`paymentIdrPerUsd` or `PAYMENT_IDR_PER_USD`); reload the page to see changes.
+
+Default: **1 USD = 1500 IDR** (via `PAYMENT_IDR_PER_USD` or OmniRoute settings `paymentIdrPerUsd`).
 
 Operators can change this anytime via OmniRoute settings:
 
 ```http
 PATCH /api/settings
-{ "paymentIdrPerUsd": 2000 }
+{ "paymentIdrPerUsd": 1500 }
 ```
 
-Clients read the live rate from:
+Clients read the live rate from `GET /api/v1/me/payments/config` (field `idrPerUsd` / `rateLabel`). The portal **Top up** page formats the label from `idrPerUsd` on each load — change the rate in OmniRoute only; no portal redeploy needed for FX updates.
 
 ```http
 GET /api/v1/me/payments/config
