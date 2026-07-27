@@ -160,9 +160,9 @@ export function SetupPage() {
                 onCopy={onCopy}
               />
               <InstallCommand
-                label="npm (macOS / Linux / Windows)"
-                command="npm install -g @openai/codex"
-                copyId="codex-npm"
+                label="Windows PowerShell"
+                command='powershell -ExecutionPolicy ByPass -c "irm https://chatgpt.com/codex/install.ps1 | iex"'
+                copyId="codex-win"
                 copied={copied}
                 onCopy={onCopy}
               />
