@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type ToolId = "claude" | "codex" | "desktop";
+type ToolId = "desktop" | "claude" | "codex";
+
+const TOOL_ORDER: ToolId[] = ["desktop", "claude", "codex"];
 
 const CLAUDE_DOCS = "https://code.claude.com/docs/en/quickstart";
 const CODEX_DOCS = "https://learn.chatgpt.com/docs/codex/cli#getting-started";
@@ -37,6 +39,12 @@ type DesktopTool = {
 };
 
 const tools: Record<ToolId, CliTool | DesktopTool> = {
+  desktop: {
+    kind: "desktop",
+    label: "Claude Desktop",
+    short: "Desktop",
+    blurb: "Aplikasi desktop Claude dengan gateway Mind Aku (tanpa akun Claude.ai).",
+  },
   claude: {
     kind: "cli",
     label: "Claude Code",
@@ -106,12 +114,6 @@ const tools: Record<ToolId, CliTool | DesktopTool> = {
       docsHref: CODEX_IDE,
       docsLabel: "Codex IDE",
     },
-  },
-  desktop: {
-    kind: "desktop",
-    label: "Claude Desktop",
-    short: "Desktop",
-    blurb: "Aplikasi desktop Claude dengan gateway Mind Aku (tanpa akun Claude.ai).",
   },
 };
 
@@ -417,7 +419,7 @@ export function SetupPage() {
     <div>
       <PageHeader
         title="Setup"
-        description="Pilih satu tool, ikuti langkahnya, lalu hubungkan ke Mind Aku."
+                description="Pilih satu tool: Claude Desktop, Claude Code, atau Codex CLI — lalu ikuti langkahnya."
       />
 
       <div className="space-y-5">
@@ -433,7 +435,7 @@ export function SetupPage() {
             </p>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              {(Object.keys(tools) as ToolId[]).map((id) => {
+              {TOOL_ORDER.map((id) => {
                 const item = tools[id];
                 const active = tool === id;
                 return (
@@ -465,9 +467,9 @@ export function SetupPage() {
         {!selected ? (
           <Card className="border-dashed border-border/80 bg-card/50">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Pilih <strong className="text-foreground">Claude Code</strong>,{" "}
-              <strong className="text-foreground">Codex</strong>, atau{" "}
-              <strong className="text-foreground">Claude Desktop</strong> di atas untuk melihat
+              Pilih <strong className="text-foreground">Claude Desktop</strong>,{" "}
+              <strong className="text-foreground">Claude Code</strong>, atau{" "}
+              <strong className="text-foreground">Codex CLI</strong> di atas untuk melihat
               panduan lengkap.
             </CardContent>
           </Card>
