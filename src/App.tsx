@@ -6,6 +6,7 @@ import { ModelsPage } from "./pages/ModelsPage";
 import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
 import { PaymentsPage } from "./pages/PaymentsPage";
+import { SetupPage } from "./pages/SetupPage";
 import { PaymentCancelPage, PaymentSuccessPage } from "./pages/PaymentResultPages";
 import { HomePage } from "./pages/HomePage";
 import { PublicInfoPage } from "./pages/PublicInfoPages";
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/payments/cancel" element={<PaymentCancelPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/console" element={<DashboardPage />} />
+        <Route path="/setup" element={<SetupPage />} />
         <Route path="/models" element={<ModelsPage />} />
         <Route path="/usage" element={<UsagePage />} />
         <Route path="/logs" element={<LogsPage />} />

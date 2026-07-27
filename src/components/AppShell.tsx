@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/console", label: "Dashboard", delay: "0ms" },
-  { to: "/models", label: "Models", delay: "70ms" },
-  { to: "/usage", label: "Usage", delay: "140ms" },
-  { to: "/logs", label: "Logs", delay: "210ms" },
-  { to: "/payments", label: "Top up", delay: "280ms" },
+  { to: "/setup", label: "Setup", delay: "50ms" },
+  { to: "/models", label: "Models", delay: "100ms" },
+  { to: "/usage", label: "Usage", delay: "150ms" },
+  { to: "/logs", label: "Logs", delay: "200ms" },
+  { to: "/payments", label: "Top up", delay: "250ms" },
 ] as const;
 
 const navClass = ({ isActive }: { isActive: boolean }) =>

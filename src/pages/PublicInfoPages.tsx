@@ -48,7 +48,7 @@ function Content({ page }: { page: PublicPage }) {
     <h2>Penggunaan API</h2>
     <h3>Apa Base URL yang digunakan?</h3><p><code>{AI_BASE_URL}</code></p>
     <h3>Bagaimana auto-setup Claude Code / Codex?</h3>
-    <p>Setelah login di portal, salin perintah dari kartu Auto setup. Atau jalankan (ganti <code>YOUR_TOKEN</code> dengan API Key):</p>
+    <p>Login ke portal, buka menu <Link to="/setup">Setup</Link>: install Claude Code / Codex dulu, lalu salin perintah auto-config. Atau jalankan (ganti <code>YOUR_TOKEN</code>):</p>
     <p><code>curl -fsSL &quot;{OMNIROUTE_BASE_URL}/setup?token=YOUR_TOKEN&quot; | bash</code></p>
     <p>Windows PowerShell: <code>irm &quot;{OMNIROUTE_BASE_URL}/setup?token=YOUR_TOKEN&quot; | iex</code></p>
     <p>Script mengarahkan Claude Code dan Codex ke gateway Mind Aku memakai combo model (Claude Opus/Sonnet/Haiku dan GPT).</p>

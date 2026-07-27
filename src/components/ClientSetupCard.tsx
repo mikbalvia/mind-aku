@@ -41,12 +41,11 @@ export function ClientSetupCard({ apiKey }: Props) {
     <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
       <CardContent className="p-6">
         <h3 className="font-display text-xl font-medium text-foreground">
-          Auto setup Claude Code / Codex
+          Auto-config ke Mind Aku
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Satu perintah mengarahkan CLI ke Mind Aku dengan combo model kamu
-          (Claude Opus/Sonnet/Haiku + GPT). Token ikut di URL — jangan bagikan
-          perintah ini.
+          Setelah Claude Code / Codex terpasang, jalankan satu perintah ini. Script mengarahkan
+          CLI ke gateway Mind Aku dengan combo model kamu. Token ikut di URL — jangan bagikan.
         </p>
 
         <div className="mt-5 space-y-4">
