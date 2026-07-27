@@ -3,35 +3,45 @@ import { Check, Copy, ExternalLink } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
 import { PageHeader } from "../components/page-chrome";
+import { OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type ToolId = "claude" | "codex";
+type ToolId = "claude" | "codex" | "desktop";
 
 const CLAUDE_DOCS = "https://code.claude.com/docs/en/quickstart";
 const CODEX_DOCS = "https://learn.chatgpt.com/docs/codex/cli#getting-started";
 const CLAUDE_VSCODE = "https://code.claude.com/docs/en/vs-code";
 const CODEX_IDE = "https://learn.chatgpt.com/docs/codex/ide";
+const CLAUDE_DESKTOP_DOWNLOAD = "https://claude.com/download";
 
-const tools: Record<
-  ToolId,
-  {
-    label: string;
-    short: string;
-    blurb: string;
-    docs: string;
-    docsLabel: string;
-    checkCmd: string;
-    modelsNote: string;
-    install: { label: string; command: string; id: string }[];
-    ide: { editor: string; steps: string[]; docsHref: string; docsLabel: string };
-  }
-> = {
+type CliTool = {
+  kind: "cli";
+  label: string;
+  short: string;
+  blurb: string;
+  docs: string;
+  docsLabel: string;
+  checkCmd: string;
+  modelsNote: string;
+  install: { label: string; command: string; id: string }[];
+  ide: { steps: string[]; docsHref: string; docsLabel: string };
+};
+
+type DesktopTool = {
+  kind: "desktop";
+  label: string;
+  short: string;
+  blurb: string;
+};
+
+const tools: Record<ToolId, CliTool | DesktopTool> = {
   claude: {
+    kind: "cli",
     label: "Claude Code",
     short: "Claude",
-    blurb: "Agent coding Anthropic — cocok untuk workflow Claude di terminal & editor.",
+    blurb: "Agent coding di terminal & editor (VS Code / Cursor / Antigravity).",
     docs: CLAUDE_DOCS,
     docsLabel: "Claude Code Quickstart",
     checkCmd: "claude --version",
@@ -54,21 +64,21 @@ const tools: Record<
       },
     ],
     ide: {
-      editor: "VS Code, Cursor, atau Antigravity",
       steps: [
         "Buka Extensions / Marketplace di editor kamu.",
         "Cari dan install extension “Claude Code”.",
-        "Pastikan CLI Claude Code sudah terpasang dan auto-config Mind Aku sudah dijalankan (langkah di atas).",
-        "Pakai seperti biasa: buka panel Claude Code, chat, atau perintah agent — request akan lewat Mind Aku.",
+        "Pastikan CLI Claude Code sudah terpasang dan auto-config Mind Aku sudah dijalankan.",
+        "Pakai seperti biasa — request akan lewat Mind Aku.",
       ],
       docsHref: CLAUDE_VSCODE,
       docsLabel: "Claude Code di VS Code",
     },
   },
   codex: {
+    kind: "cli",
     label: "Codex CLI",
     short: "Codex",
-    blurb: "Agent coding OpenAI / ChatGPT — cocok untuk GPT di terminal & editor.",
+    blurb: "Agent coding OpenAI / ChatGPT di terminal & editor.",
     docs: CODEX_DOCS,
     docsLabel: "Codex CLI getting started",
     checkCmd: "codex --version",
@@ -87,16 +97,21 @@ const tools: Record<
       },
     ],
     ide: {
-      editor: "VS Code, Cursor, atau Antigravity",
       steps: [
         "Buka Extensions / Marketplace di editor kamu.",
         "Cari dan install extension “Codex” (OpenAI Codex).",
-        "Pastikan CLI Codex sudah terpasang dan auto-config Mind Aku sudah dijalankan (langkah di atas).",
-        "Pakai seperti biasa: buka panel Codex di editor — request akan lewat Mind Aku.",
+        "Pastikan CLI Codex sudah terpasang dan auto-config Mind Aku sudah dijalankan.",
+        "Pakai seperti biasa — request akan lewat Mind Aku.",
       ],
       docsHref: CODEX_IDE,
       docsLabel: "Codex IDE",
     },
+  },
+  desktop: {
+    kind: "desktop",
+    label: "Claude Desktop",
+    short: "Desktop",
+    blurb: "Aplikasi desktop Claude dengan gateway Mind Aku (tanpa akun Claude.ai).",
   },
 };
 
@@ -155,6 +170,235 @@ function StepLabel({ n, children }: { n: number; children: ReactNode }) {
   );
 }
 
+function ManualShot({
+  src,
+  alt,
+  caption,
+}: {
+  src: string;
+  alt: string;
+  caption: string;
+}) {
+  return (
+    <figure className="mt-4 overflow-hidden rounded-xl border border-border bg-muted/20">
+      <img src={src} alt={alt} className="w-full object-contain object-top" loading="lazy" />
+      <figcaption className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+        {caption}
+      </figcaption>
+    </figure>
+  );
+}
+
+function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
+  const gatewayUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function onCopy(id: string, value: string) {
+    const ok = await copyText(value);
+    if (!ok) return;
+    setCopied(id);
+    window.setTimeout(() => setCopied(null), 2000);
+  }
+
+  return (
+    <div className="space-y-5">
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <StepLabel n={2}>Download Claude Desktop</StepLabel>
+              <h3 className="font-display text-xl font-medium text-foreground">
+                Pasang aplikasi resmi Anthropic
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Unduh Claude Desktop untuk macOS atau Windows, lalu instal. Kamu{" "}
+                <strong className="text-foreground">tidak perlu login Claude.ai</strong> jika
+                memakai gateway Mind Aku.
+              </p>
+            </div>
+            <Button asChild size="sm">
+              <a href={CLAUDE_DESKTOP_DOWNLOAD} target="_blank" rel="noopener noreferrer">
+                Download <ExternalLink />
+              </a>
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Sumber:{" "}
+            <a
+              href={CLAUDE_DESKTOP_DOWNLOAD}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              claude.com/download
+            </a>
+            .
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={3}>Aktifkan Developer Mode</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Buka menu Developer
+          </h3>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>Buka aplikasi Claude Desktop (belum perlu sign-in).</li>
+            <li>
+              Di menu bar: <strong>Help → Troubleshooting → Enable Developer Mode</strong>.
+            </li>
+            <li>
+              Setelah aktif, menu <strong>Developer</strong> akan muncul di menu bar.
+            </li>
+          </ol>
+          <ManualShot
+            src="/setup/manual-1.png"
+            alt="Enable Developer Mode di Claude Desktop"
+            caption="Help → Troubleshooting → Enable Developer Mode"
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={4}>Buka pengaturan gateway</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Configure Third-Party Inference
+          </h3>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>
+              Klik <strong>Developer → Configure Third-Party Inference…</strong>
+            </li>
+            <li>
+              Pastikan tipe koneksi: <strong>Gateway</strong>.
+            </li>
+          </ol>
+          <ManualShot
+            src="/setup/manual-2.png"
+            alt="Configure Third-Party Inference di Claude Desktop"
+            caption="Developer → Configure Third-Party Inference…"
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={5}>Isi kredensial Mind Aku</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Gateway credentials
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Di tab <strong>Connection</strong>, isi seperti berikut (sesuaikan dengan screenshot):
+          </p>
+
+          <div className="mt-4 space-y-3 text-sm">
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Gateway base URL
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <code className="text-foreground">{gatewayUrl}</code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void onCopy("gw-url", gatewayUrl)}
+                >
+                  {copied === "gw-url" ? <Check /> : <Copy />}
+                  {copied === "gw-url" ? "Copied" : "Copy"}
+                </Button>
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Gateway API key
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                Tempel API key Mind Aku kamu
+                {apiKey ? " (dari sesi login portal ini)." : " (dari portal setelah login)."}
+              </p>
+              {apiKey ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <code className="max-w-full truncate text-foreground">{apiKey}</code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void onCopy("gw-key", apiKey)}
+                  >
+                    {copied === "gw-key" ? <Check /> : <Copy />}
+                    {copied === "gw-key" ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Gateway auth scheme
+              </p>
+              <p className="mt-1 font-medium text-foreground">
+                <code>x-api-key</code>
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Credential kind
+              </p>
+              <p className="mt-1 font-medium text-foreground">Static API key</p>
+            </div>
+          </div>
+
+          <p className="mt-3 text-sm text-muted-foreground">
+            Opsional: klik <strong>Test connection</strong> untuk memastikan gateway terjangkau.
+          </p>
+
+          <ManualShot
+            src="/setup/manual-3.png"
+            alt="Isi Gateway base URL dan API key Mind Aku"
+            caption={`Gateway base URL = ${gatewayUrl}, auth scheme = x-api-key`}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={6}>Atur model</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Model discovery & daftar model
+          </h3>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>
+              Nyalakan <strong>Model discovery</strong> agar model diambil dari{" "}
+              <code>{gatewayUrl}/v1/models</code>.
+            </li>
+            <li>
+              Pastikan model Claude muncul, misalnya: <code>claude-opus-4.8</code>,{" "}
+              <code>claude-sonnet-5</code>, <code>claude-haiku-4.5</code>.
+            </li>
+            <li>
+              Klik <strong>Apply Changes</strong>.
+            </li>
+            <li>
+              Tutup sepenuhnya Claude Desktop, lalu buka lagi. Di layar awal pilih{" "}
+              <strong>Continue</strong> / lanjut dengan gateway lokal (tanpa sign-in Claude.ai).
+            </li>
+          </ol>
+          <ManualShot
+            src="/setup/manual-4.png"
+            alt="Model discovery dan daftar model Claude"
+            caption="Model discovery ON + daftar claude-opus-4.8 / sonnet-5 / haiku-4.5"
+          />
+          <p className="mt-4 text-xs text-muted-foreground">
+            Alur ini mengikuti pola integrasi gateway pihak ketiga (mirip panduan OpenRouter untuk
+            Claude Desktop), disesuaikan ke Mind Aku.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export function SetupPage() {
   const { apiKey } = useAuth();
   const [tool, setTool] = useState<ToolId | null>(null);
@@ -173,7 +417,7 @@ export function SetupPage() {
     <div>
       <PageHeader
         title="Setup"
-        description="Pilih satu tool (Claude Code atau Codex), install, auto-config ke Mind Aku, lalu pakai di terminal atau editor."
+        description="Pilih satu tool, ikuti langkahnya, lalu hubungkan ke Mind Aku."
       />
 
       <div className="space-y-5">
@@ -181,13 +425,14 @@ export function SetupPage() {
           <CardContent className="p-6">
             <StepLabel n={1}>Pilih tool</StepLabel>
             <h3 className="font-display text-xl font-medium text-foreground">
-              Claude Code atau Codex — cukup salah satu
+              Cukup pilih salah satu
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Tidak perlu install keduanya. Pilih yang ingin kamu pakai; langkah berikutnya menyesuaikan pilihanmu.
+              Claude Code (CLI), Codex CLI, atau Claude Desktop — pilih yang ingin kamu pakai.
+              Langkah berikutnya menyesuaikan pilihanmu.
             </p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {(Object.keys(tools) as ToolId[]).map((id) => {
                 const item = tools[id];
                 const active = tool === id;
@@ -220,11 +465,14 @@ export function SetupPage() {
         {!selected ? (
           <Card className="border-dashed border-border/80 bg-card/50">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Pilih <strong className="text-foreground">Claude Code</strong> atau{" "}
-              <strong className="text-foreground">Codex</strong> di atas untuk melihat
-              perintah install, auto-config, dan integrasi editor.
+              Pilih <strong className="text-foreground">Claude Code</strong>,{" "}
+              <strong className="text-foreground">Codex</strong>, atau{" "}
+              <strong className="text-foreground">Claude Desktop</strong> di atas untuk melihat
+              panduan lengkap.
             </CardContent>
           </Card>
+        ) : selected.kind === "desktop" ? (
+          <ClaudeDesktopGuide apiKey={apiKey} />
         ) : (
           <>
             <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
@@ -332,19 +580,6 @@ export function SetupPage() {
                     </div>
                   ))}
                 </div>
-
-                <p className="mt-4 text-xs text-muted-foreground">
-                  Detail extension:{" "}
-                  <a
-                    href={selected.ide.docsHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {selected.ide.docsLabel}
-                  </a>
-                  .
-                </p>
               </CardContent>
             </Card>
           </>
