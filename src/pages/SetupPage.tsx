@@ -260,7 +260,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
             </li>
           </ol>
           <ManualShot
-            src="/setup/manual-1.png"
+            src="/setup-guides/manual-1.png"
             alt="Enable Developer Mode di Claude Desktop"
             caption="Help → Troubleshooting → Enable Developer Mode"
           />
@@ -282,7 +282,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
             </li>
           </ol>
           <ManualShot
-            src="/setup/manual-2.png"
+            src="/setup-guides/manual-2.png"
             alt="Configure Third-Party Inference di Claude Desktop"
             caption="Developer → Configure Third-Party Inference…"
           />
@@ -361,7 +361,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
           </p>
 
           <ManualShot
-            src="/setup/manual-3.png"
+            src="/setup-guides/manual-3.png"
             alt="Isi Gateway base URL dan API key Mind Aku"
             caption={`Gateway base URL = ${gatewayUrl}, auth scheme = x-api-key`}
           />
@@ -422,12 +422,12 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
             </li>
           </ol>
           <ManualShot
-            src="/setup/manual-4.png"
+            src="/setup-guides/manual-4.png"
             alt="Model discovery dan daftar model Claude"
             caption="Model discovery ON + daftar 3 model Claude"
           />
           <ManualShot
-            src="/setup/add-model.png"
+            src="/setup-guides/add-model.png"
             alt="Form Add model: Model ID dan Display name"
             caption="Klik + Add, isi Model ID + Display name (contoh claude-opus-4.8), ulangi untuk sonnet & haiku"
           />
