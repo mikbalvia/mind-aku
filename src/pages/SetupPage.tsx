@@ -419,18 +419,24 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               </ul>
             </li>
             <li>
-              Klik <strong>Apply Changes</strong>.
+              Pastikan daftar sudah lengkap (Model discovery ON + 3 model), lalu klik{" "}
+              <strong>Apply Changes</strong>.
+              <ManualShot
+                src="/setup-guides/manual-4.png"
+                alt="Model discovery ON dan 3 model Claude di daftar"
+                caption="Model discovery ON + 3 model, lalu Apply Changes"
+              />
             </li>
             <li>
               Tutup sepenuhnya Claude Desktop, lalu buka lagi. Di layar awal pilih{" "}
-              <strong>Continue</strong> / lanjut dengan gateway lokal (tanpa sign-in Claude.ai).
+              <strong>Continue</strong> (tanpa sign-in Claude.ai).
+              <ManualShot
+                src="/setup-guides/login-claude.png"
+                alt="Welcome to Claude — Continue dengan custom gateway"
+                caption="Pilih Continue — gateway lokal, tanpa akun Claude.ai"
+              />
             </li>
           </ol>
-          <ManualShot
-            src="/setup-guides/manual-4.png"
-            alt="Model discovery dan daftar model Claude"
-            caption="Hasil akhir: Model discovery ON + 3 model Claude di daftar"
-          />
           <p className="mt-4 text-xs text-muted-foreground">
             Alur ini mengikuti pola integrasi gateway pihak ketiga (mirip panduan OpenRouter untuk
             Claude Desktop), disesuaikan ke Mind Aku.
