@@ -383,7 +383,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               Di bagian <strong>Model list</strong>, klik tombol <strong>+ Add</strong> di bawah.
             </li>
             <li>
-              Isi form model (lihat screenshot):
+              Isi form model seperti screenshot di bawah:
               <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
                 <li>
                   <strong className="text-foreground">Model ID</strong> dan{" "}
@@ -398,6 +398,11 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                   <strong className="text-foreground">Tier alias</strong>: boleh dikosongkan
                 </li>
               </ul>
+              <ManualShot
+                src="/setup-guides/add-model.png"
+                alt="Form Add model: Model ID dan Display name"
+                caption="Isi Model ID + Display name (contoh claude-opus-4.8)"
+              />
             </li>
             <li>
               Ulangi sampai total <strong>3 model</strong> terdaftar:
@@ -424,12 +429,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
           <ManualShot
             src="/setup-guides/manual-4.png"
             alt="Model discovery dan daftar model Claude"
-            caption="Model discovery ON + daftar 3 model Claude"
-          />
-          <ManualShot
-            src="/setup-guides/add-model.png"
-            alt="Form Add model: Model ID dan Display name"
-            caption="Klik + Add, isi Model ID + Display name (contoh claude-opus-4.8), ulangi untuk sonnet & haiku"
+            caption="Hasil akhir: Model discovery ON + 3 model Claude di daftar"
           />
           <p className="mt-4 text-xs text-muted-foreground">
             Alur ini mengikuti pola integrasi gateway pihak ketiga (mirip panduan OpenRouter untuk
