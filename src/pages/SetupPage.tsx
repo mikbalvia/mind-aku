@@ -245,8 +245,13 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
           <h3 className="font-display text-xl font-medium text-foreground">
             Buka menu Developer
           </h3>
+          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+            <strong>Penting:</strong> jika kamu sudah login ke akun Claude.ai di aplikasi ini,
+            <strong> logout dulu</strong> sebelum lanjut. Gateway Mind Aku dipakai tanpa
+            sign-in Claude.ai.
+          </div>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
-            <li>Buka aplikasi Claude Desktop (belum perlu sign-in).</li>
+            <li>Buka aplikasi Claude Desktop (pastikan sudah logout jika sebelumnya login).</li>
             <li>
               Di menu bar: <strong>Help → Troubleshooting → Enable Developer Mode</strong>.
             </li>
@@ -367,7 +372,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
         <CardContent className="p-6">
           <StepLabel n={6}>Atur model</StepLabel>
           <h3 className="font-display text-xl font-medium text-foreground">
-            Model discovery & daftar model
+            Model discovery & tambah 3 model
           </h3>
           <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
@@ -375,8 +380,38 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               <code>{gatewayUrl}/v1/models</code>.
             </li>
             <li>
-              Pastikan model Claude muncul, misalnya: <code>claude-opus-4.8</code>,{" "}
-              <code>claude-sonnet-5</code>, <code>claude-haiku-4.5</code>.
+              Di bagian <strong>Model list</strong>, klik tombol <strong>+ Add</strong> di bawah.
+            </li>
+            <li>
+              Isi form model (lihat screenshot):
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+                <li>
+                  <strong className="text-foreground">Model ID</strong> dan{" "}
+                  <strong className="text-foreground">Display name</strong> sama, misalnya{" "}
+                  <code className="text-foreground">claude-opus-4.8</code>
+                </li>
+                <li>
+                  <strong className="text-foreground">Offer 1M-context variant</strong>: matikan
+                  (OFF)
+                </li>
+                <li>
+                  <strong className="text-foreground">Tier alias</strong>: boleh dikosongkan
+                </li>
+              </ul>
+            </li>
+            <li>
+              Ulangi sampai total <strong>3 model</strong> terdaftar:
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                <li>
+                  <code>claude-opus-4.8</code>
+                </li>
+                <li>
+                  <code>claude-sonnet-5</code>
+                </li>
+                <li>
+                  <code>claude-haiku-4.5</code>
+                </li>
+              </ul>
             </li>
             <li>
               Klik <strong>Apply Changes</strong>.
@@ -389,7 +424,12 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
           <ManualShot
             src="/setup/manual-4.png"
             alt="Model discovery dan daftar model Claude"
-            caption="Model discovery ON + daftar claude-opus-4.8 / sonnet-5 / haiku-4.5"
+            caption="Model discovery ON + daftar 3 model Claude"
+          />
+          <ManualShot
+            src="/setup/add-model.png"
+            alt="Form Add model: Model ID dan Display name"
+            caption="Klik + Add, isi Model ID + Display name (contoh claude-opus-4.8), ulangi untuk sonnet & haiku"
           />
           <p className="mt-4 text-xs text-muted-foreground">
             Alur ini mengikuti pola integrasi gateway pihak ketiga (mirip panduan OpenRouter untuk
