@@ -43,7 +43,6 @@ export function UsagePage() {
     };
   }, [apiKey, refreshStatus, logout]);
 
-  const cost = status?.usage.cost;
   const tokens = status?.usage.tokens;
   const lifetime = config?.lifetimeQuota;
   const usedPct = lifetimeUsedPercent(lifetime?.spentUsd, lifetime?.limitUsd);
@@ -52,7 +51,7 @@ export function UsagePage() {
     <div>
       <PageHeader
         title="Usage"
-        description="Saldo lifetime, budget periode, dan token yang sudah kamu bakar."
+        description="Saldo lifetime dan token yang sudah kamu bakar."
         actions={
           <Button
             type="button"
@@ -117,50 +116,24 @@ export function UsagePage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-end justify-between gap-3">
-                  <h3 className="font-display text-2xl font-medium text-foreground">Period budget</h3>
-                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
-                    {cost?.period || "period"}
-                  </p>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Separate from lifetime top-up balance (resets with period).
+          <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-end justify-between gap-3">
+                <h3 className="font-display text-2xl font-medium text-foreground">Tokens</h3>
+                <p className="max-w-[10rem] truncate text-right text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                  Since {formatDate(tokens?.periodStartAt)}
                 </p>
-                <dl className="mt-6">
-                  <MetricRow label="Used" value={formatUsd(cost?.usedUsd, 4)} emphasize />
-                  <MetricRow label="Limit" value={formatUsd(cost?.limitUsd, 4)} />
-                  <MetricRow label="Remaining" value={formatUsd(cost?.remainingUsd, 4)} />
-                  <MetricRow
-                    label="Used %"
-                    value={cost?.usedPercent != null ? formatPercent(cost.usedPercent) : "—"}
-                  />
-                  <MetricRow label="Resets" value={formatDate(cost?.resetAt)} />
-                </dl>
-              </CardContent>
-            </Card>
-
-            <Card className="scale-in scale-in-delay-3 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex items-end justify-between gap-3">
-                  <h3 className="font-display text-2xl font-medium text-foreground">Tokens</h3>
-                  <p className="max-w-[10rem] truncate text-right text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    Since {formatDate(tokens?.periodStartAt)}
-                  </p>
-                </div>
-                <dl className="mt-6">
-                  <MetricRow label="Input" value={formatNumber(tokens?.inputTokens)} />
-                  <MetricRow label="Output" value={formatNumber(tokens?.outputTokens)} />
-                  <MetricRow label="Cache read" value={formatNumber(tokens?.cacheReadTokens)} />
-                  <MetricRow label="Cache write" value={formatNumber(tokens?.cacheCreationTokens)} />
-                  <MetricRow label="Reasoning" value={formatNumber(tokens?.reasoningTokens)} />
-                  <MetricRow label="Total" value={formatNumber(tokens?.totalTokens)} emphasize />
-                </dl>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <dl className="mt-6">
+                <MetricRow label="Input" value={formatNumber(tokens?.inputTokens)} />
+                <MetricRow label="Output" value={formatNumber(tokens?.outputTokens)} />
+                <MetricRow label="Cache read" value={formatNumber(tokens?.cacheReadTokens)} />
+                <MetricRow label="Cache write" value={formatNumber(tokens?.cacheCreationTokens)} />
+                <MetricRow label="Reasoning" value={formatNumber(tokens?.reasoningTokens)} />
+                <MetricRow label="Total" value={formatNumber(tokens?.totalTokens)} emphasize />
+              </dl>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

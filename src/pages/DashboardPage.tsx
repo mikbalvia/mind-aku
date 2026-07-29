@@ -59,7 +59,6 @@ export function DashboardPage() {
   const lifetime = config?.lifetimeQuota;
   const usedPct = lifetimeUsedPercent(lifetime?.spentUsd, lifetime?.limitUsd);
   const remaining = lifetime?.remainingUsd;
-  const cost = status?.usage.cost;
   const tokens = status?.usage.tokens;
 
   return (
@@ -84,9 +83,9 @@ export function DashboardPage() {
 
       {!loading && !error ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2">
             <SummaryCard
-              className="scale-in scale-in-delay-1 md:col-span-2 xl:col-span-2"
+              className="scale-in scale-in-delay-1"
               label="Lifetime balance"
               value={formatUsd(remaining)}
               hint={
@@ -110,19 +109,6 @@ export function DashboardPage() {
 
             <SummaryCard
               className="scale-in scale-in-delay-2"
-              label="Period used"
-              value={formatUsd(cost?.usedUsd, 4)}
-              hint={
-                cost?.remainingUsd != null
-                  ? `${formatUsd(cost.remainingUsd, 4)} remaining this period`
-                  : cost?.period
-                    ? `Period: ${cost.period}`
-                    : "No period budget set"
-              }
-            />
-
-            <SummaryCard
-              className="scale-in scale-in-delay-3"
               label="Tokens this period"
               value={formatNumber(tokens?.totalTokens)}
               hint={`In ${formatNumber(tokens?.inputTokens)} · Out ${formatNumber(tokens?.outputTokens)}`}
