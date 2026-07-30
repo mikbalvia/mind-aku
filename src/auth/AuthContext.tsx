@@ -3,6 +3,7 @@ import { fetchMeStatus } from "../api/client";
 import { ApiError } from "../api/types";
 import type { MeStatus } from "../api/types";
 import { SESSION_KEY } from "../config";
+import { clearAllChatStores } from "../lib/chatStore";
 
 type AuthContextValue = {
   apiKey: string | null;
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     writeStoredKey(null);
+    clearAllChatStores();
     setApiKey(null);
     setStatus(null);
   }, []);

@@ -7,6 +7,7 @@ import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components
 import { COMPANY } from "../lib/company";
 import { formatIdrPerUsdRate } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
+import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -115,6 +116,12 @@ export function PaymentsPage() {
         await simulatePayment(apiKey, payment.id);
         setSuccessMessage(`Mock top-up credited ${formatUsd(payment.usdCredit)} to lifetime quota.`);
         await load();
+        setSubmitting(false);
+        return;
+      }
+
+      if (!isAllowedPaymentCheckoutUrl(payment.paymentLinkUrl)) {
+        setError("Payment link host is not allowed. Contact support if this persists.");
         setSubmitting(false);
         return;
       }

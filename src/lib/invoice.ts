@@ -363,28 +363,19 @@ function printInvoiceViaIframe(html: string): void {
   const iframe = document.createElement("iframe");
   iframe.id = "mind-aku-invoice-frame";
   iframe.setAttribute("aria-hidden", "true");
+  // Sandbox: allow print modals + same-origin so we can call print(); no scripts.
+  iframe.setAttribute("sandbox", "allow-modals allow-same-origin");
   iframe.style.cssText =
     "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;pointer-events:none;";
   document.body.appendChild(iframe);
-
-  const frameWindow = iframe.contentWindow;
-  const frameDoc = iframe.contentDocument ?? frameWindow?.document;
-  if (!frameDoc || !frameWindow) {
-    iframe.remove();
-    return;
-  }
-
-  frameDoc.open();
-  frameDoc.write(html);
-  frameDoc.close();
 
   let printed = false;
   const triggerPrint = () => {
     if (printed) return;
     printed = true;
     try {
-      frameWindow.focus();
-      frameWindow.print();
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
     } catch {
       // HTML file download already saved; user can open it and print.
     }
@@ -392,7 +383,8 @@ function printInvoiceViaIframe(html: string): void {
   };
 
   iframe.addEventListener("load", triggerPrint);
-  // document.write often skips load in some browsers — fallback once.
+  iframe.srcdoc = html;
+  // Fallback if load does not fire for srcdoc in some browsers.
   window.setTimeout(triggerPrint, 350);
 }
 

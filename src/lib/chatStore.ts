@@ -71,6 +71,19 @@ export function loadChatStore(apiKeyId: string): ChatStoreSnapshot {
   }
 }
 
+export function clearAllChatStores(): void {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(STORE_PREFIX)) keys.push(key);
+    }
+    for (const key of keys) localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
 export function saveChatStore(apiKeyId: string, snapshot: ChatStoreSnapshot): void {
   try {
     localStorage.setItem(storageKey(apiKeyId), JSON.stringify(snapshot));

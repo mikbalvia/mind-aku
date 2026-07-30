@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COMPANY } from "../lib/company";
+import { safeInternalPath } from "../lib/safeUrl";
 
 export function LoginPage() {
   const { apiKey, login, loading } = useAuth();
@@ -15,10 +16,10 @@ export function LoginPage() {
   const location = useLocation();
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const nextPath = safeInternalPath((location.state as { from?: string } | null)?.from);
 
   if (apiKey) {
-    const from = (location.state as { from?: string } | null)?.from || "/console";
-    return <Navigate to={from} replace />;
+    return <Navigate to={nextPath} replace />;
   }
 
   async function onSubmit(event: FormEvent) {
@@ -26,7 +27,7 @@ export function LoginPage() {
     setError(null);
     try {
       await login(value);
-      navigate("/console", { replace: true });
+      navigate(nextPath, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
       else setError("Login failed. Please try again.");

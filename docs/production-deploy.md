@@ -8,13 +8,13 @@ Dokumentasi deploy frontend portal ke Ubuntu (nginx, static build). Terakhir dip
 |------|--------|
 | Publik | https://mind-aku.my.id |
 | Repo GitHub | https://github.com/mikbalvia/mind-aku.git |
-| Server | Ubuntu, `43.129.52.189` (SSH user: `ubuntu`) |
+| Server | Ubuntu VPS (SSH key auth; host details in private runbook) |
 | Path aplikasi | `/var/www/mind-aku` |
 | Artefak production | `/var/www/mind-aku/dist` (hasil `npm run build`) |
 | Nginx vhost | `/etc/nginx/sites-available/mind-aku.my.id` → `sites-enabled/` |
 | TLS origin | Let's Encrypt (`certbot`), cert: `/etc/letsencrypt/live/mind-aku.my.id/` |
 | API OmniRoute | https://vip-api.mind-aku.my.id (proxy nginx → backend lokal, bukan bagian deploy portal) |
-| DNS | Cloudflare → IP server |
+| DNS | Cloudflare → origin |
 
 Portal **hanya static files**; tidak ada proses Node yang berjalan di production. Variabel `VITE_*` di-inject saat **build**, bukan saat runtime.
 
@@ -113,17 +113,32 @@ Reload nginx **tidak** diperlukan selama `root` tetap menunjuk ke `dist/` yang s
 
 ## Auto-setup Claude Code / Codex
 
-After login, the dashboard shows copy-paste commands. Public endpoint on the API host:
+After login, the dashboard shows copy-paste commands. Public endpoint on the API host (script prompts for the API key — do **not** put the key in the URL):
 
 ```bash
-curl -fsSL "https://vip-api.mind-aku.my.id/setup?token=<API_KEY>" | bash
+curl -fsSL "https://vip-api.mind-aku.my.id/setup" | bash
 ```
 
 ```powershell
-irm "https://vip-api.mind-aku.my.id/setup?token=<API_KEY>" | iex
+irm "https://vip-api.mind-aku.my.id/setup" | iex
 ```
 
 OmniRoute env (optional): `SETUP_PUBLIC_BASE_URL=https://vip-api.mind-aku.my.id` so scripts embed the correct origin behind nginx.
+
+## Security headers (portal nginx)
+
+Add inside the `server { ... }` block for `mind-aku.my.id` (HTTPS), then `sudo nginx -t && sudo systemctl reload nginx`:
+
+```nginx
+add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://vip-api.mind-aku.my.id https:; worker-src 'self' blob:; manifest-src 'self'" always;
+add_header X-Frame-Options "DENY" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=()" always;
+add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+```
+
+Verify: `curl -sI https://mind-aku.my.id | grep -iE 'content-security|strict-transport|x-frame|x-content|referrer|permissions'`.
 
 ## Verifikasi
 

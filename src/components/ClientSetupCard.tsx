@@ -19,15 +19,12 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-export function ClientSetupCard({ apiKey, toolLabel, modelsNote }: Props) {
+export function ClientSetupCard({ apiKey: _apiKey, toolLabel, modelsNote }: Props) {
   const [copied, setCopied] = useState<"mac" | "win" | null>(null);
 
-  const setupBase = OMNIROUTE_BASE_URL.replace(/\/$/, "");
-  const setupUrl = useMemo(() => {
-    const url = new URL(`${setupBase}/setup`);
-    url.searchParams.set("token", apiKey);
-    return url.toString();
-  }, [apiKey, setupBase]);
+  // Do not embed the long-lived API key in the setup URL (history / Referer / logs).
+  // OmniRoute's setup script prompts for the token interactively when omitted.
+  const setupUrl = useMemo(() => `${OMNIROUTE_BASE_URL.replace(/\/$/, "")}/setup`, []);
 
   const macCmd = `curl -fsSL "${setupUrl}" | bash`;
   const winCmd = `irm "${setupUrl}" | iex`;
@@ -47,9 +44,9 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote }: Props) {
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
           {toolLabel
-            ? `Setelah ${toolLabel} terpasang, jalankan satu perintah di bawah. Script menghubungkan CLI ke gateway Mind Aku dengan API key kamu.`
-            : "Jalankan satu perintah di bawah untuk menghubungkan CLI ke gateway Mind Aku."}{" "}
-          Token ikut di URL — jangan bagikan.
+            ? `Setelah ${toolLabel} terpasang, jalankan satu perintah di bawah. Script akan meminta API key kamu (jangan bagikan perintah ke orang lain).`
+            : "Jalankan satu perintah di bawah. Script akan meminta API key kamu."}{" "}
+          API key tidak lagi disisipkan di URL.
         </p>
 
         <div className="mt-5 space-y-4">
