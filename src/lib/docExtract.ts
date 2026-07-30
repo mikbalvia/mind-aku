@@ -1,5 +1,7 @@
 export const MAX_DOC_BYTES = 10 * 1024 * 1024; // 10 MB
 export const MAX_DOC_CHARS = 100_000;
+const MAX_OCR_PAGES = 15;
+const OCR_MIN_TEXT_CHARS = 20;
 
 const TEXT_EXTENSIONS = new Set([".txt", ".md", ".markdown", ".csv", ".json", ".log"]);
 const PDF_EXTENSIONS = new Set([".pdf"]);
@@ -47,45 +49,125 @@ function isSupported(name: string, mimeType: string): boolean {
   return false;
 }
 
-async function extractPdfText(file: File): Promise<string> {
-  const pdfjs = await import("pdfjs-dist");
-  // Vite emits a hashed .mjs worker URL. Some hosts (nginx without mjs in
-  // mime.types) serve it as application/octet-stream, which browsers reject
-  // for module workers — wrap as a JS blob URL instead.
-  const workerMod = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
-  const workerUrl = workerMod.default;
-  const workerRes = await fetch(workerUrl);
-  if (!workerRes.ok) {
-    throw new DocExtractError("Failed to load PDF worker.");
+type PdfJsModule = typeof import("pdfjs-dist");
+type PdfDocument = Awaited<ReturnType<PdfJsModule["getDocument"]>["promise"]>;
+type PdfPage = Awaited<ReturnType<PdfDocument["getPage"]>>;
+
+let pdfWorkerReady: Promise<PdfJsModule> | null = null;
+
+async function loadPdfJs(): Promise<PdfJsModule> {
+  if (!pdfWorkerReady) {
+    pdfWorkerReady = (async () => {
+      const pdfjs = await import("pdfjs-dist");
+      // Vite emits a hashed .mjs worker URL. Some hosts serve .mjs as
+      // application/octet-stream; wrap as a JS blob URL for module workers.
+      const workerMod = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+      const workerRes = await fetch(workerMod.default);
+      if (!workerRes.ok) {
+        throw new DocExtractError("Failed to load PDF worker.");
+      }
+      const typedWorker = new Blob([await workerRes.blob()], { type: "text/javascript" });
+      pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(typedWorker);
+      return pdfjs;
+    })().catch((error) => {
+      pdfWorkerReady = null;
+      throw error;
+    });
   }
-  const workerBlob = await workerRes.blob();
-  const typedWorker = new Blob([workerBlob], { type: "text/javascript" });
-  const blobUrl = URL.createObjectURL(typedWorker);
-  pdfjs.GlobalWorkerOptions.workerSrc = blobUrl;
+  return pdfWorkerReady;
+}
+
+function textFromContentItems(items: PdfPage extends never ? never : Awaited<ReturnType<PdfPage["getTextContent"]>>["items"]): string {
+  let out = "";
+  for (const item of items) {
+    if (!("str" in item) || typeof item.str !== "string") continue;
+    out += item.str;
+    if ("hasEOL" in item && item.hasEOL) out += "\n";
+  }
+  return out.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+async function extractEmbeddedPdfText(doc: PdfDocument): Promise<string> {
+  const parts: string[] = [];
+  for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
+    const page = await doc.getPage(pageNum);
+    const content = await page.getTextContent({
+      includeMarkedContent: false,
+      disableNormalization: false,
+    });
+    const pageText = textFromContentItems(content.items);
+    if (pageText) {
+      parts.push(`--- Page ${pageNum} ---\n${pageText}`);
+    }
+    if (parts.join("\n\n").length >= MAX_DOC_CHARS) break;
+  }
+  return parts.join("\n\n").trim();
+}
+
+async function ocrPdfPages(doc: PdfDocument): Promise<string> {
+  const { createWorker } = await import("tesseract.js");
+  const worker = await createWorker("eng+ind");
+  const parts: string[] = [];
 
   try {
-    const data = new Uint8Array(await file.arrayBuffer());
-    const doc = await pdfjs.getDocument({ data }).promise;
-    const parts: string[] = [];
-
-    for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
+    const pageLimit = Math.min(doc.numPages, MAX_OCR_PAGES);
+    for (let pageNum = 1; pageNum <= pageLimit; pageNum += 1) {
       const page = await doc.getPage(pageNum);
-      const content = await page.getTextContent();
-      const pageText = content.items
-        .map((item) => ("str" in item && typeof item.str === "string" ? item.str : ""))
-        .filter(Boolean)
-        .join(" ");
-      if (pageText.trim()) {
-        parts.push(`--- Page ${pageNum} ---\n${pageText}`);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) continue;
+
+      const renderTask = page.render({
+        canvasContext: ctx,
+        viewport,
+        canvas,
+      } as Parameters<PdfPage["render"]>[0]);
+      await renderTask.promise;
+
+      const result = await worker.recognize(canvas);
+      const pageText = (result.data.text ?? "").trim();
+      canvas.width = 0;
+      canvas.height = 0;
+
+      if (pageText) {
+        parts.push(`--- Page ${pageNum} (OCR) ---\n${pageText}`);
       }
-      // Stop early if already over the char budget (before truncation message).
       if (parts.join("\n\n").length >= MAX_DOC_CHARS) break;
     }
-
-    await doc.cleanup();
-    return parts.join("\n\n").trim();
   } finally {
-    URL.revokeObjectURL(blobUrl);
+    await worker.terminate();
+  }
+
+  return parts.join("\n\n").trim();
+}
+
+async function extractPdfText(file: File): Promise<string> {
+  const pdfjs = await loadPdfJs();
+  const data = new Uint8Array(await file.arrayBuffer());
+  const loadingTask = pdfjs.getDocument({ data });
+  const doc = await loadingTask.promise;
+
+  try {
+    const embedded = await extractEmbeddedPdfText(doc);
+    if (embedded.replace(/\s+/g, "").length >= OCR_MIN_TEXT_CHARS) {
+      return embedded;
+    }
+
+    // Scanned / image-only PDFs have little or no text layer — OCR pages.
+    const ocrText = await ocrPdfPages(doc);
+    if (ocrText) return ocrText;
+
+    if (embedded) return embedded;
+
+    throw new DocExtractError(
+      "No extractable text found. This PDF may be empty or image-only; try a text PDF, DOCX, or TXT."
+    );
+  } finally {
+    await doc.cleanup();
+    await loadingTask.destroy().catch(() => undefined);
   }
 }
 
