@@ -59,8 +59,7 @@ export function ChatMessageList({
           Chat Mind Aku
         </p>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          Tanya apa saja, atau lampirkan PDF / DOCX / TXT untuk dibaca. Setiap pesan memakai
-          quota lifetime kamu.
+          Tanya apa saja. Setiap pesan memakai quota lifetime kamu.
         </p>
       </div>
     );

@@ -6,12 +6,11 @@ import { streamChatCompletions } from "../api/chat";
 import { ApiError } from "../api/types";
 import type { ModelItem } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
-import { ChatComposer, type PendingAttachment } from "../components/chat/ChatComposer";
+import { ChatComposer } from "../components/chat/ChatComposer";
 import { ChatConversationList } from "../components/chat/ChatConversationList";
 import { ChatMessageList } from "../components/chat/ChatMessageList";
 import { ErrorBanner } from "../components/page-chrome";
 import {
-  addAttachments,
   appendMessage,
   createConversation,
   createId,
@@ -22,15 +21,9 @@ import {
   toApiMessages,
   updateMessageContent,
   upsertConversation,
-  type ChatAttachmentMeta,
   type ChatConversation,
   type ChatStoreSnapshot,
 } from "../lib/chatStore";
-import {
-  DocExtractError,
-  extractDocumentText,
-  formatAttachmentForPrompt,
-} from "../lib/docExtract";
 import { formatUsd } from "../lib/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,9 +52,6 @@ export function ChatPage() {
   const [modelsError, setModelsError] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState("");
   const [draft, setDraft] = useState("");
-  const [pendingAttachments, setPendingAttachments] = useState<
-    Array<PendingAttachment & { text?: string; mimeType?: string }>
-  >([]);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quotaError, setQuotaError] = useState(false);
@@ -86,14 +76,11 @@ export function ChatPage() {
     [apiKeyId]
   );
 
-  // Load conversations when api key id is known.
   useEffect(() => {
     if (!apiKeyId) return;
-    const loaded = loadChatStore(apiKeyId);
-    setStore(loaded);
+    setStore(loadChatStore(apiKeyId));
   }, [apiKeyId]);
 
-  // Load models + quota.
   useEffect(() => {
     if (!apiKey) return;
     let cancelled = false;
@@ -134,7 +121,6 @@ export function ChatPage() {
     };
   }, [apiKey, logout]);
 
-  // Sync model onto active conversation when selection changes (idle only).
   useEffect(() => {
     if (!active || streaming || !selectedModel) return;
     if (active.model === selectedModel) return;
@@ -174,7 +160,6 @@ export function ChatPage() {
     if (streaming) return;
     const created = createConversation(selectedModel || models[0]?.id || "");
     setDraft("");
-    setPendingAttachments([]);
     setError(null);
     setQuotaError(false);
     setSidebarOpen(false);
@@ -196,44 +181,6 @@ export function ChatPage() {
     persist(deleteConversation(storeRef.current, id));
   }
 
-  async function handleAttachFiles(files: FileList | File[]) {
-    const list = Array.from(files);
-    for (const file of list) {
-      const pendingId = createId("att");
-      setPendingAttachments((prev) => [
-        ...prev,
-        {
-          id: pendingId,
-          name: file.name,
-          charCount: 0,
-          truncated: false,
-          extracting: true,
-        },
-      ]);
-      try {
-        const extracted = await extractDocumentText(file);
-        setPendingAttachments((prev) =>
-          prev.map((item) =>
-            item.id === pendingId
-              ? {
-                  id: pendingId,
-                  name: extracted.name,
-                  charCount: extracted.charCount,
-                  truncated: extracted.truncated,
-                  extracting: false,
-                  text: extracted.text,
-                  mimeType: extracted.mimeType,
-                }
-              : item
-          )
-        );
-      } catch (err) {
-        setPendingAttachments((prev) => prev.filter((item) => item.id !== pendingId));
-        setError(err instanceof DocExtractError ? err.message : "Failed to read attachment.");
-      }
-    }
-  }
-
   function handleStop() {
     abortRef.current?.abort();
     abortRef.current = null;
@@ -249,41 +196,12 @@ export function ChatPage() {
       return;
     }
 
-    const readyAttachments = pendingAttachments.filter((a) => a.text && !a.extracting);
-    if (pendingAttachments.some((a) => a.extracting)) {
-      setError("Tunggu ekstraksi dokumen selesai.");
-      return;
-    }
-
     setError(null);
     setQuotaError(false);
 
     let conversation = ensureConversation();
     conversation = { ...conversation, model: selectedModel };
-
-    const attachmentMetas: ChatAttachmentMeta[] = readyAttachments.map((a) => ({
-      id: a.id,
-      name: a.name,
-      mimeType: a.mimeType || "application/octet-stream",
-      charCount: a.charCount,
-      truncated: a.truncated,
-      text: a.text!,
-    }));
-
-    if (attachmentMetas.length > 0) {
-      conversation = addAttachments(conversation, attachmentMetas);
-    }
-
-    const attachmentBlock = attachmentMetas
-      .map((a) => formatAttachmentForPrompt(a.name, a.text))
-      .join("\n\n");
-    const userContent = attachmentBlock ? `${attachmentBlock}\n\n${prompt}` : prompt;
-
-    conversation = appendMessage(conversation, {
-      role: "user",
-      content: userContent,
-      attachmentIds: attachmentMetas.map((a) => a.id),
-    });
+    conversation = appendMessage(conversation, { role: "user", content: prompt });
 
     const assistantId = createId("msg");
     conversation = appendMessage(conversation, {
@@ -294,7 +212,6 @@ export function ChatPage() {
 
     persist(upsertConversation(storeRef.current, conversation));
     setDraft("");
-    setPendingAttachments([]);
     setStreaming(true);
 
     const controller = new AbortController();
@@ -319,7 +236,6 @@ export function ChatPage() {
         persist(upsertConversation(storeRef.current, updated));
       }
 
-      // If aborted with empty assistant message, drop the empty bubble.
       const finalConv =
         storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;
       const assistantMsg = finalConv.messages.find((m) => m.id === assistantId);
@@ -381,7 +297,6 @@ export function ChatPage() {
   return (
     <div className="chat-page flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-card/20">
-        {/* Desktop conversation rail */}
         <aside className="hidden w-60 shrink-0 flex-col border-r border-border/70 bg-card/40 md:flex">
           <ChatConversationList
             conversations={store.conversations}
@@ -392,7 +307,6 @@ export function ChatPage() {
           />
         </aside>
 
-        {/* Mobile drawer */}
         {sidebarOpen ? (
           <div className="fixed inset-0 z-40 md:hidden">
             <button
@@ -463,7 +377,10 @@ export function ChatPage() {
                 {quotaError ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     Quota habis.{" "}
-                    <Link to="/payments" className="font-semibold text-primary underline-offset-2 hover:underline">
+                    <Link
+                      to="/payments"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
                       Top up di sini
                     </Link>
                     .
@@ -481,11 +398,6 @@ export function ChatPage() {
                 onChange={setDraft}
                 onSubmit={() => void handleSend()}
                 onStop={handleStop}
-                onAttachFiles={(files) => void handleAttachFiles(files)}
-                onRemoveAttachment={(id) =>
-                  setPendingAttachments((prev) => prev.filter((a) => a.id !== id))
-                }
-                attachments={pendingAttachments}
                 disabled={!selectedModel || models.length === 0}
                 streaming={streaming}
               />

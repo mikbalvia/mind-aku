@@ -2,20 +2,9 @@ import type { ChatMessage } from "../api/types";
 
 const STORE_PREFIX = "new-clients.chat.v1.";
 
-export type ChatAttachmentMeta = {
-  id: string;
-  name: string;
-  mimeType: string;
-  charCount: number;
-  truncated: boolean;
-  /** Extracted text kept for re-sending in later turns of this conversation. */
-  text: string;
-};
-
 export type StoredChatMessage = ChatMessage & {
   id: string;
   createdAt: string;
-  attachmentIds?: string[];
 };
 
 export type ChatConversation = {
@@ -23,7 +12,6 @@ export type ChatConversation = {
   title: string;
   model: string;
   messages: StoredChatMessage[];
-  attachments: ChatAttachmentMeta[];
   createdAt: string;
   updatedAt: string;
 };
@@ -63,7 +51,19 @@ export function loadChatStore(apiKeyId: string): ChatStoreSnapshot {
     }
     return {
       version: 1,
-      conversations: parsed.conversations,
+      conversations: parsed.conversations.map((c) => ({
+        id: c.id,
+        title: c.title,
+        model: c.model,
+        messages: (c.messages ?? []).map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          createdAt: m.createdAt,
+        })),
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
       activeId: parsed.activeId ?? parsed.conversations[0]?.id ?? null,
     };
   } catch {
@@ -86,7 +86,6 @@ export function createConversation(model: string, title = "New chat"): ChatConve
     title,
     model,
     messages: [],
-    attachments: [],
     createdAt: ts,
     updatedAt: ts,
   };
@@ -143,7 +142,6 @@ export function appendMessage(
     role: message.role,
     content: message.content,
     createdAt: message.createdAt ?? nowIso(),
-    attachmentIds: message.attachmentIds,
   };
   return {
     ...conversation,
@@ -168,19 +166,6 @@ export function updateMessageContent(
   };
 }
 
-export function addAttachments(
-  conversation: ChatConversation,
-  attachments: ChatAttachmentMeta[]
-): ChatConversation {
-  if (attachments.length === 0) return conversation;
-  return {
-    ...conversation,
-    attachments: [...conversation.attachments, ...attachments],
-    updatedAt: nowIso(),
-  };
-}
-
-/** Build API messages; include prior attachment texts only via the user messages that referenced them. */
 export function toApiMessages(conversation: ChatConversation): ChatMessage[] {
   return conversation.messages
     .filter((m) => m.role === "user" || m.role === "assistant" || m.role === "system")
