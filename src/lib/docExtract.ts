@@ -49,30 +49,44 @@ function isSupported(name: string, mimeType: string): boolean {
 
 async function extractPdfText(file: File): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
-  // Vite resolves the worker as a URL module.
-  const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
-  pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-
-  const data = new Uint8Array(await file.arrayBuffer());
-  const doc = await pdfjs.getDocument({ data }).promise;
-  const parts: string[] = [];
-
-  for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
-    const page = await doc.getPage(pageNum);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map((item) => ("str" in item && typeof item.str === "string" ? item.str : ""))
-      .filter(Boolean)
-      .join(" ");
-    if (pageText.trim()) {
-      parts.push(`--- Page ${pageNum} ---\n${pageText}`);
-    }
-    // Stop early if already over the char budget (before truncation message).
-    if (parts.join("\n\n").length >= MAX_DOC_CHARS) break;
+  // Vite emits a hashed .mjs worker URL. Some hosts (nginx without mjs in
+  // mime.types) serve it as application/octet-stream, which browsers reject
+  // for module workers — wrap as a JS blob URL instead.
+  const workerMod = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+  const workerUrl = workerMod.default;
+  const workerRes = await fetch(workerUrl);
+  if (!workerRes.ok) {
+    throw new DocExtractError("Failed to load PDF worker.");
   }
+  const workerBlob = await workerRes.blob();
+  const typedWorker = new Blob([workerBlob], { type: "text/javascript" });
+  const blobUrl = URL.createObjectURL(typedWorker);
+  pdfjs.GlobalWorkerOptions.workerSrc = blobUrl;
 
-  await doc.cleanup();
-  return parts.join("\n\n").trim();
+  try {
+    const data = new Uint8Array(await file.arrayBuffer());
+    const doc = await pdfjs.getDocument({ data }).promise;
+    const parts: string[] = [];
+
+    for (let pageNum = 1; pageNum <= doc.numPages; pageNum += 1) {
+      const page = await doc.getPage(pageNum);
+      const content = await page.getTextContent();
+      const pageText = content.items
+        .map((item) => ("str" in item && typeof item.str === "string" ? item.str : ""))
+        .filter(Boolean)
+        .join(" ");
+      if (pageText.trim()) {
+        parts.push(`--- Page ${pageNum} ---\n${pageText}`);
+      }
+      // Stop early if already over the char budget (before truncation message).
+      if (parts.join("\n\n").length >= MAX_DOC_CHARS) break;
+    }
+
+    await doc.cleanup();
+    return parts.join("\n\n").trim();
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
 }
 
 async function extractDocxText(file: File): Promise<string> {
