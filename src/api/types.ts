@@ -1,4 +1,30 @@
-export type ApiErrorCode = "unauthorized" | "forbidden" | "network" | "unknown";
+export type ApiErrorCode =
+  | "unauthorized"
+  | "forbidden"
+  | "network"
+  | "quota"
+  | "rate_limit"
+  | "unknown";
+
+export type ChatRole = "system" | "user" | "assistant";
+
+export type ChatMessage = {
+  role: ChatRole;
+  content: string;
+};
+
+export type ChatCompletionChunk = {
+  id?: string;
+  object?: string;
+  created?: number;
+  model?: string;
+  choices?: Array<{
+    index?: number;
+    delta?: { role?: string; content?: string | null };
+    finish_reason?: string | null;
+  }>;
+  error?: { message?: string; type?: string; code?: string };
+};
 
 export class ApiError extends Error {
   status: number;

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/RequireAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ChatPage } from "./pages/ChatPage";
 import { ModelsPage } from "./pages/ModelsPage";
 import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/payments/cancel" element={<PaymentCancelPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/console" element={<DashboardPage />} />
+        <Route path="/chat" element={<ChatPage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/models" element={<ModelsPage />} />
         <Route path="/usage" element={<UsagePage />} />

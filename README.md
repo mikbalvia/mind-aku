@@ -9,6 +9,7 @@ This app is **frontend-only**. All data comes from OmniRoute.
 | Page | OmniRoute API |
 |------|----------------|
 | Login | `GET /api/v1/me/status` (validates key + `self:usage`) |
+| Chat | `POST /v1/chat/completions` (streaming; debits lifetime quota) |
 | Models | `GET /v1/models` |
 | Usage | `GET /api/v1/me/status` |
 | Logs | `GET /api/v1/me/logs`, `GET /api/v1/me/logs/:id` |

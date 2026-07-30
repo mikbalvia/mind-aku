@@ -1,0 +1,501 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { fetchModels, fetchPaymentsConfig } from "../api/client";
+import { streamChatCompletions } from "../api/chat";
+import { ApiError } from "../api/types";
+import type { ModelItem } from "../api/types";
+import { useAuth } from "../auth/AuthContext";
+import { ChatComposer, type PendingAttachment } from "../components/chat/ChatComposer";
+import { ChatConversationList } from "../components/chat/ChatConversationList";
+import { ChatMessageList } from "../components/chat/ChatMessageList";
+import { ErrorBanner } from "../components/page-chrome";
+import {
+  addAttachments,
+  appendMessage,
+  createConversation,
+  createId,
+  deleteConversation,
+  loadChatStore,
+  saveChatStore,
+  setActiveConversation,
+  toApiMessages,
+  updateMessageContent,
+  upsertConversation,
+  type ChatAttachmentMeta,
+  type ChatConversation,
+  type ChatStoreSnapshot,
+} from "../lib/chatStore";
+import {
+  DocExtractError,
+  extractDocumentText,
+  formatAttachmentForPrompt,
+} from "../lib/docExtract";
+import { formatUsd } from "../lib/format";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type RemainingQuota = {
+  remainingUsd: number | null;
+  enabled: boolean;
+};
+
+export function ChatPage() {
+  const { apiKey, status, logout, refreshStatus } = useAuth();
+  const apiKeyId = status?.apiKey?.id ?? null;
+
+  const [store, setStore] = useState<ChatStoreSnapshot>({
+    version: 1,
+    conversations: [],
+    activeId: null,
+  });
+  const [models, setModels] = useState<ModelItem[]>([]);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState("");
+  const [draft, setDraft] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState<
+    Array<PendingAttachment & { text?: string; mimeType?: string }>
+  >([]);
+  const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [quotaError, setQuotaError] = useState(false);
+  const [remaining, setRemaining] = useState<RemainingQuota | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const abortRef = useRef<AbortController | null>(null);
+  const storeRef = useRef(store);
+  storeRef.current = store;
+
+  const active = useMemo(
+    () => store.conversations.find((c) => c.id === store.activeId) ?? null,
+    [store]
+  );
+
+  const persist = useCallback(
+    (next: ChatStoreSnapshot) => {
+      storeRef.current = next;
+      setStore(next);
+      if (apiKeyId) saveChatStore(apiKeyId, next);
+    },
+    [apiKeyId]
+  );
+
+  // Load conversations when api key id is known.
+  useEffect(() => {
+    if (!apiKeyId) return;
+    const loaded = loadChatStore(apiKeyId);
+    setStore(loaded);
+  }, [apiKeyId]);
+
+  // Load models + quota.
+  useEffect(() => {
+    if (!apiKey) return;
+    let cancelled = false;
+
+    async function load() {
+      setModelsError(null);
+      try {
+        const [modelRes, payCfg] = await Promise.all([
+          fetchModels(apiKey!),
+          fetchPaymentsConfig(apiKey!).catch(() => null),
+        ]);
+        if (cancelled) return;
+        const list = modelRes.data ?? [];
+        setModels(list);
+        setSelectedModel((current) => {
+          if (current && list.some((m) => m.id === current)) return current;
+          return list[0]?.id ?? "";
+        });
+        if (payCfg?.lifetimeQuota) {
+          setRemaining({
+            enabled: payCfg.lifetimeQuota.enabled,
+            remainingUsd: payCfg.lifetimeQuota.remainingUsd,
+          });
+        }
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.code === "unauthorized") {
+          logout();
+          return;
+        }
+        setModelsError(err instanceof ApiError ? err.message : "Failed to load models.");
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiKey, logout]);
+
+  // Sync model onto active conversation when selection changes (idle only).
+  useEffect(() => {
+    if (!active || streaming || !selectedModel) return;
+    if (active.model === selectedModel) return;
+    const updated: ChatConversation = {
+      ...active,
+      model: selectedModel,
+      updatedAt: new Date().toISOString(),
+    };
+    persist(upsertConversation(storeRef.current, updated));
+  }, [selectedModel, active, streaming, persist]);
+
+  const refreshQuota = useCallback(async () => {
+    if (!apiKey) return;
+    try {
+      await refreshStatus();
+      const payCfg = await fetchPaymentsConfig(apiKey);
+      if (payCfg.lifetimeQuota) {
+        setRemaining({
+          enabled: payCfg.lifetimeQuota.enabled,
+          remainingUsd: payCfg.lifetimeQuota.remainingUsd,
+        });
+      }
+    } catch {
+      // non-fatal
+    }
+  }, [apiKey, refreshStatus]);
+
+  function ensureConversation(): ChatConversation {
+    const current = storeRef.current.conversations.find((c) => c.id === storeRef.current.activeId);
+    if (current) return current;
+    const created = createConversation(selectedModel || models[0]?.id || "");
+    persist(upsertConversation(storeRef.current, created));
+    return created;
+  }
+
+  function handleNewChat() {
+    if (streaming) return;
+    const created = createConversation(selectedModel || models[0]?.id || "");
+    setDraft("");
+    setPendingAttachments([]);
+    setError(null);
+    setQuotaError(false);
+    setSidebarOpen(false);
+    persist(upsertConversation(storeRef.current, created));
+  }
+
+  function handleSelect(id: string) {
+    if (streaming) return;
+    const conv = storeRef.current.conversations.find((c) => c.id === id);
+    if (conv?.model) setSelectedModel(conv.model);
+    setError(null);
+    setQuotaError(false);
+    setSidebarOpen(false);
+    persist(setActiveConversation(storeRef.current, id));
+  }
+
+  function handleDelete(id: string) {
+    if (streaming) return;
+    persist(deleteConversation(storeRef.current, id));
+  }
+
+  async function handleAttachFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    for (const file of list) {
+      const pendingId = createId("att");
+      setPendingAttachments((prev) => [
+        ...prev,
+        {
+          id: pendingId,
+          name: file.name,
+          charCount: 0,
+          truncated: false,
+          extracting: true,
+        },
+      ]);
+      try {
+        const extracted = await extractDocumentText(file);
+        setPendingAttachments((prev) =>
+          prev.map((item) =>
+            item.id === pendingId
+              ? {
+                  id: pendingId,
+                  name: extracted.name,
+                  charCount: extracted.charCount,
+                  truncated: extracted.truncated,
+                  extracting: false,
+                  text: extracted.text,
+                  mimeType: extracted.mimeType,
+                }
+              : item
+          )
+        );
+      } catch (err) {
+        setPendingAttachments((prev) => prev.filter((item) => item.id !== pendingId));
+        setError(err instanceof DocExtractError ? err.message : "Failed to read attachment.");
+      }
+    }
+  }
+
+  function handleStop() {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStreaming(false);
+  }
+
+  async function handleSend() {
+    if (!apiKey || streaming) return;
+    const prompt = draft.trim();
+    if (!prompt) return;
+    if (!selectedModel) {
+      setError("Pilih model dulu.");
+      return;
+    }
+
+    const readyAttachments = pendingAttachments.filter((a) => a.text && !a.extracting);
+    if (pendingAttachments.some((a) => a.extracting)) {
+      setError("Tunggu ekstraksi dokumen selesai.");
+      return;
+    }
+
+    setError(null);
+    setQuotaError(false);
+
+    let conversation = ensureConversation();
+    conversation = { ...conversation, model: selectedModel };
+
+    const attachmentMetas: ChatAttachmentMeta[] = readyAttachments.map((a) => ({
+      id: a.id,
+      name: a.name,
+      mimeType: a.mimeType || "application/octet-stream",
+      charCount: a.charCount,
+      truncated: a.truncated,
+      text: a.text!,
+    }));
+
+    if (attachmentMetas.length > 0) {
+      conversation = addAttachments(conversation, attachmentMetas);
+    }
+
+    const attachmentBlock = attachmentMetas
+      .map((a) => formatAttachmentForPrompt(a.name, a.text))
+      .join("\n\n");
+    const userContent = attachmentBlock ? `${attachmentBlock}\n\n${prompt}` : prompt;
+
+    conversation = appendMessage(conversation, {
+      role: "user",
+      content: userContent,
+      attachmentIds: attachmentMetas.map((a) => a.id),
+    });
+
+    const assistantId = createId("msg");
+    conversation = appendMessage(conversation, {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+    });
+
+    persist(upsertConversation(storeRef.current, conversation));
+    setDraft("");
+    setPendingAttachments([]);
+    setStreaming(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const apiMessages = toApiMessages(conversation).filter(
+        (m) => !(m.role === "assistant" && m.content === "")
+      );
+
+      let assembled = "";
+      for await (const delta of streamChatCompletions(apiKey, {
+        model: selectedModel,
+        messages: apiMessages,
+        signal: controller.signal,
+      })) {
+        assembled += delta;
+        const latest =
+          storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;
+        const updated = updateMessageContent(latest, assistantId, assembled);
+        conversation = updated;
+        persist(upsertConversation(storeRef.current, updated));
+      }
+
+      // If aborted with empty assistant message, drop the empty bubble.
+      const finalConv =
+        storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;
+      const assistantMsg = finalConv.messages.find((m) => m.id === assistantId);
+      if (assistantMsg && !assistantMsg.content.trim() && controller.signal.aborted) {
+        const cleaned = {
+          ...finalConv,
+          messages: finalConv.messages.filter((m) => m.id !== assistantId),
+          updatedAt: new Date().toISOString(),
+        };
+        persist(upsertConversation(storeRef.current, cleaned));
+      }
+
+      void refreshQuota();
+    } catch (err) {
+      if (controller.signal.aborted) {
+        // keep partial content
+      } else if (err instanceof ApiError) {
+        if (err.code === "unauthorized") {
+          logout();
+          return;
+        }
+        setQuotaError(err.code === "quota");
+        setError(err.message);
+        const latest =
+          storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;
+        const assistantMsg = latest.messages.find((m) => m.id === assistantId);
+        if (assistantMsg && !assistantMsg.content.trim()) {
+          const cleaned = {
+            ...latest,
+            messages: latest.messages.filter((m) => m.id !== assistantId),
+            updatedAt: new Date().toISOString(),
+          };
+          persist(upsertConversation(storeRef.current, cleaned));
+        }
+      } else {
+        setError("Chat gagal. Coba lagi.");
+      }
+    } finally {
+      abortRef.current = null;
+      setStreaming(false);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  if (!apiKeyId && status === null) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center text-sm text-muted-foreground">
+        <span className="loading-dot" aria-hidden="true" />
+        Loading session…
+      </div>
+    );
+  }
+
+  return (
+    <div className="chat-page flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-card/20">
+        {/* Desktop conversation rail */}
+        <aside className="hidden w-60 shrink-0 flex-col border-r border-border/70 bg-card/40 md:flex">
+          <ChatConversationList
+            conversations={store.conversations}
+            activeId={store.activeId}
+            onSelect={handleSelect}
+            onCreate={handleNewChat}
+            onDelete={handleDelete}
+          />
+        </aside>
+
+        {/* Mobile drawer */}
+        {sidebarOpen ? (
+          <div className="fixed inset-0 z-40 md:hidden">
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/55"
+              aria-label="Close conversations"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <div className="absolute inset-y-0 left-0 flex w-[min(18rem,88vw)] flex-col border-r border-border bg-card shadow-xl">
+              <ChatConversationList
+                conversations={store.conversations}
+                activeId={store.activeId}
+                onSelect={handleSelect}
+                onCreate={handleNewChat}
+                onDelete={handleDelete}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <section className="flex min-w-0 flex-1 flex-col">
+          <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border/70 bg-card/50 px-3 py-2.5 backdrop-blur-md sm:px-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="md:hidden"
+              aria-label="Open conversations"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="size-4" />
+            </Button>
+
+            <div className="min-w-0 flex-1">
+              <Select
+                value={selectedModel || undefined}
+                onValueChange={setSelectedModel}
+                disabled={streaming || models.length === 0}
+              >
+                <SelectTrigger className="h-8 max-w-full min-w-[10rem] sm:min-w-[14rem]">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent position="popper" align="start">
+                  {models.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      {model.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {remaining?.enabled ? (
+              <p className="shrink-0 text-xs text-muted-foreground">
+                Sisa{" "}
+                <span className="font-semibold text-foreground">
+                  {formatUsd(remaining.remainingUsd)}
+                </span>
+              </p>
+            ) : null}
+          </header>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5">
+            {modelsError ? <ErrorBanner message={modelsError} /> : null}
+            {error ? (
+              <div className="mb-4">
+                <ErrorBanner message={error} />
+                {quotaError ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Quota habis.{" "}
+                    <Link to="/payments" className="font-semibold text-primary underline-offset-2 hover:underline">
+                      Top up di sini
+                    </Link>
+                    .
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <ChatMessageList messages={active?.messages ?? []} streaming={streaming} />
+          </div>
+
+          <div className="shrink-0 border-t border-border/70 bg-card/40 px-3 py-3 sm:px-5">
+            <div className="mx-auto max-w-3xl">
+              <ChatComposer
+                value={draft}
+                onChange={setDraft}
+                onSubmit={() => void handleSend()}
+                onStop={handleStop}
+                onAttachFiles={(files) => void handleAttachFiles(files)}
+                onRemoveAttachment={(id) =>
+                  setPendingAttachments((prev) => prev.filter((a) => a.id !== id))
+                }
+                attachments={pendingAttachments}
+                disabled={!selectedModel || models.length === 0}
+                streaming={streaming}
+              />
+              <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                Chat memakai API key kamu lewat OmniRoute — usage mengurangi lifetime quota.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

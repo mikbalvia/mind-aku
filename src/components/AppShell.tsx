@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { COMPANY } from "../lib/company";
@@ -6,14 +6,16 @@ import { ApiKeySession } from "./ApiKeySession";
 import { Atmosphere } from "./Atmosphere";
 import { PageEnter } from "./PageEnter";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/console", label: "Dashboard", delay: "0ms" },
-  { to: "/setup", label: "Setup", delay: "50ms" },
-  { to: "/models", label: "Models", delay: "100ms" },
-  { to: "/usage", label: "Usage", delay: "150ms" },
+  { to: "/chat", label: "Chat", delay: "40ms" },
+  { to: "/setup", label: "Setup", delay: "80ms" },
+  { to: "/models", label: "Models", delay: "120ms" },
+  { to: "/usage", label: "Usage", delay: "160ms" },
   { to: "/logs", label: "Logs", delay: "200ms" },
-  { to: "/payments", label: "Top up", delay: "250ms" },
+  { to: "/payments", label: "Top up", delay: "240ms" },
 ] as const;
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -83,7 +85,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { apiKey, status, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isChat = location.pathname === "/chat";
 
   function signOut() {
     logout();
@@ -91,10 +95,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="relative min-h-screen text-foreground">
+    <div className={cn("relative text-foreground", isChat ? "h-dvh overflow-hidden" : "min-h-screen")}>
       <Atmosphere />
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col md:flex-row">
-        <header className="flex items-center justify-between border-b border-border bg-card/55 px-5 py-4 backdrop-blur-md md:hidden">
+      <div
+        className={cn(
+          "relative z-10 mx-auto flex max-w-7xl flex-col md:flex-row",
+          isChat ? "h-full" : "min-h-screen"
+        )}
+      >
+        <header className="flex shrink-0 items-center justify-between border-b border-border bg-card/55 px-5 py-4 backdrop-blur-md md:hidden">
           <div>
             <p className="font-display text-2xl font-extrabold tracking-tight">{COMPANY.name}</p>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
@@ -114,7 +123,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         {menuOpen ? (
-          <div className="border-b border-border bg-card/80 px-5 py-5 backdrop-blur-md md:hidden">
+          <div className="shrink-0 border-b border-border bg-card/80 px-5 py-5 backdrop-blur-md md:hidden">
             <BrandBlock apiKey={apiKey} memberName={status?.apiKey?.name} />
             <div className="mt-6">
               <NavList onNavigate={() => setMenuOpen(false)} />
@@ -137,7 +146,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 overflow-auto px-5 py-7 md:px-10 md:py-10">
+        <main
+          className={cn(
+            "min-w-0 flex-1",
+            isChat
+              ? "flex flex-col overflow-hidden px-5 py-7 md:px-10 md:py-10"
+              : "overflow-auto px-5 py-7 md:px-10 md:py-10"
+          )}
+        >
           <PageEnter>{children}</PageEnter>
         </main>
       </div>
