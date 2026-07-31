@@ -121,7 +121,15 @@ export function PaymentsPage() {
       }
 
       if (!isAllowedPaymentCheckoutUrl(payment.paymentLinkUrl)) {
-        setError("Payment link host is not allowed. Contact support if this persists.");
+        let host = "unknown";
+        try {
+          host = new URL(payment.paymentLinkUrl).hostname;
+        } catch {
+          // ignore
+        }
+        setError(
+          `Payment link host is not allowed (${host}). Contact support if this persists.`
+        );
         setSubmitting(false);
         return;
       }
