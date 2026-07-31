@@ -4,7 +4,6 @@ import { fetchModels } from "../api/client";
 import { ApiError } from "../api/types";
 import type { ModelItem } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
-import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
 import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,8 +80,6 @@ export function ModelsPage() {
         title="Models"
         description="Katalog model yang bisa kamu tembak. Rate dalam USD per 1M tokens."
       />
-
-      <GatewayEndpointCard compact className="mb-5 scale-in-delay-1" />
 
       <Card className="mb-5 scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
         <CardContent className="p-5">
