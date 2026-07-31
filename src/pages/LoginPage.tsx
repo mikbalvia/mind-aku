@@ -15,6 +15,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [value, setValue] = useState("");
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const nextPath = safeInternalPath((location.state as { from?: string } | null)?.from);
 
@@ -26,7 +27,7 @@ export function LoginPage() {
     event.preventDefault();
     setError(null);
     try {
-      await login(value);
+      await login(value, { remember });
       navigate(nextPath, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
@@ -84,6 +85,24 @@ export function LoginPage() {
               onChange={(e) => setValue(e.target.value)}
               disabled={loading}
             />
+          </div>
+          <div className="flex items-start gap-3">
+            <input
+              id="remember-me"
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              disabled={loading}
+              className="mt-1 size-4 shrink-0 rounded border border-input accent-primary"
+            />
+            <div className="space-y-1">
+              <Label htmlFor="remember-me" className="cursor-pointer text-sm font-medium text-foreground">
+                Remember me on this device
+              </Label>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Simpan sesi di browser ini. Jangan centang di perangkat bersama.
+              </p>
+            </div>
           </div>
           <Button
             type="submit"

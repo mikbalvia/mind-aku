@@ -19,3 +19,5 @@ export const WHATSAPP_MESSAGE =
   "Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.";
 
 export const SESSION_KEY = "new-clients.apiKey";
+/** Persisted API key when "Remember me" is checked (localStorage). */
+export const REMEMBER_KEY = "new-clients.apiKey.remember";
