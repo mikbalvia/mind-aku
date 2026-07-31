@@ -3,7 +3,10 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import App from "./App";
+import { installForceFreshBuild } from "./lib/forceFreshBuild";
 import "./index.css";
+
+installForceFreshBuild();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

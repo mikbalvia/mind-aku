@@ -129,7 +129,7 @@ OmniRoute env (optional): `SETUP_PUBLIC_BASE_URL=https://vip-api.mind-aku.my.id`
 
 Add inside the `server { ... }` block for `mind-aku.my.id` (HTTPS), then `sudo nginx -t && sudo systemctl reload nginx`.
 
-**Important:** hashed JS/CSS may use long `immutable` cache. `index.html` (SPA shell) must **not** be cached long — otherwise users keep an old HTML that points at an old JS hash after deploy, and need Ctrl+Shift+R.
+**Important:** hashed JS/CSS may use long `immutable` cache. `index.html` (SPA shell) must use **`no-store`** — otherwise browsers/CDN keep an old HTML that points at an old JS hash after deploy.
 
 ```nginx
 # server-level defaults (also repeated inside locations that set add_header)
@@ -142,8 +142,10 @@ add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; prelo
 
 location / {
     try_files $uri $uri/ /index.html;
-    # revalidate HTML so deploys pick up new asset hashes without hard refresh
-    add_header Cache-Control "no-cache" always;
+    etag off;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+    add_header Pragma "no-cache" always;
+    add_header Expires "0" always;
     # nginx: add_header in a location does not inherit server-level add_header — repeat:
     add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://vip-api.mind-aku.my.id https:; worker-src 'self' blob:; manifest-src 'self'" always;
     add_header X-Frame-Options "DENY" always;
@@ -160,7 +162,9 @@ location ~* \.(js|mjs|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
 }
 ```
 
-Verify: `curl -sI https://mind-aku.my.id | grep -iE 'cache-control|content-security|strict-transport|x-frame|x-content|referrer|permissions'`.
+The portal also auto-reloads when it detects a newer `index-*.js` hash after deploy (`src/lib/forceFreshBuild.ts`).
+
+Verify: `curl -sI https://mind-aku.my.id | grep -iE 'cache-control|pragma|etag|content-security|strict-transport'`.
 
 ## Verifikasi
 
