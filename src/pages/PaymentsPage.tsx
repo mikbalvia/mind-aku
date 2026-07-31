@@ -134,7 +134,8 @@ export function PaymentsPage() {
         return;
       }
 
-      window.location.href = payment.paymentLinkUrl;
+      // Full-page navigate to SumoPod checkout (checkout.pymnt.app).
+      window.location.replace(payment.paymentLinkUrl);
     } catch (err) {
       if (err instanceof ApiError && err.code === "unauthorized") {
         logout();
