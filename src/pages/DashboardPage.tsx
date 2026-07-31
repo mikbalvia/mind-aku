@@ -4,6 +4,7 @@ import { fetchLogs, fetchMeStatus, fetchPayments, fetchPaymentsConfig } from "..
 import { ApiError } from "../api/types";
 import type { CallLog, MeStatus, PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
+import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
 import { ProgressBar, SummaryCard } from "../components/metrics";
 import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,8 @@ export function DashboardPage() {
 
       {!loading && !error ? (
         <>
+          <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
+
           <div className="grid gap-4 md:grid-cols-2">
             <SummaryCard
               className="scale-in scale-in-delay-1"

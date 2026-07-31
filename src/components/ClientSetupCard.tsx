@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { OMNIROUTE_BASE_URL } from "../config";
+import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -20,16 +20,18 @@ async function copyText(value: string): Promise<boolean> {
 }
 
 export function ClientSetupCard({ apiKey: _apiKey, toolLabel, modelsNote }: Props) {
-  const [copied, setCopied] = useState<"mac" | "win" | null>(null);
+  const [copied, setCopied] = useState<"mac" | "win" | "base" | "v1" | null>(null);
 
   // Do not embed the long-lived API key in the setup URL (history / Referer / logs).
   // OmniRoute's setup script prompts for the token interactively when omitted.
-  const setupUrl = useMemo(() => `${OMNIROUTE_BASE_URL.replace(/\/$/, "")}/setup`, []);
+  const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
+  const v1Url = AI_BASE_URL.replace(/\/$/, "");
+  const setupUrl = useMemo(() => `${baseUrl}/setup`, [baseUrl]);
 
   const macCmd = `curl -fsSL "${setupUrl}" | bash`;
   const winCmd = `irm "${setupUrl}" | iex`;
 
-  async function onCopy(kind: "mac" | "win", value: string) {
+  async function onCopy(kind: "mac" | "win" | "base" | "v1", value: string) {
     const ok = await copyText(value);
     if (!ok) return;
     setCopied(kind);
@@ -48,6 +50,43 @@ export function ClientSetupCard({ apiKey: _apiKey, toolLabel, modelsNote }: Prop
             : "Jalankan satu perintah di bawah. Script akan meminta API key kamu."}{" "}
           API key tidak lagi disisipkan di URL.
         </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              Gateway base URL
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <code className="min-w-0 flex-1 break-all text-xs text-foreground">{baseUrl}</code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => void onCopy("base", baseUrl)}
+              >
+                {copied === "base" ? <Check /> : <Copy />}
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              OpenAI endpoint (/v1)
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <code className="min-w-0 flex-1 break-all text-xs text-foreground">{v1Url}</code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => void onCopy("v1", v1Url)}
+              >
+                {copied === "v1" ? <Check /> : <Copy />}
+              </Button>
+            </div>
+          </div>
+        </div>
 
         <div className="mt-5 space-y-4">
           <div>

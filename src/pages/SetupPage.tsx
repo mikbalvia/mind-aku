@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
+import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
 import { PageHeader } from "../components/page-chrome";
 import { OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
@@ -465,10 +466,12 @@ export function SetupPage() {
     <div>
       <PageHeader
         title="Setup"
-                description="Pilih satu tool: Claude Desktop, Claude Code, atau Codex CLI — lalu ikuti langkahnya."
+        description="Pilih satu tool: Claude Desktop, Claude Code, atau Codex CLI — lalu ikuti langkahnya."
       />
 
       <div className="space-y-5">
+        <GatewayEndpointCard className="scale-in-delay-1" />
+
         <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
           <CardContent className="p-6">
             <StepLabel n={1}>Pilih tool</StepLabel>
