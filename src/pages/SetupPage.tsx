@@ -69,7 +69,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | OpenClawTool> = {
     docs: CLAUDE_DOCS,
     docsLabel: "Claude Code Quickstart",
     checkCmd: "claude --version",
-    modelsNote: "Default: claude-opus-4.8, claude-sonnet-5, claude-haiku-4.5.",
+    modelsNote: "Default: claude-opus-5, claude-sonnet-5, claude-haiku-4.5.",
     install: [
       {
         label: "macOS / Linux / WSL",
@@ -404,7 +404,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                 <li>
                   <strong className="text-foreground">Model ID</strong> dan{" "}
                   <strong className="text-foreground">Display name</strong> sama, misalnya{" "}
-                  <code className="text-foreground">claude-opus-4.8</code>
+                  <code className="text-foreground">claude-opus-5</code>
                 </li>
                 <li>
                   <strong className="text-foreground">Offer 1M-context variant</strong>: matikan
@@ -417,14 +417,14 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               <ManualShot
                 src="/setup-guides/add-model.png"
                 alt="Form Add model: Model ID dan Display name"
-                caption="Isi Model ID + Display name (contoh claude-opus-4.8)"
+                caption="Isi Model ID + Display name (contoh claude-opus-5)"
               />
             </li>
             <li>
               Ulangi sampai total <strong>3 model</strong> terdaftar:
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>
-                  <code>claude-opus-4.8</code>
+                  <code>claude-opus-5</code>
                 </li>
                 <li>
                   <code>claude-sonnet-5</code>
@@ -635,7 +635,7 @@ function OpenClawGuide({ apiKey }: { apiKey: string | null }) {
             />
             <WizardField
               label="Model ID"
-              value="claude-opus-4.8"
+              value="claude-opus-5"
               copyId="oc-model"
               copied={copied}
               onCopy={onCopy}
@@ -667,7 +667,7 @@ function OpenClawGuide({ apiKey }: { apiKey: string | null }) {
               Set <strong>Endpoint compatibility</strong> = <strong>OpenAI-compatible</strong>.
             </li>
             <li>
-              Isi <strong>Model ID</strong> (contoh <code>claude-opus-4.8</code>) dan{" "}
+              Isi <strong>Model ID</strong> (contoh <code>claude-opus-5</code>) dan{" "}
               <strong>Endpoint ID</strong> = <code>mind</code>.
             </li>
             <li>Tunggu verifikasi sukses, lalu pakai model seperti biasa.</li>
