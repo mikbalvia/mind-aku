@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { COMPANY } from "../lib/company";
 import { ApiKeySession } from "./ApiKeySession";
+import { AnnouncementPopup } from "./AnnouncementPopup";
 import { Atmosphere } from "./Atmosphere";
 import { PageEnter } from "./PageEnter";
 import { Button } from "@/components/ui/button";
@@ -157,6 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <PageEnter>{children}</PageEnter>
         </main>
       </div>
+      <AnnouncementPopup />
     </div>
   );
 }
