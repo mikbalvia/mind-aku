@@ -407,17 +407,17 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                   <code className="text-foreground">claude-opus-5</code>
                 </li>
                 <li>
-                  <strong className="text-foreground">Offer 1M-context variant</strong>: matikan
-                  (OFF)
+                  <strong className="text-foreground">Offer 1M-context variant</strong>: nyalakan
+                  (ON)
                 </li>
                 <li>
                   <strong className="text-foreground">Tier alias</strong>: boleh dikosongkan
                 </li>
               </ul>
               <ManualShot
-                src="/setup-guides/add-model.png"
-                alt="Form Add model: Model ID dan Display name"
-                caption="Isi Model ID + Display name (contoh claude-opus-5)"
+                src="/setup-guides/manual-4b.png"
+                alt="Form model: Model ID, Display name, Offer 1M-context ON"
+                caption="Isi Model ID + Display name; Offer 1M-context variant ON"
               />
             </li>
             <li>
