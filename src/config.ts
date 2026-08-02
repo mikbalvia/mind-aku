@@ -18,6 +18,60 @@ export const WHATSAPP_MESSAGE =
   (import.meta.env.VITE_WHATSAPP_MESSAGE as string | undefined) ||
   "Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.";
 
+/** Manual bank transfer for subscription plans (not SumoPod). */
+export const BCA_TRANSFER = {
+  bank: "BCA",
+  accountNumber: "6611281631",
+  accountName: "Muhammad Ikbal",
+} as const;
+
+export type SubscriptionPackage = {
+  id: string;
+  label: string;
+  durationLabel: string;
+  amountIdr: number;
+};
+
+export const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
+  {
+    id: "sub-2w",
+    label: "2 minggu",
+    durationLabel: "2 minggu",
+    amountIdr: 800_000,
+  },
+  {
+    id: "sub-1m",
+    label: "1 bulan",
+    durationLabel: "1 bulan",
+    amountIdr: 1_500_000,
+  },
+];
+
+export const SUBSCRIPTION_PLAN_META = {
+  dailyLimitUsd: 100,
+  monthlyLimitUsd: 3_000,
+  monthlyLimitIdrApprox: 50_000_000,
+  requestsPerMinute: 20,
+} as const;
+
+export function buildSubscriptionWhatsAppHref(pkg?: SubscriptionPackage): string {
+  const parts = [
+    "Hai admin Mikbalvia Digital, saya sudah transfer subscription Mind Aku.",
+    pkg ? `Paket: ${pkg.label} (${formatIdrPlain(pkg.amountIdr)}).` : null,
+    `Rekening tujuan: ${BCA_TRANSFER.bank} ${BCA_TRANSFER.accountNumber} a.n ${BCA_TRANSFER.accountName}.`,
+    "Mohon aktivasi limit. Saya lampirkan bukti transfer.",
+  ].filter(Boolean);
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(parts.join(" "))}`;
+}
+
+function formatIdrPlain(value: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export const SESSION_KEY = "new-clients.apiKey";
 /** Persisted API key when "Remember me" is checked (localStorage). */
 export const REMEMBER_KEY = "new-clients.apiKey.remember";

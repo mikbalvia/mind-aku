@@ -1,35 +1,84 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-/** Bump this id when shipping a new announcement so returning users see it again. */
-const ANNOUNCEMENT_ID = "opus-5-ready-2026-08-01";
-const STORAGE_KEY = `new-clients.announcement.dismissed.${ANNOUNCEMENT_ID}`;
+type Announcement = {
+  id: string;
+  title: string;
+  body: ReactNode;
+  primaryTo: string;
+  primaryLabel: string;
+};
 
-export function AnnouncementPopup() {
-  const [open, setOpen] = useState(false);
+/** Bump an announcement id when shipping a new one so returning users see it again. */
+const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: "opus-5-ready-2026-08-01",
+    title: "Claude Opus 5 sudah ready",
+    body: (
+      <>
+        Model <strong className="text-foreground">claude-opus-5</strong> sudah tersedia di Mind
+        Aku. Silakan ke menu <strong className="text-foreground">Setup</strong> untuk auto-config
+        Claude Desktop, Claude Code, Codex, atau OpenClaw.
+      </>
+    ),
+    primaryTo: "/setup",
+    primaryLabel: "Ke menu Setup",
+  },
+  {
+    id: "subscription-plan-2026-08-02",
+    title: "New plan subscription",
+    body: (
+      <>
+        Paket baru: <strong className="text-foreground">2 minggu Rp 800rb</strong> atau{" "}
+        <strong className="text-foreground">1 bulan Rp 1,5 jt</strong>. Limit harian{" "}
+        <strong className="text-foreground">$100</strong>, total sebulan{" "}
+        <strong className="text-foreground">$3.000</strong> (~Rp 50 jt), RPM{" "}
+        <strong className="text-foreground">20</strong>. Transfer BCA lalu WA admin — lihat menu
+        Top up.
+      </>
+    ),
+    primaryTo: "/payments",
+    primaryLabel: "Ke menu Top up",
+  },
+];
 
-  useEffect(() => {
+function storageKey(id: string) {
+  return `new-clients.announcement.dismissed.${id}`;
+}
+
+function firstVisibleAnnouncement(): Announcement | null {
+  for (const item of ANNOUNCEMENTS) {
     try {
-      if (window.localStorage.getItem(STORAGE_KEY) === "1") return;
+      if (window.localStorage.getItem(storageKey(item.id)) === "1") continue;
     } catch {
       // ignore storage failures — still show once per session
     }
-    setOpen(true);
+    return item;
+  }
+  return null;
+}
+
+export function AnnouncementPopup() {
+  const [current, setCurrent] = useState<Announcement | null>(null);
+
+  useEffect(() => {
+    setCurrent(firstVisibleAnnouncement());
   }, []);
 
   function dismiss() {
+    if (!current) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, "1");
+      window.localStorage.setItem(storageKey(current.id), "1");
     } catch {
       // ignore
     }
-    setOpen(false);
+    setCurrent(firstVisibleAnnouncement());
   }
 
-  if (!open) return null;
+  if (!current) return null;
 
   return (
     <div
@@ -56,19 +105,15 @@ export function AnnouncementPopup() {
             id="announcement-title"
             className="font-display text-2xl font-medium tracking-tight text-foreground"
           >
-            Claude Opus 5 sudah ready
+            {current.title}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Model <strong className="text-foreground">claude-opus-5</strong> sudah tersedia di
-            Mind Aku. Silakan ke menu <strong className="text-foreground">Setup</strong> untuk
-            auto-config Claude Desktop, Claude Code, Codex, atau OpenClaw.
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{current.body}</p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={dismiss}>
               Nanti saja
             </Button>
             <Button asChild onClick={dismiss}>
-              <Link to="/setup">Ke menu Setup</Link>
+              <Link to={current.primaryTo}>{current.primaryLabel}</Link>
             </Button>
           </div>
         </CardContent>
