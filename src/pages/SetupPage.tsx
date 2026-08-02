@@ -438,7 +438,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               Pastikan daftar sudah lengkap (Model discovery ON + 3 model), lalu klik{" "}
               <strong>Apply Changes</strong>.
               <ManualShot
-                src="/setup-guides/manual-4.png"
+                src="/setup-guides/manual-4b.png"
                 alt="Model discovery ON dan 3 model Claude di daftar"
                 caption="Model discovery ON + 3 model, lalu Apply Changes"
               />
