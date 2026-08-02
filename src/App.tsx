@@ -7,6 +7,7 @@ import { ModelsPage } from "./pages/ModelsPage";
 import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
 import { PaymentsPage } from "./pages/PaymentsPage";
+import { SubscriptionPage } from "./pages/SubscriptionPage";
 import { SetupPage } from "./pages/SetupPage";
 import { PaymentCancelPage, PaymentSuccessPage } from "./pages/PaymentResultPages";
 import { HomePage } from "./pages/HomePage";
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/models" element={<ModelsPage />} />
         <Route path="/usage" element={<UsagePage />} />
         <Route path="/logs" element={<LogsPage />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/payments" element={<PaymentsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

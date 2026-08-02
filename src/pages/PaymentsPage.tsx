@@ -1,17 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle } from "lucide-react";
 import { createPayment, fetchPayments, fetchPaymentsConfig, simulatePayment } from "../api/client";
 import { ApiError } from "../api/types";
 import type { PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
-import {
-  BCA_TRANSFER,
-  SUBSCRIPTION_PACKAGES,
-  SUBSCRIPTION_PLAN_META,
-  buildSubscriptionWhatsAppHref,
-  type SubscriptionPackage,
-} from "../config";
 import { COMPANY } from "../lib/company";
 import { formatIdrPerUsdRate } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
@@ -59,12 +51,10 @@ export function PaymentsPage() {
   const [history, setHistory] = useState<PaymentHistoryItem[]>([]);
   const [selectedUsd, setSelectedUsd] = useState<number | null>(10);
   const [customUsd, setCustomUsd] = useState("");
-  const [selectedSubId, setSelectedSubId] = useState<string>(SUBSCRIPTION_PACKAGES[0]?.id ?? "");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const buyerName = status?.apiKey?.name ?? "API Key Member";
 
@@ -80,10 +70,6 @@ export function PaymentsPage() {
     config && activeUsd != null && activeUsd > 0 ? Math.ceil(activeUsd * config.idrPerUsd) : null;
 
   const mockMode = Boolean(config?.mockEnabled);
-
-  const selectedSub: SubscriptionPackage | undefined = SUBSCRIPTION_PACKAGES.find(
-    (pkg) => pkg.id === selectedSubId
-  );
 
   async function load() {
     if (!apiKey) return;
@@ -168,16 +154,6 @@ export function PaymentsPage() {
     }
   }
 
-  async function copyText(label: string, value: string) {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopiedField(label);
-      window.setTimeout(() => setCopiedField(null), 1600);
-    } catch {
-      setError("Gagal menyalin. Salin manual saja.");
-    }
-  }
-
   return (
     <div>
       <PageHeader
@@ -185,7 +161,7 @@ export function PaymentsPage() {
         description={
           mockMode
             ? "Mode mock lokal — isi saldo Lifetime (USD) instan tanpa SumoPod."
-            : "Bayar credit via SumoPod, atau ambil subscription via transfer BCA."
+            : "Bayar IDR via SumoPod. Sukses = kredit Lifetime quota (USD) di API key kamu."
         }
       />
 
@@ -196,130 +172,6 @@ export function PaymentsPage() {
         </Alert>
       ) : null}
       {loading ? <LoadingBlock label="Siapkan paket credit…" /> : null}
-
-      {!loading ? (
-        <Card className="mb-5 scale-in border-primary/30 bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                  New plan
-                </p>
-                <h3 className="mt-1 font-display text-2xl font-medium text-foreground">
-                  Subscription
-                </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Transfer BCA manual — limit tidak auto-add. Setelah bayar, WA admin + bukti
-                  transfer.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {SUBSCRIPTION_PACKAGES.map((pkg) => {
-                const active = selectedSubId === pkg.id;
-                return (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    onClick={() => setSelectedSubId(pkg.id)}
-                    className={cn(
-                      "rounded-lg border px-4 py-4 text-left transition-all duration-200",
-                      active
-                        ? "border-primary/40 bg-accent"
-                        : "border-border hover:border-border/80"
-                    )}
-                  >
-                    <div className="font-display text-xl text-foreground">{pkg.label}</div>
-                    <div className="mt-1 text-sm font-medium text-foreground">
-                      {formatIdr(pkg.amountIdr)}
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">{pkg.durationLabel}</div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <dl className="mt-5 grid gap-2 text-sm sm:grid-cols-2">
-              <div className="flex justify-between gap-3 rounded-lg border border-border/70 px-3 py-2.5">
-                <dt className="text-muted-foreground">Limit harian</dt>
-                <dd className="tabular-nums text-foreground">
-                  {formatUsd(SUBSCRIPTION_PLAN_META.dailyLimitUsd)}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3 rounded-lg border border-border/70 px-3 py-2.5">
-                <dt className="text-muted-foreground">Limit 1 bulan</dt>
-                <dd className="tabular-nums text-foreground">
-                  {formatUsd(SUBSCRIPTION_PLAN_META.monthlyLimitUsd)}
-                  <span className="ml-1 text-xs text-muted-foreground">(~Rp 50 jt)</span>
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3 rounded-lg border border-border/70 px-3 py-2.5 sm:col-span-2">
-                <dt className="text-muted-foreground">Request per menit</dt>
-                <dd className="tabular-nums text-foreground">
-                  {SUBSCRIPTION_PLAN_META.requestsPerMinute} RPM
-                </dd>
-              </div>
-            </dl>
-
-            <div className="mt-5 rounded-lg border border-border bg-muted/40 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                Transfer ke
-              </p>
-              <div className="mt-3 space-y-2 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Bank</span>
-                  <span className="font-medium text-foreground">{BCA_TRANSFER.bank}</span>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-muted-foreground">No. rekening</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-base font-semibold tabular-nums text-foreground">
-                      {BCA_TRANSFER.accountNumber}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2 text-[11px]"
-                      onClick={() => void copyText("account", BCA_TRANSFER.accountNumber)}
-                    >
-                      {copiedField === "account" ? "Copied" : "Copy"}
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-muted-foreground">a.n</span>
-                  <span className="font-medium text-foreground">{BCA_TRANSFER.accountName}</span>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
-                  <span className="text-muted-foreground">Nominal</span>
-                  <span className="font-display text-lg text-foreground">
-                    {selectedSub ? formatIdr(selectedSub.amountIdr) : "—"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Setelah transfer, kirim bukti ke WhatsApp admin. Limit subscription diaktifkan
-                manual — tidak otomatis.
-              </p>
-              <Button asChild className="min-w-[12rem] shrink-0">
-                <a
-                  href={buildSubscriptionWhatsAppHref(selectedSub)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageCircle className="size-4" />
-                  WA setelah bayar
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
 
       {!loading && config ? (
         <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
