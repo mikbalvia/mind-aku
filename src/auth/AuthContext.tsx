@@ -123,7 +123,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((error) => {
         if (cancelled) return;
-        if (error instanceof ApiError && error.code === "unauthorized") logout();
+        // Any failure on rehydration means the stored key is no longer usable.
+        // Drop it so the user lands on /login instead of a half-authenticated UI.
+        // Without this, network/403/500 errors leave a stale apiKey in state and
+        // authenticated pages render before MeStatus is ready, forcing users to
+        // open an incognito window to recover.
+        if (error instanceof ApiError) {
+          logout();
+        } else {
+          // Unknown error (e.g. unexpected throw). Force logout as well so the
+          // session does not get stuck in a half-loaded state.
+          logout();
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
