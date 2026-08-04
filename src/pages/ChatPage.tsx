@@ -99,10 +99,10 @@ export function ChatPage() {
           if (current && list.some((m) => m.id === current)) return current;
           return list[0]?.id ?? "";
         });
-        if (payCfg?.lifetimeQuota) {
+        if (payCfg?.paygBalance) {
           setRemaining({
-            enabled: payCfg.lifetimeQuota.enabled,
-            remainingUsd: payCfg.lifetimeQuota.remainingUsd,
+            enabled: payCfg.paygBalance.enabled,
+            remainingUsd: payCfg.paygBalance.unlimited ? null : payCfg.paygBalance.remainingUsd,
           });
         }
       } catch (err) {
@@ -137,10 +137,10 @@ export function ChatPage() {
     try {
       await refreshStatus();
       const payCfg = await fetchPaymentsConfig(apiKey);
-      if (payCfg.lifetimeQuota) {
+      if (payCfg.paygBalance) {
         setRemaining({
-          enabled: payCfg.lifetimeQuota.enabled,
-          remainingUsd: payCfg.lifetimeQuota.remainingUsd,
+          enabled: payCfg.paygBalance.enabled,
+          remainingUsd: payCfg.paygBalance.unlimited ? null : payCfg.paygBalance.remainingUsd,
         });
       }
     } catch {
@@ -361,9 +361,9 @@ export function ChatPage() {
 
             {remaining?.enabled ? (
               <p className="shrink-0 text-xs text-muted-foreground">
-                Sisa{" "}
+                Saldo pay as you go{" "}
                 <span className="font-semibold text-foreground">
-                  {formatUsd(remaining.remainingUsd)}
+                  {remaining.remainingUsd == null ? "Unlimited" : formatUsd(remaining.remainingUsd)}
                 </span>
               </p>
             ) : null}

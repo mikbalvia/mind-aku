@@ -162,6 +162,17 @@ export type UsageLimitWindow = {
   exceeded: boolean;
 };
 
+// PaygBalance is the per-key pay-as-you-go pool that the dashboard reads as
+// "Saldo top up". Top-ups credit this pool (RemainQuota). Unlimited keys
+// report enabled=false; subscription keys with 5h/daily/weekly caps also
+// report enabled=true because payg runs alongside subscription windows.
+export type PaygBalance = {
+  enabled: boolean;
+  unlimited: boolean;
+  remainingUsd: number | null;
+  spentUsd: number;
+};
+
 export type CustomerUsageLimits = {
   enabled: boolean;
   fiveHour: UsageLimitWindow | null;
@@ -181,12 +192,17 @@ export type PaymentsConfig = {
     successReturnUrl: string | null;
     cancelReturnUrl: string | null;
   };
+  /** Source of the "Saldo top up" card on /console. Payg-key pool. */
+  paygBalance: PaygBalance;
+  /** @deprecated kept for back-compat; subscription top-up has moved to payg. */
   lifetimeQuota: {
     enabled: boolean;
     limitUsd: number | null;
     spentUsd: number;
     remainingUsd: number | null;
   } | null;
+  /** Top-up is only available for pay-as-you-go, non-unlimited keys. */
+  topUpAllowed: boolean;
   /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
 };

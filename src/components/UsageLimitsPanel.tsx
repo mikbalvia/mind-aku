@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
-import type { CustomerUsageLimits, UsageLimitWindow } from "../api/types";
+import type {
+  CustomerUsageLimits,
+  PaygBalance,
+  UsageLimitWindow,
+} from "../api/types";
 import { MetricRow, ProgressBar, SummaryCard } from "./metrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,25 +29,6 @@ function activeSubWindows(limits: CustomerUsageLimits | null | undefined) {
   });
 }
 
-function resolveLifetime(
-  limits: CustomerUsageLimits | null | undefined,
-  fallback: {
-    limitUsd: number | null;
-    spentUsd: number;
-    remainingUsd: number | null;
-  } | null
-): UsageLimitWindow | null {
-  if (limits?.lifetime) return limits.lifetime;
-  if (fallback?.limitUsd == null) return null;
-  return {
-    limitUsd: fallback.limitUsd,
-    spentUsd: fallback.spentUsd,
-    remainingUsd: fallback.remainingUsd ?? Math.max(fallback.limitUsd - fallback.spentUsd, 0),
-    resetAt: null,
-    exceeded: fallback.spentUsd >= fallback.limitUsd,
-  };
-}
-
 function primaryExceededHint(limits: CustomerUsageLimits | null | undefined): string | null {
   if (!limits?.enabled) return null;
   for (const item of activeSubWindows(limits)) {
@@ -54,7 +39,7 @@ function primaryExceededHint(limits: CustomerUsageLimits | null | undefined): st
       : `${item.label} tercapai.`;
   }
   if (limits.lifetime?.exceeded) {
-    return "Saldo top up habis — top up untuk lanjut (tidak reset otomatis).";
+    return "Lifetime cap habis — top up untuk lanjut (tidak reset otomatis).";
   }
   return null;
 }
@@ -91,32 +76,156 @@ function WindowRows({
   );
 }
 
+/**
+ * PaygCard renders the "Saldo top up" card from the per-key pay-as-you-go pool.
+ * Subscription keys (UsageLimits configured) report payg.enabled=false, in which
+ * case this card hides entirely. Unlimited keys show "Unlimited" instead of a
+ * numeric remaining balance.
+ */
+function PaygCard({
+  payg,
+  compact,
+  topUpAllowed,
+}: {
+  payg: PaygBalance | null | undefined;
+  compact: boolean;
+  topUpAllowed: boolean;
+}) {
+  const hasPayg = payg != null;
+  const unlimited = payg?.unlimited ?? false;
+  const remaining = payg?.remainingUsd ?? null;
+  const spent = payg?.spentUsd ?? 0;
+  const exhausted = hasPayg && !unlimited && remaining != null && remaining <= 0;
+
+  if (compact) {
+    return (
+      <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 p-6 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-0">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Saldo top up
+            </p>
+            {topUpAllowed && !unlimited ? (
+              <Link
+                to="/payments"
+                className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline"
+              >
+                Top up →
+              </Link>
+            ) : null}
+          </div>
+          <p
+            className={cn(
+              "mt-3 font-display text-3xl font-medium tracking-tight md:text-4xl",
+              exhausted ? "text-destructive" : "text-foreground"
+            )}
+          >
+            {unlimited ? "Unlimited" : hasPayg ? formatUsd(remaining) : "—"}
+            {!unlimited ? (
+              <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+            ) : null}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {unlimited
+              ? "Pay as you go tanpa batas."
+              : hasPayg
+                ? `Spent ${formatUsd(spent)} sepanjang masa · pay as you go · tidak reset.`
+                : "Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa."}
+          </p>
+          {exhausted ? (
+            <p className="mt-3 text-sm text-destructive">
+              Saldo top up habis — top up untuk lanjut (tidak ada reset window).
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+      <CardContent className="p-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="font-display text-2xl font-medium text-foreground">Saldo top up</h3>
+            <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
+              {hasPayg ? "Pay as you go · tidak reset" : "Dikelola admin"}
+            </p>
+          </div>
+          {topUpAllowed && !unlimited ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/payments">Top up</Link>
+            </Button>
+          ) : null}
+        </div>
+
+        {unlimited ? (
+          <p className="mt-6 font-display text-4xl font-medium text-foreground">Unlimited</p>
+        ) : hasPayg ? (
+          <>
+            <p
+              className={cn(
+                "mt-6 font-display text-4xl font-medium",
+                remaining != null && remaining <= 0
+                  ? "text-destructive"
+                  : "text-foreground"
+              )}
+            >
+              {formatUsd(remaining)}
+              <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+            </p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Spent {formatUsd(spent)} sepanjang masa · top-up akan menambah saldo di
+              sini.
+            </p>
+            {remaining != null && remaining <= 0 ? (
+              <p className="mt-3 text-sm text-destructive">
+                Saldo top up habis — top up untuk lanjut (tidak ada reset window).
+              </p>
+            ) : null}
+          </>
+        ) : (
+          <p className="mt-6 text-sm text-muted-foreground">
+            Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa, atau buka
+            halaman Top up untuk menambah.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function UsageLimitsPanel({
+  paygBalance,
   usageLimits,
-  lifetimeFallback,
+  topUpAllowed = true,
   variant = "detailed",
   className,
 }: {
+  /** Per-key payg pool, the source of the "Saldo top up" card. */
+  paygBalance?: PaygBalance | null;
+  /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
-  /** Backward-compatible lifetime from lifetimeQuota when usageLimits missing. */
-  lifetimeFallback?: {
-    limitUsd: number | null;
-    spentUsd: number;
-    remainingUsd: number | null;
-  } | null;
+  /** Top-up eligibility (subscription keys receive false). */
+  topUpAllowed?: boolean;
   variant?: Variant;
   className?: string;
 }) {
-  const lifetime = resolveLifetime(usageLimits, lifetimeFallback ?? null);
   const subs = activeSubWindows(usageLimits);
   const hasSubs = subs.length > 0;
-  const enabled = usageLimits?.enabled ?? lifetimeFallback != null;
+  const enabled = usageLimits?.enabled ?? hasSubs;
   const exceededHint = primaryExceededHint(usageLimits);
   const compact = variant === "compact";
-
+  // The "Saldo top up" card is always visible — admin can add saldo manually
+  // even when the API key has no subscription windows. Hide only when the
+  // backend explicitly reports `unlimited: true`. When `paygBalance` is
+  // absent (older backend) we still render a hint card so users know saldo
+  // is admin-managed.
+  const showPayg = paygBalance == null ? true : !paygBalance.unlimited;
+  const gridCols = compact ? "md:grid-cols-2" : "gap-5";
   return (
-    <div className={cn("grid gap-4", compact ? "md:grid-cols-2" : "gap-5", className)}>
-      {usageLimits && !usageLimits.enabled && (lifetime || hasSubs) ? (
+    <div className={cn("grid gap-4", gridCols, className)}>
+      {usageLimits && !usageLimits.enabled && hasSubs ? (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 md:col-span-2">
           Limit terkonfigurasi tetapi belum diaktifkan admin (`usage limit` off). Belum di-enforce.
         </div>
@@ -128,71 +237,9 @@ export function UsageLimitsPanel({
         </div>
       ) : null}
 
-      {compact ? (
-        <SummaryCard
-          className="scale-in scale-in-delay-1"
-          label="Saldo top up"
-          value={lifetime ? formatUsd(lifetime.remainingUsd) : "—"}
-          hint={
-            lifetime
-              ? `dari ${formatUsd(lifetime.limitUsd)} lifetime · tidak reset`
-              : "Belum ada saldo — top up untuk menambah limit lifetime."
-          }
-        >
-          {lifetime && enabled ? <WindowRows window={lifetime} detailed={false} /> : null}
-          {lifetime?.exceeded && enabled ? (
-            <p className="mt-2 text-xs text-destructive">Saldo top up habis.</p>
-          ) : null}
-          {!lifetime ? (
-            <Link to="/payments" className="mt-4 inline-block text-sm text-primary hover:underline">
-              Top up →
-            </Link>
-          ) : null}
-        </SummaryCard>
-      ) : (
-        <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h3 className="font-display text-2xl font-medium text-foreground">Saldo top up</h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
-                  Lifetime · tidak reset
-                </p>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/payments">Top up</Link>
-              </Button>
-            </div>
-
-            {!lifetime ? (
-              <div className="mt-6 rounded-lg border border-dashed border-border px-4 py-8 text-center">
-                <p className="text-sm text-muted-foreground">Belum ada saldo top up pada key ini.</p>
-                <Link to="/payments" className="mt-3 inline-block text-sm text-primary hover:underline">
-                  Tambah saldo di Top up →
-                </Link>
-              </div>
-            ) : (
-              <>
-                <p
-                  className={cn(
-                    "mt-6 font-display text-4xl font-medium",
-                    lifetime.exceeded && enabled ? "text-destructive" : "text-foreground"
-                  )}
-                >
-                  {formatUsd(lifetime.remainingUsd)}
-                  <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
-                </p>
-                {enabled ? <WindowRows window={lifetime} detailed /> : null}
-                {lifetime.exceeded && enabled ? (
-                  <p className="mt-3 text-sm text-destructive">
-                    Saldo top up habis — top up untuk lanjut (bukan tunggu reset window).
-                  </p>
-                ) : null}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {showPayg ? (
+        <PaygCard payg={paygBalance} compact={compact} topUpAllowed={topUpAllowed} />
+      ) : null}
 
       {compact ? (
         <SummaryCard
@@ -301,7 +348,8 @@ export function UsageLimitsPanel({
                       </p>
                     </div>
                     {enabled ? <WindowRows window={window} detailed /> : null}
-                    {window.exceeded && enabled && lifetime && lifetime.remainingUsd > 0 ? (
+                    {window.exceeded && enabled && paygBalance?.enabled && !paygBalance.unlimited &&
+                      paygBalance.remainingUsd != null && paygBalance.remainingUsd > 0 ? (
                       <p className="mt-3 text-xs text-muted-foreground">
                         Saldo top up masih ada, tapi {label.toLowerCase()} habis — tunggu reset
                         window.

@@ -87,8 +87,9 @@ export function DashboardPage() {
           <UsageLimitsPanel
             className="mb-4"
             variant="compact"
+            paygBalance={config?.paygBalance}
             usageLimits={config?.usageLimits}
-            lifetimeFallback={config?.lifetimeQuota}
+            topUpAllowed={config?.topUpAllowed ?? false}
           />
 
           <div className="grid gap-4 md:grid-cols-1">

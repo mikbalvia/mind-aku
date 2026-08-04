@@ -10,7 +10,7 @@ export function PaymentSuccessPage() {
         <p className="brand-reveal font-display text-4xl font-extrabold text-foreground">Credit masuk</p>
         <div className="mx-auto mt-5 accent-line" />
         <p className="rise-in rise-in-delay-1 mt-6 text-sm text-muted-foreground">
-          Kalau transfer sukses, saldo lifetime biasanya update sebentar setelah webhook tiba.
+          Kalau transfer sukses, saldo pay as you go biasanya update sebentar setelah webhook tiba.
         </p>
         <Button asChild className="rise-in rise-in-delay-2 mt-8 h-11 px-8">
           <Link to="/payments">Kembali ke top up</Link>

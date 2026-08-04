@@ -49,7 +49,7 @@ export function UsagePage() {
     <div>
       <PageHeader
         title="Usage"
-        description="Saldo top up (lifetime) dan limit subscription — terpisah, tidak digabung."
+        description="Saldo pay as you go (top up) dan limit subscription — terpisah, tidak digabung."
         actions={
           <Button
             type="button"
@@ -78,8 +78,9 @@ export function UsagePage() {
         <div className="grid gap-5">
           <UsageLimitsPanel
             variant="detailed"
+            paygBalance={config?.paygBalance}
             usageLimits={config?.usageLimits}
-            lifetimeFallback={config?.lifetimeQuota}
+            topUpAllowed={config?.topUpAllowed ?? false}
           />
 
           <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
