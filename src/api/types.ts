@@ -154,6 +154,22 @@ export type PaymentPackage = {
   amountIdr: number;
 };
 
+export type UsageLimitWindow = {
+  limitUsd: number;
+  spentUsd: number;
+  remainingUsd: number;
+  resetAt: string | null;
+  exceeded: boolean;
+};
+
+export type CustomerUsageLimits = {
+  enabled: boolean;
+  fiveHour: UsageLimitWindow | null;
+  daily: UsageLimitWindow | null;
+  weekly: UsageLimitWindow | null;
+  lifetime: UsageLimitWindow | null;
+};
+
 export type PaymentsConfig = {
   currency: string;
   idrPerUsd: number;
@@ -171,6 +187,8 @@ export type PaymentsConfig = {
     spentUsd: number;
     remainingUsd: number | null;
   } | null;
+  /** Live USD windows from API Manager enforcement (optional for older API). */
+  usageLimits?: CustomerUsageLimits | null;
 };
 
 export type PaymentCreateResponse = {

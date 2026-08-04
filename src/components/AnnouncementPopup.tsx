@@ -28,14 +28,15 @@ const ANNOUNCEMENTS: Announcement[] = [
     primaryLabel: "Ke menu Setup",
   },
   {
-    id: "subscription-plan-2026-08-02-menu",
+    id: "subscription-plan-2026-08-03-daily300",
     title: "New plan subscription",
     body: (
       <>
         Paket baru: <strong className="text-foreground">2 minggu Rp 800rb</strong> atau{" "}
-        <strong className="text-foreground">1 bulan Rp 1,5 jt</strong>. Limit harian{" "}
-        <strong className="text-foreground">$100</strong>, total sebulan{" "}
-        <strong className="text-foreground">$3.000</strong> (~Rp 50 jt), RPM{" "}
+        <strong className="text-foreground">1 bulan Rp 1,5 jt</strong>. Limit 5 jam{" "}
+        <strong className="text-foreground">$200</strong>, harian{" "}
+        <strong className="text-foreground">$300</strong>, mingguan{" "}
+        <strong className="text-foreground">$700</strong>, RPM{" "}
         <strong className="text-foreground">20</strong>. Transfer BCA lalu WA admin — lihat menu{" "}
         <strong className="text-foreground">Subscription</strong>.
       </>

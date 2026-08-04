@@ -35,7 +35,7 @@ async function request<T>(
   }
   if (response.status === 403) {
     throw new ApiError(
-      "This API key is missing the self:usage scope. Ask your admin to enable it.",
+      "This API key is not allowed to access the customer portal.",
       403,
       "forbidden"
     );
@@ -59,11 +59,7 @@ export function fetchMeStatus(apiKey: string): Promise<MeStatus> {
 }
 
 export function fetchModels(apiKey: string): Promise<ModelsResponse> {
-  return request<ModelsResponse>("/v1/models", apiKey).then((response) => ({
-    ...response,
-    // Customer portal surfaces combos only (owned_by === "combo").
-    data: (response.data ?? []).filter((model) => model.owned_by === "combo"),
-  }));
+  return request<ModelsResponse>("/v1/models", apiKey);
 }
 
 export function fetchLogs(apiKey: string, query: LogsQuery = {}): Promise<LogsResponse> {

@@ -23,7 +23,7 @@ Production (nginx, mind-aku.my.id): [docs/production-deploy.md](docs/production-
 
 ## Prerequisites
 
-1. OmniRoute running (default `http://localhost:20128`)
+1. OmniRoute running (default `http://localhost:3000`)
 2. OmniRoute build that includes self-service logs (`/api/v1/me/logs`)
 3. A customer API key with the `self:usage` scope (added by default when creating keys in OmniRoute)
 4. CORS allowing this portal origin
@@ -53,13 +53,13 @@ Open [http://localhost:5173](http://localhost:5173).
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_OMNIROUTE_BASE_URL` | `http://localhost:20128` | OmniRoute origin (no trailing slash) |
+| `VITE_OMNIROUTE_BASE_URL` | `http://localhost:3000` | OmniRoute origin (no trailing slash) |
 | `VITE_AI_BASE_URL` | `<VITE_OMNIROUTE_BASE_URL>/v1` | Public AI endpoint shown in FAQ |
 | `VITE_PUBLIC_WEB_URL` | Current browser origin | Public website shown on Contact |
 
 ## End-to-end test
 
-1. Start OmniRoute on port `20128`.
+1. Start OmniRoute on port `3000`.
 2. In OmniRoute admin, create an API key (ensure `self:usage` is present).
 3. Optionally allow specific models on that key.
 4. Set `CORS_ALLOWED_ORIGINS` to include `http://localhost:5173`.

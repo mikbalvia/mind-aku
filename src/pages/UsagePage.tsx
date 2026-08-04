@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchPaymentsConfig } from "../api/client";
 import { ApiError } from "../api/types";
 import type { PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
-import { MetricRow, ProgressBar } from "../components/metrics";
+import { MetricRow } from "../components/metrics";
+import { UsageLimitsPanel } from "../components/UsageLimitsPanel";
 import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatDate, formatNumber, formatPercent, formatUsd, lifetimeUsedPercent } from "../lib/format";
+import { formatDate, formatNumber } from "../lib/format";
 
 export function UsagePage() {
   const { apiKey, status, refreshStatus, logout, loading } = useAuth();
@@ -44,14 +44,12 @@ export function UsagePage() {
   }, [apiKey, refreshStatus, logout]);
 
   const tokens = status?.usage.tokens;
-  const lifetime = config?.lifetimeQuota;
-  const usedPct = lifetimeUsedPercent(lifetime?.spentUsd, lifetime?.limitUsd);
 
   return (
     <div>
       <PageHeader
         title="Usage"
-        description="Saldo lifetime dan token yang sudah kamu bakar."
+        description="Saldo top up (lifetime) dan limit subscription — terpisah, tidak digabung."
         actions={
           <Button
             type="button"
@@ -78,43 +76,11 @@ export function UsagePage() {
 
       {(status || config) && (
         <div className="grid gap-5">
-          <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <div>
-                  <h3 className="font-display text-2xl font-medium text-foreground">Lifetime balance</h3>
-                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
-                    From top-ups · does not reset
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/payments">Top up</Link>
-                </Button>
-              </div>
-
-              {lifetime?.limitUsd == null ? (
-                <div className="mt-6 rounded-lg border border-dashed border-border px-4 py-8 text-center">
-                  <p className="text-sm text-muted-foreground">No lifetime quota on this key yet.</p>
-                  <Link to="/payments" className="mt-3 inline-block text-sm text-primary hover:underline">
-                    Add balance on Top up →
-                  </Link>
-                </div>
-              ) : (
-                <>
-                  <p className="mt-6 font-display text-4xl font-medium text-foreground">
-                    {formatUsd(lifetime.remainingUsd)}
-                    <span className="ml-2 text-base font-normal text-muted-foreground">remaining</span>
-                  </p>
-                  <ProgressBar percent={usedPct} />
-                  <dl className="mt-4">
-                    <MetricRow label="Limit" value={formatUsd(lifetime.limitUsd)} />
-                    <MetricRow label="Spent" value={formatUsd(lifetime.spentUsd)} />
-                    <MetricRow label="Used %" value={formatPercent(usedPct)} emphasize />
-                  </dl>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <UsageLimitsPanel
+            variant="detailed"
+            usageLimits={config?.usageLimits}
+            lifetimeFallback={config?.lifetimeQuota}
+          />
 
           <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
             <CardContent className="p-6">

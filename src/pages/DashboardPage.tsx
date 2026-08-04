@@ -5,11 +5,12 @@ import { ApiError } from "../api/types";
 import type { CallLog, MeStatus, PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
-import { ProgressBar, SummaryCard } from "../components/metrics";
+import { SummaryCard } from "../components/metrics";
+import { UsageLimitsPanel } from "../components/UsageLimitsPanel";
 import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatDate, formatNumber, formatUsd, lifetimeUsedPercent } from "../lib/format";
+import { formatDate, formatNumber, formatUsd } from "../lib/format";
 
 export function DashboardPage() {
   const { apiKey, logout } = useAuth();
@@ -57,9 +58,6 @@ export function DashboardPage() {
     };
   }, [apiKey, logout]);
 
-  const lifetime = config?.lifetimeQuota;
-  const usedPct = lifetimeUsedPercent(lifetime?.spentUsd, lifetime?.limitUsd);
-  const remaining = lifetime?.remainingUsd;
   const tokens = status?.usage.tokens;
 
   return (
@@ -86,30 +84,14 @@ export function DashboardPage() {
         <>
           <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <SummaryCard
-              className="scale-in scale-in-delay-1"
-              label="Lifetime balance"
-              value={formatUsd(remaining)}
-              hint={
-                lifetime?.limitUsd == null
-                  ? "No lifetime quota yet — top up to add balance."
-                  : `of ${formatUsd(lifetime.limitUsd)} lifetime limit`
-              }
-            >
-              {lifetime?.limitUsd != null ? <ProgressBar percent={usedPct} /> : null}
-              {lifetime?.limitUsd != null ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Spent {formatUsd(lifetime.spentUsd)} ·{" "}
-                  {usedPct != null ? `${usedPct.toFixed(1)}% used` : "—"}
-                </p>
-              ) : (
-                <Link to="/payments" className="mt-4 inline-block text-sm text-primary hover:underline">
-                  Add balance →
-                </Link>
-              )}
-            </SummaryCard>
+          <UsageLimitsPanel
+            className="mb-4"
+            variant="compact"
+            usageLimits={config?.usageLimits}
+            lifetimeFallback={config?.lifetimeQuota}
+          />
 
+          <div className="grid gap-4 md:grid-cols-1">
             <SummaryCard
               className="scale-in scale-in-delay-2"
               label="Tokens this period"

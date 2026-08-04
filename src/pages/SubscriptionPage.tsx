@@ -159,16 +159,21 @@ export function SubscriptionPage() {
             <h3 className="font-display text-2xl font-medium text-foreground">Benefit paket</h3>
             <dl className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between gap-3 border-b border-border pb-3">
+                <dt className="text-muted-foreground">Limit 5 jam</dt>
+                <dd className="tabular-nums text-foreground">
+                  {formatUsd(SUBSCRIPTION_PLAN_META.fiveHourLimitUsd)}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3 border-b border-border pb-3">
                 <dt className="text-muted-foreground">Limit harian</dt>
                 <dd className="tabular-nums text-foreground">
                   {formatUsd(SUBSCRIPTION_PLAN_META.dailyLimitUsd)}
                 </dd>
               </div>
               <div className="flex justify-between gap-3 border-b border-border pb-3">
-                <dt className="text-muted-foreground">Limit 1 bulan</dt>
+                <dt className="text-muted-foreground">Limit mingguan</dt>
                 <dd className="tabular-nums text-foreground">
-                  {formatUsd(SUBSCRIPTION_PLAN_META.monthlyLimitUsd)}
-                  <span className="ml-1 text-xs text-muted-foreground">(~Rp 50 jt)</span>
+                  {formatUsd(SUBSCRIPTION_PLAN_META.weeklyLimitUsd)}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">

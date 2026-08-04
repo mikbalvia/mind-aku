@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPayment, fetchPayments, fetchPaymentsConfig, simulatePayment } from "../api/client";
 import { ApiError } from "../api/types";
 import type { PaymentHistoryItem, PaymentsConfig } from "../api/types";
@@ -71,7 +71,7 @@ export function PaymentsPage() {
 
   const mockMode = Boolean(config?.mockEnabled);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!apiKey) return;
     setLoading(true);
     setError(null);
@@ -89,11 +89,11 @@ export function PaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [apiKey, logout]);
 
   useEffect(() => {
     void load();
-  }, [apiKey]);
+  }, [load]);
 
   async function onTopUp() {
     if (!apiKey || activeUsd == null || activeUsd < 1) {

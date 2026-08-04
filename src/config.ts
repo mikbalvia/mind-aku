@@ -1,6 +1,6 @@
 export const OMNIROUTE_BASE_URL =
   (import.meta.env.VITE_OMNIROUTE_BASE_URL as string | undefined)?.replace(/\/$/, "") ||
-  "http://localhost:20128";
+  "http://localhost:3000";
 
 export const AI_BASE_URL =
   (import.meta.env.VITE_AI_BASE_URL as string | undefined)?.replace(/\/$/, "") ||
@@ -48,9 +48,9 @@ export const SUBSCRIPTION_PACKAGES: SubscriptionPackage[] = [
 ];
 
 export const SUBSCRIPTION_PLAN_META = {
-  dailyLimitUsd: 100,
-  monthlyLimitUsd: 3_000,
-  monthlyLimitIdrApprox: 50_000_000,
+  fiveHourLimitUsd: 200,
+  dailyLimitUsd: 300,
+  weeklyLimitUsd: 700,
   requestsPerMinute: 20,
 } as const;
 
