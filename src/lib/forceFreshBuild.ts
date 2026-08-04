@@ -1,20 +1,22 @@
 const RELOAD_FLAG = "new-clients.buildReload";
+const META_SELECTOR = 'meta[name="build-id"]';
 
-function currentAssetFile(): string | null {
-  const src = document
-    .querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/"]')
-    ?.getAttribute("src");
-  if (!src) return null;
-  const file = src.split("/").pop();
-  return file || null;
+function localBuildId(): string | null {
+  return document.querySelector<HTMLMetaElement>(META_SELECTOR)?.getAttribute("content") ?? null;
 }
 
-function remoteAssetFile(html: string): string | null {
-  const match = html.match(/\/assets\/(index-[A-Za-z0-9_-]+\.js)/);
+function remoteBuildId(html: string): string | null {
+  const match = html.match(/<meta\s+name="build-id"\s+content="([^"]+)"/);
   return match?.[1] ?? null;
 }
 
-/** If deploy changed the SPA shell, reload so users are not stuck on an old hashed bundle. */
+/**
+ * If the deploy changed the SPA shell (new build-id), reload so users are not
+ * stuck on an old hashed bundle. Compares the meta tag injected at build
+ * time against the latest server HTML, which is more reliable than parsing
+ * the JS asset filename and is independent of the cache state of the
+ * index.html itself.
+ */
 export function installForceFreshBuild(): void {
   const check = async () => {
     try {
@@ -23,7 +25,7 @@ export function installForceFreshBuild(): void {
         return;
       }
 
-      const current = currentAssetFile();
+      const current = localBuildId();
       if (!current) return;
 
       const response = await fetch(`/?__fresh=${Date.now()}`, {
@@ -32,7 +34,7 @@ export function installForceFreshBuild(): void {
       });
       if (!response.ok) return;
 
-      const remote = remoteAssetFile(await response.text());
+      const remote = remoteBuildId(await response.text());
       if (!remote || remote === current) return;
 
       sessionStorage.setItem(RELOAD_FLAG, "1");
