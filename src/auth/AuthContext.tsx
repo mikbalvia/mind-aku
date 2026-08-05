@@ -4,6 +4,7 @@ import { ApiError } from "../api/types";
 import type { MeStatus } from "../api/types";
 import { REMEMBER_KEY, SESSION_KEY } from "../config";
 import { clearAllChatStores } from "../lib/chatStore";
+import { REHYDRATE_ERROR_EVENT } from "./constants";
 
 type LoginOptions = {
   remember?: boolean;
@@ -128,13 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Without this, network/403/500 errors leave a stale apiKey in state and
         // authenticated pages render before MeStatus is ready, forcing users to
         // open an incognito window to recover.
-        if (error instanceof ApiError) {
-          logout();
-        } else {
-          // Unknown error (e.g. unexpected throw). Force logout as well so the
-          // session does not get stuck in a half-loaded state.
-          logout();
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : "Saved session expired. Please sign in again.";
+        try {
+          window.dispatchEvent(new CustomEvent(REHYDRATE_ERROR_EVENT, { detail: message }));
+        } catch {
+          // ignore
         }
+        logout();
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

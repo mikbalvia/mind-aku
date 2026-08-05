@@ -1,121 +1,369 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, X } from "lucide-react";
+import {
+  ArrowDown,
+  Check,
+  ChevronRight,
+  Copy,
+  Flame,
+  Gauge,
+  Sparkles,
+  X,
+  Zap,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-type Announcement = {
+type ModelHighlight = {
   id: string;
-  title: string;
-  body: ReactNode;
-  primaryTo: string;
-  primaryLabel: string;
+  name: string;
+  family: string;
+  badge: string;
+  accent: string;
+  glow: string;
+  icon: ReactNode;
+  description: string;
+  input: number;
+  output: number;
+  context: string;
+  bestFor: string;
 };
 
-/** Bump an announcement id when shipping a new one so returning users see it again. */
-const ANNOUNCEMENTS: Announcement[] = [
+const PRICING_NOTE = "USD per 1M tokens";
+
+const NEW_MODELS: ModelHighlight[] = [
   {
-    id: "opus-5-ready-2026-08-01",
-    title: "Claude Opus 5 sudah ready",
-    body: (
-      <>
-        Model <strong className="text-foreground">claude-opus-5</strong> sudah tersedia di Mind
-        Aku. Silakan ke menu <strong className="text-foreground">Setup</strong> untuk auto-config
-        Claude Desktop, Claude Code, Codex, atau OpenClaw.
-      </>
-    ),
-    primaryTo: "/setup",
-    primaryLabel: "Ke menu Setup",
+    id: "deepseek-v4-pro",
+    name: "deepseek-v4-pro",
+    family: "DeepSeek",
+    badge: "Pro",
+    accent: "from-cyan-500/30 via-cyan-400/15 to-transparent",
+    glow: "rgba(34, 211, 238, 0.45)",
+    icon: <Gauge className="size-4" />,
+    description:
+      "Reasoning dalam untuk agent, code review, dan analisis panjang. Kualitas setingkat flagship, harga inference.",
+    input: 0.35,
+    output: 1.30,
+    context: "128K",
+    bestFor: "Agent · Code · Reasoning",
   },
   {
-    id: "subscription-plan-2026-08-03-daily300",
-    title: "New plan subscription",
-    body: (
-      <>
-        Paket baru: <strong className="text-foreground">2 minggu Rp 800rb</strong> atau{" "}
-        <strong className="text-foreground">1 bulan Rp 1,5 jt</strong>. Limit 5 jam{" "}
-        <strong className="text-foreground">$200</strong>, harian{" "}
-        <strong className="text-foreground">$300</strong>, mingguan{" "}
-        <strong className="text-foreground">$700</strong>, RPM{" "}
-        <strong className="text-foreground">20</strong>. Transfer BCA lalu WA admin — lihat menu{" "}
-        <strong className="text-foreground">Subscription</strong>.
-      </>
-    ),
-    primaryTo: "/subscription",
-    primaryLabel: "Ke menu Subscription",
+    id: "deepseek-v4-flash",
+    name: "deepseek-v4-flash",
+    family: "DeepSeek",
+    badge: "Flash",
+    accent: "from-sky-500/30 via-sky-400/15 to-transparent",
+    glow: "rgba(56, 189, 248, 0.45)",
+    icon: <Zap className="size-4" />,
+    description:
+      "Latency rendah, throughput tinggi. Ideal untuk chat harian, autocomplete, dan pipeline RAG volume besar.",
+    input: 0.08,
+    output: 0.30,
+    context: "128K",
+    bestFor: "Chat · RAG · Bulk",
+  },
+  {
+    id: "minimax-m3",
+    name: "minimax-m3",
+    family: "MiniMax",
+    badge: "M3",
+    accent: "from-amber-500/30 via-orange-400/15 to-transparent",
+    glow: "rgba(251, 146, 60, 0.45)",
+    icon: <Sparkles className="size-4" />,
+    description:
+      "Model multimodal yang ringan. Multibahasa kuat, cocok untuk customer support dan ringkasan dokumen.",
+    input: 0.20,
+    output: 0.80,
+    context: "256K",
+    bestFor: "Support · Multilingual",
+  },
+  {
+    id: "glm-5.2",
+    name: "glm-5.2",
+    family: "Zhipu · GLM",
+    badge: "5.2",
+    accent: "from-violet-500/30 via-fuchsia-400/15 to-transparent",
+    glow: "rgba(167, 139, 250, 0.45)",
+    icon: <Flame className="size-4" />,
+    description:
+      "Generasi terbaru GLM, akurasi lebih tinggi pada tool use dan structured output. Premium murah untuk workflow produksi.",
+    input: 0.50,
+    output: 2.00,
+    context: "128K",
+    bestFor: "Tools · Production",
   },
 ];
+
+const REFERENCE = {
+  sonnet: { label: "Claude Sonnet 4.5", input: 3.0, output: 15.0 },
+  opus: { label: "Claude Opus 5", input: 15.0, output: 75.0 },
+};
+
+const COMPARISON_TARGET = REFERENCE.sonnet;
+
+function formatRate(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  }).format(value);
+}
+
+function savings(input: number, output: number): number {
+  // Weighted blend 70% output / 30% input — typical chat workload is output-heavy.
+  const ours = 0.3 * input + 0.7 * output;
+  const ref = 0.3 * COMPARISON_TARGET.input + 0.7 * COMPARISON_TARGET.output;
+  return Math.round((1 - ours / ref) * 100);
+}
+
+function ModelCard({ model }: { model: ModelHighlight }) {
+  const pct = savings(model.input, model.output);
+  return (
+    <div
+      className="group relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-br from-card/95 to-card/60 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50"
+      style={
+        {
+          boxShadow: `0 0 0 1px rgba(255,255,255,0.04), 0 18px 40px -22px ${model.glow}`,
+        } as React.CSSProperties
+      }
+    >
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${model.accent} opacity-60 transition-opacity duration-300 group-hover:opacity-100`}
+      />
+      <div className="relative">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border/80 bg-background/70 text-foreground"
+              style={{ color: model.glow }}
+            >
+              {model.icon}
+            </span>
+            <div className="leading-tight">
+              <p className="font-mono text-[13px] font-semibold text-foreground">{model.name}</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {model.family}
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">
+            <ArrowDown className="mr-0.5 size-3" />
+            {pct}% vs Sonnet
+          </span>
+        </div>
+
+        <p className="mt-3 text-[12px] leading-snug text-muted-foreground">{model.description}</p>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              Input
+            </p>
+            <p className="font-display text-sm font-bold text-foreground tabular-nums">
+              {formatRate(model.input)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              Output
+            </p>
+            <p className="font-display text-sm font-bold text-foreground tabular-nums">
+              {formatRate(model.output)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              Context
+            </p>
+            <p className="font-display text-sm font-bold text-foreground tabular-nums">
+              {model.context}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-3 inline-flex items-center gap-1 rounded-full border border-border/80 bg-background/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <Check className="size-3 text-primary" />
+          {model.bestFor}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CompareRow() {
+  return (
+    <div className="rounded-xl border border-border/80 bg-background/60 p-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        Perbandingan {PRICING_NOTE}
+      </p>
+      <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            Claude Opus 5
+          </p>
+          <p className="font-display text-sm font-bold text-foreground/70 tabular-nums line-through decoration-1">
+            {formatRate(REFERENCE.opus.input)}/{formatRate(REFERENCE.opus.output)}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            Sonnet 4.5
+          </p>
+          <p className="font-display text-sm font-bold text-foreground/70 tabular-nums line-through decoration-1">
+            {formatRate(REFERENCE.sonnet.input)}/{formatRate(REFERENCE.sonnet.output)}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-primary">
+            Model Baru
+          </p>
+          <p className="font-display text-sm font-bold text-foreground tabular-nums">
+            mulai $0.08
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ANNOUNCEMENT_ID = "new-models-2026-08-05";
 
 function storageKey(id: string) {
   return `new-clients.announcement.dismissed.${id}`;
 }
 
-function firstVisibleAnnouncement(): Announcement | null {
-  for (const item of ANNOUNCEMENTS) {
-    try {
-      if (window.localStorage.getItem(storageKey(item.id)) === "1") continue;
-    } catch {
-      // ignore storage failures — still show once per session
-    }
-    return item;
-  }
-  return null;
-}
-
 export function AnnouncementPopup() {
-  const [current, setCurrent] = useState<Announcement | null>(null);
+  const [open, setOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    setCurrent(firstVisibleAnnouncement());
-  }, []);
-
-  function dismiss() {
-    if (!current) return;
     try {
-      window.localStorage.setItem(storageKey(current.id), "1");
+      if (window.localStorage.getItem(storageKey(ANNOUNCEMENT_ID)) === "1") return;
     } catch {
       // ignore
     }
-    setCurrent(firstVisibleAnnouncement());
+    setOpen(true);
+  }, []);
+
+  function dismiss() {
+    try {
+      window.localStorage.setItem(storageKey(ANNOUNCEMENT_ID), "1");
+    } catch {
+      // ignore
+    }
+    setOpen(false);
   }
 
-  if (!current) return null;
+  async function copyModel(id: string) {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      window.setTimeout(
+        () => setCopiedId((current) => (current === id ? null : current)),
+        1500
+      );
+    } catch {
+      // ignore clipboard failures
+    }
+  }
+
+  if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-labelledby="announcement-title"
     >
-      <Card className="scale-in relative w-full max-w-md border-primary/40 bg-card shadow-2xl shadow-primary/10">
+      <Card className="scale-in relative w-full max-w-2xl overflow-hidden border-primary/40 bg-card shadow-2xl shadow-primary/20">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-sky-500/10" />
+        <div className="pointer-events-none absolute -left-20 -top-20 size-56 rounded-full bg-primary/25 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -bottom-24 size-64 rounded-full bg-sky-500/20 blur-3xl" />
+
         <button
           type="button"
           onClick={dismiss}
-          className="absolute right-3 top-3 rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          className="absolute right-3 top-3 z-10 rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           aria-label="Tutup"
         >
           <X className="size-4" />
         </button>
-        <CardContent className="p-6 pt-8 sm:p-7">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-            <Sparkles className="size-3.5" />
-            Pengumuman
+
+        <CardContent className="relative p-6 sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+              <Sparkles className="size-3.5" />
+              4 Model Baru
+            </div>
+            <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              {PRICING_NOTE}
+            </span>
           </div>
+
           <h2
             id="announcement-title"
-            className="font-display text-2xl font-medium tracking-tight text-foreground"
+            className="mt-4 font-display text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
           >
-            {current.title}
+            Lebih murah dari Claude & Sonnet.
+            <span className="block font-display text-[26px] font-bold leading-tight tracking-tight text-primary sm:text-3xl">
+              Mulai dari $0.08 / 1M token.
+            </span>
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{current.body}</p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={dismiss}>
-              Nanti saja
-            </Button>
-            <Button asChild onClick={dismiss}>
-              <Link to={current.primaryTo}>{current.primaryLabel}</Link>
-            </Button>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Tambahan 4 model inference cepat untuk workflow kamu. Pilih sesuai kasus —
+            dari chat harian sampai agent & code review — tanpa kompromi harga.
+          </p>
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {NEW_MODELS.map((model) => (
+              <div key={model.id} className="relative">
+                <ModelCard model={model} />
+                <button
+                  type="button"
+                  onClick={() => void copyModel(model.id)}
+                  className="absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-md border border-border/80 bg-background/80 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
+                  aria-label={`Copy model id ${model.name}`}
+                  title={model.id}
+                >
+                  {copiedId === model.id ? (
+                    <>
+                      <Check className="size-3 text-emerald-400" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-3" />
+                      {model.id}
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <CompareRow />
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Sudah tersedia di API key-mu. Tinggal pilih di menu{" "}
+              <strong className="text-foreground">Models</strong> atau langsung dari{" "}
+              <strong className="text-foreground">Chat</strong>.
+            </p>
+            <div className="flex shrink-0 gap-2">
+              <Button type="button" variant="outline" onClick={dismiss}>
+                Nanti saja
+              </Button>
+              <Button asChild onClick={dismiss}>
+                <Link to="/models" className="inline-flex items-center">
+                  Lihat di Models
+                  <ChevronRight className="size-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

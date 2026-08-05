@@ -20,6 +20,12 @@ async function request<T>(
   try {
     response = await fetch(`${OMNIROUTE_BASE_URL}${path}`, {
       ...init,
+      // Bypass HTTP cache. The auth/rehydrate path can otherwise lock onto a
+      // stale cached 404 (e.g. when the gateway was restarted or the route was
+      // added later) and force users into a confusing "Invalid URL" loop on
+      // already-open tabs. incognito tabs avoid this because they start with
+      // an empty cache.
+      cache: "no-store",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${apiKey}`,
@@ -43,8 +49,13 @@ async function request<T>(
   if (!response.ok) {
     let message = `Request failed (${response.status})`;
     try {
-      const body = (await response.json()) as { error?: string };
-      if (body?.error) message = body.error;
+      const body = (await response.json()) as { error?: unknown; message?: unknown };
+      const raw = body?.error ?? body?.message;
+      if (typeof raw === "string" && raw.trim()) message = raw;
+      else if (raw && typeof raw === "object") {
+        const nested = (raw as { message?: unknown }).message;
+        if (typeof nested === "string" && nested.trim()) message = nested;
+      }
     } catch {
       // ignore parse errors
     }

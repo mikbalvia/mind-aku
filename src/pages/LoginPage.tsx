@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/types";
+import { REHYDRATE_ERROR_EVENT } from "../auth/constants";
 import { useAuth } from "../auth/AuthContext";
 import { Atmosphere } from "../components/Atmosphere";
 import { ErrorBanner } from "../components/page-chrome";
@@ -19,6 +20,22 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const nextPath = safeInternalPath((location.state as { from?: string } | null)?.from);
 
+  // Surface a one-shot reason when rehydrate failed (e.g. saved key is no longer
+  // valid against the gateway). Without this, users get bounced to /login with
+  // no feedback and assume they typed the wrong key.
+  useEffect(() => {
+    function onRehydrateError(event: Event) {
+      const detail = (event as CustomEvent<unknown>).detail;
+      const message =
+        typeof detail === "string" && detail.trim()
+          ? detail
+          : "Saved session expired. Please sign in again.";
+      setError(message);
+    }
+    window.addEventListener(REHYDRATE_ERROR_EVENT, onRehydrateError);
+    return () => window.removeEventListener(REHYDRATE_ERROR_EVENT, onRehydrateError);
+  }, []);
+
   if (apiKey) {
     return <Navigate to={nextPath} replace />;
   }
@@ -31,6 +48,7 @@ export function LoginPage() {
       navigate(nextPath, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) setError(err.message);
+      else if (err instanceof Error) setError(err.message || "Login failed. Please try again.");
       else setError("Login failed. Please try again.");
     }
   }
