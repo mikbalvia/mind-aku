@@ -174,14 +174,6 @@ function ModelCard({ model }: { model: ModelHighlight }) {
               {formatRate(model.output)}
             </p>
           </div>
-          <div className="hidden sm:block">
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Ctx
-            </p>
-            <p className="font-display text-sm font-bold text-foreground tabular-nums">
-              {model.context}
-            </p>
-          </div>
           <p className="ml-auto hidden items-center gap-1 rounded-full border border-border/80 bg-background/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
             <Check className="size-3 text-primary" />
             {model.bestFor}
