@@ -142,23 +142,25 @@ function ModelCard({ model }: { model: ModelHighlight }) {
             </span>
             <div className="leading-tight">
               <p className="font-mono text-[13px] font-semibold text-foreground">{model.name}</p>
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="hidden text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:block">
                 {model.family}
               </p>
             </div>
           </div>
-          <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">
+          <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">
             <ArrowDown className="mr-0.5 size-3" />
-            {pct}% vs Sonnet
+            {pct}%
           </span>
         </div>
 
-        <p className="mt-3 text-[12px] leading-snug text-muted-foreground">{model.description}</p>
+        <p className="mt-3 hidden text-[12px] leading-snug text-muted-foreground sm:block">
+          {model.description}
+        </p>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 flex items-baseline gap-4">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Input
+              In
             </p>
             <p className="font-display text-sm font-bold text-foreground tabular-nums">
               {formatRate(model.input)}
@@ -166,26 +168,25 @@ function ModelCard({ model }: { model: ModelHighlight }) {
           </div>
           <div>
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Output
+              Out
             </p>
             <p className="font-display text-sm font-bold text-foreground tabular-nums">
               {formatRate(model.output)}
             </p>
           </div>
-          <div>
+          <div className="hidden sm:block">
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Context
+              Ctx
             </p>
             <p className="font-display text-sm font-bold text-foreground tabular-nums">
               {model.context}
             </p>
           </div>
+          <p className="ml-auto hidden items-center gap-1 rounded-full border border-border/80 bg-background/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
+            <Check className="size-3 text-primary" />
+            {model.bestFor}
+          </p>
         </div>
-
-        <p className="mt-3 inline-flex items-center gap-1 rounded-full border border-border/80 bg-background/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-          <Check className="size-3 text-primary" />
-          {model.bestFor}
-        </p>
       </div>
     </div>
   );
@@ -272,12 +273,12 @@ export function AnnouncementPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="announcement-title"
     >
-      <Card className="scale-in relative w-full max-w-2xl overflow-hidden border-primary/40 bg-card shadow-2xl shadow-primary/20">
+      <Card className="scale-in relative w-full max-w-2xl overflow-hidden border-primary/40 bg-card shadow-2xl shadow-primary/20 max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-xl">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-sky-500/10" />
         <div className="pointer-events-none absolute -left-20 -top-20 size-56 rounded-full bg-primary/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 -bottom-24 size-64 rounded-full bg-sky-500/20 blur-3xl" />
@@ -291,32 +292,32 @@ export function AnnouncementPopup() {
           <X className="size-4" />
         </button>
 
-        <CardContent className="relative p-6 sm:p-7">
+        <CardContent className="relative p-5 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
               <Sparkles className="size-3.5" />
               4 Model Baru
             </div>
-            <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="hidden text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:inline">
               {PRICING_NOTE}
             </span>
           </div>
 
           <h2
             id="announcement-title"
-            className="mt-4 font-display text-[26px] font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
+            className="mt-4 font-display text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
           >
-            Lebih murah dari Claude & Sonnet.
-            <span className="block font-display text-[26px] font-bold leading-tight tracking-tight text-primary sm:text-3xl">
-              Mulai dari $0.08 / 1M token.
+            Lebih murah dari Claude &amp; Sonnet.
+            <span className="block font-display text-xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
+              Mulai $0.08 / 1M token.
             </span>
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 hidden text-sm leading-relaxed text-muted-foreground sm:block">
             Tambahan 4 model inference cepat untuk workflow kamu. Pilih sesuai kasus —
-            dari chat harian sampai agent & code review — tanpa kompromi harga.
+            dari chat harian sampai agent &amp; code review — tanpa kompromi harga.
           </p>
 
-          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:mt-5 sm:gap-3 sm:grid-cols-2">
             {NEW_MODELS.map((model) => (
               <div key={model.id} className="relative">
                 <ModelCard model={model} />
@@ -335,7 +336,8 @@ export function AnnouncementPopup() {
                   ) : (
                     <>
                       <Copy className="size-3" />
-                      {model.id}
+                      <span className="hidden sm:inline">{model.id}</span>
+                      <span className="sm:hidden">Copy</span>
                     </>
                   )}
                 </button>
@@ -343,21 +345,21 @@ export function AnnouncementPopup() {
             ))}
           </div>
 
-          <div className="mt-5">
+          <div className="mt-4 hidden sm:block sm:mt-5">
             <CompareRow />
           </div>
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[11px] leading-snug text-muted-foreground">
+          <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="hidden text-[11px] leading-snug text-muted-foreground sm:block">
               Sudah tersedia di API key-mu. Tinggal pilih di menu{" "}
               <strong className="text-foreground">Models</strong> atau langsung dari{" "}
               <strong className="text-foreground">Chat</strong>.
             </p>
             <div className="flex shrink-0 gap-2">
-              <Button type="button" variant="outline" onClick={dismiss}>
+              <Button type="button" variant="outline" onClick={dismiss} className="flex-1 sm:flex-none">
                 Nanti saja
               </Button>
-              <Button asChild onClick={dismiss}>
+              <Button asChild onClick={dismiss} className="flex-1 sm:flex-none">
                 <Link to="/models" className="inline-flex items-center">
                   Lihat di Models
                   <ChevronRight className="size-4" />
