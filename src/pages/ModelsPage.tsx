@@ -30,7 +30,7 @@ function formatRate(value: number | null | undefined): string {
 }
 
 export function ModelsPage() {
-  const { apiKey, logout } = useAuth();
+  const { apiKey } = useAuth();
   const [models, setModels] = useState<ModelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,10 +48,6 @@ export function ModelsPage() {
         if (!cancelled) setModels(response.data ?? []);
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.code === "unauthorized") {
-          logout();
-          return;
-        }
         setError(err instanceof ApiError ? err.message : "Failed to load models.");
       } finally {
         if (!cancelled) setLoading(false);
@@ -62,7 +58,7 @@ export function ModelsPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey, logout]);
+  }, [apiKey]);
 
   async function copyModelId(id: string) {
     try {

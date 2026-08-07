@@ -71,7 +71,7 @@ function formatSpend(value: number | null | undefined): string {
 }
 
 export function LogsPage() {
-  const { apiKey, logout } = useAuth();
+  const { apiKey } = useAuth();
   const [logs, setLogs] = useState<CallLog[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -103,16 +103,12 @@ export function LogsPage() {
         setTotal(response.total);
         setOffset(response.offset);
       } catch (err) {
-        if (err instanceof ApiError && err.code === "unauthorized") {
-          logout();
-          return;
-        }
         setError(err instanceof ApiError ? err.message : "Failed to load logs.");
       } finally {
         setLoading(false);
       }
     },
-    [apiKey, status, appliedModel, appliedSearch, logout]
+    [apiKey, status, appliedModel, appliedSearch]
   );
 
   useEffect(() => {
@@ -128,10 +124,6 @@ export function LogsPage() {
       const detail = await fetchLogDetail(apiKey, id);
       setSelected(detail);
     } catch (err) {
-      if (err instanceof ApiError && err.code === "unauthorized") {
-        logout();
-        return;
-      }
       setError(err instanceof ApiError ? err.message : "Failed to load log detail.");
       setSheetOpen(false);
     } finally {

@@ -13,7 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber, formatUsd } from "../lib/format";
 
 export function DashboardPage() {
-  const { apiKey, logout } = useAuth();
+  const { apiKey } = useAuth();
   const [status, setStatus] = useState<MeStatus | null>(null);
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
   const [payments, setPayments] = useState<PaymentHistoryItem[]>([]);
@@ -42,10 +42,6 @@ export function DashboardPage() {
         setLogs(logRes.data ?? []);
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.code === "unauthorized") {
-          logout();
-          return;
-        }
         setError(err instanceof ApiError ? err.message : "Failed to load dashboard.");
       } finally {
         if (!cancelled) setLoading(false);
@@ -56,7 +52,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey, logout]);
+  }, [apiKey]);
 
   const tokens = status?.usage.tokens;
 

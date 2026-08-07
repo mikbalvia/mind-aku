@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
-import { fetchModels, fetchPaymentsConfig } from "../api/client";
+import { fetchPaymentsConfig, fetchPortalModels } from "../api/client";
 import { streamChatCompletions } from "../api/chat";
 import { ApiError } from "../api/types";
 import type { ModelItem } from "../api/types";
@@ -40,7 +40,7 @@ type RemainingQuota = {
 };
 
 export function ChatPage() {
-  const { apiKey, status, logout, refreshStatus } = useAuth();
+  const { apiKey, status, refreshStatus } = useAuth();
   const apiKeyId = status?.apiKey?.id ?? null;
 
   const [store, setStore] = useState<ChatStoreSnapshot>({
@@ -89,7 +89,7 @@ export function ChatPage() {
       setModelsError(null);
       try {
         const [modelRes, payCfg] = await Promise.all([
-          fetchModels(apiKey!),
+          fetchPortalModels(apiKey!),
           fetchPaymentsConfig(apiKey!).catch(() => null),
         ]);
         if (cancelled) return;
@@ -107,10 +107,6 @@ export function ChatPage() {
         }
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.code === "unauthorized") {
-          logout();
-          return;
-        }
         setModelsError(err instanceof ApiError ? err.message : "Failed to load models.");
       }
     }
@@ -119,7 +115,7 @@ export function ChatPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey, logout]);
+  }, [apiKey]);
 
   useEffect(() => {
     if (!active || streaming || !selectedModel) return;
@@ -253,11 +249,7 @@ export function ChatPage() {
       if (controller.signal.aborted) {
         // keep partial content
       } else if (err instanceof ApiError) {
-        if (err.code === "unauthorized") {
-          logout();
-          return;
-        }
-        setQuotaError(err.code === "quota");
+        setQuotaError(err.code === "quota" || err.code === "unauthorized");
         setError(err.message);
         const latest =
           storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;

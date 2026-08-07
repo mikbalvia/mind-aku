@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber } from "../lib/format";
 
 export function UsagePage() {
-  const { apiKey, status, refreshStatus, logout, loading } = useAuth();
+  const { apiKey, status, refreshStatus, loading } = useAuth();
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
@@ -27,10 +27,6 @@ export function UsagePage() {
         if (!cancelled) setConfig(cfg);
       } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.code === "unauthorized") {
-          logout();
-          return;
-        }
         setError(err instanceof ApiError ? err.message : "Failed to load usage.");
       } finally {
         if (!cancelled) setInitializing(false);
@@ -41,7 +37,7 @@ export function UsagePage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey, refreshStatus, logout]);
+  }, [apiKey, refreshStatus]);
 
   const tokens = status?.usage.tokens;
 
@@ -60,8 +56,7 @@ export function UsagePage() {
               void Promise.all([refreshStatus(), fetchPaymentsConfig(apiKey!)])
                 .then(([, cfg]) => setConfig(cfg))
                 .catch((err) => {
-                  if (err instanceof ApiError && err.code === "unauthorized") logout();
-                  else setError(err instanceof ApiError ? err.message : "Failed to refresh.");
+                  setError(err instanceof ApiError ? err.message : "Failed to refresh.");
                 })
                 .finally(() => setInitializing(false));
             }}

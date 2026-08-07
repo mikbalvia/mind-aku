@@ -81,15 +81,11 @@ export function PaymentsPage() {
       setHistory(list.data ?? []);
       if (cfg.packages[1]) setSelectedUsd(cfg.packages[1].usdAmount);
     } catch (err) {
-      if (err instanceof ApiError && err.code === "unauthorized") {
-        logout();
-        return;
-      }
       setError(err instanceof ApiError ? err.message : "Failed to load payments.");
     } finally {
       setLoading(false);
     }
-  }, [apiKey, logout]);
+  }, [apiKey]);
 
   useEffect(() => {
     void load();
