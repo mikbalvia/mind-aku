@@ -75,5 +75,10 @@ function formatIdrPlain(value: number): string {
 export const SESSION_KEY = "new-clients.apiKey";
 /** Persisted API key when "Remember me" is checked (localStorage). */
 export const REMEMBER_KEY = "new-clients.apiKey.remember";
+/**
+ * sessionStorage flag set on explicit logout so a remembered key is kept for
+ * the login form but does not auto-restore the session in this tab.
+ */
+export const LOGGED_OUT_KEY = "new-clients.loggedOut";
 /** sessionStorage key prefix for guest checkout claim secrets: `${prefix}${orderId}` */
 export const GUEST_CLAIM_SECRET_PREFIX = "new-clients.guestClaim.";

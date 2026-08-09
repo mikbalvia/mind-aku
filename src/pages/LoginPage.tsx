@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/types";
 import { REHYDRATE_ERROR_EVENT } from "../auth/constants";
-import { useAuth } from "../auth/AuthContext";
+import { readRememberedApiKey, useAuth } from "../auth/AuthContext";
 import { Atmosphere } from "../components/Atmosphere";
 import { ErrorBanner } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,9 @@ export function LoginPage() {
   const { apiKey, login, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [value, setValue] = useState("");
-  const [remember, setRemember] = useState(false);
+  const rememberedKey = readRememberedApiKey() ?? "";
+  const [value, setValue] = useState(rememberedKey);
+  const [remember, setRemember] = useState(Boolean(rememberedKey));
   const [error, setError] = useState<string | null>(null);
   const nextPath = safeInternalPath((location.state as { from?: string } | null)?.from);
 
@@ -118,7 +119,7 @@ export function LoginPage() {
                 Remember me on this device
               </Label>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Simpan sesi di browser ini. Jangan centang di perangkat bersama.
+                Simpan API key di browser ini (termasuk setelah logout). Jangan centang di perangkat bersama.
               </p>
             </div>
           </div>

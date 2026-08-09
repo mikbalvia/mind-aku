@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { fetchMeStatus } from "../api/client";
 import { ApiError } from "../api/types";
 import type { MeStatus } from "../api/types";
-import { REMEMBER_KEY, SESSION_KEY } from "../config";
+import { LOGGED_OUT_KEY, REMEMBER_KEY, SESSION_KEY } from "../config";
 import { clearAllChatStores } from "../lib/chatStore";
 import { REHYDRATE_ERROR_EVENT } from "./constants";
 
@@ -10,16 +10,47 @@ type LoginOptions = {
   remember?: boolean;
 };
 
+type LogoutOptions = {
+  /** When true, also wipe the remembered API key (e.g. unauthorized / invalid key). */
+  clearRemembered?: boolean;
+};
+
 type AuthContextValue = {
   apiKey: string | null;
   status: MeStatus | null;
   loading: boolean;
   login: (apiKey: string, options?: LoginOptions) => Promise<void>;
-  logout: () => void;
+  logout: (options?: LogoutOptions) => void;
   refreshStatus: () => Promise<MeStatus | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function isExplicitlyLoggedOut(): boolean {
+  try {
+    return sessionStorage.getItem(LOGGED_OUT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setExplicitlyLoggedOut(value: boolean) {
+  try {
+    if (value) sessionStorage.setItem(LOGGED_OUT_KEY, "1");
+    else sessionStorage.removeItem(LOGGED_OUT_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+/** Remembered API key for login-form prefill (does not imply an active session). */
+export function readRememberedApiKey(): string | null {
+  try {
+    return localStorage.getItem(REMEMBER_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function readStoredKey(): string | null {
   try {
@@ -28,6 +59,9 @@ function readStoredKey(): string | null {
   } catch {
     // ignore
   }
+  // After an explicit logout in this tab, keep the remembered key for prefill
+  // but do not auto-restore the session until the user signs in again.
+  if (isExplicitlyLoggedOut()) return null;
   try {
     const remembered = localStorage.getItem(REMEMBER_KEY);
     if (remembered) {
@@ -63,18 +97,15 @@ function writeRememberKey(apiKey: string | null) {
   }
 }
 
-function clearStoredKeys() {
-  writeSessionKey(null);
-  writeRememberKey(null);
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [apiKey, setApiKey] = useState<string | null>(() => readStoredKey());
   const [status, setStatus] = useState<MeStatus | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const logout = useCallback(() => {
-    clearStoredKeys();
+  const logout = useCallback((options?: LogoutOptions) => {
+    writeSessionKey(null);
+    if (options?.clearRemembered) writeRememberKey(null);
+    setExplicitlyLoggedOut(true);
     clearAllChatStores();
     setApiKey(null);
     setStatus(null);
@@ -86,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const me = await fetchMeStatus(trimmed);
+      setExplicitlyLoggedOut(false);
       writeSessionKey(trimmed);
       if (options?.remember) writeRememberKey(trimmed);
       else writeRememberKey(null);
@@ -105,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return me;
     } catch (error) {
       if (error instanceof ApiError && error.code === "unauthorized") {
-        logout();
+        logout({ clearRemembered: true });
       }
       throw error;
     } finally {
@@ -125,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch((error) => {
         if (cancelled) return;
         if (error instanceof ApiError && error.code === "unauthorized") {
-          logout();
+          logout({ clearRemembered: true });
         }
         const message =
           error instanceof ApiError

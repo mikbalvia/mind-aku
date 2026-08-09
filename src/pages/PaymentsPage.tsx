@@ -138,7 +138,7 @@ export function PaymentsPage() {
       window.location.replace(payment.paymentLinkUrl);
     } catch (err) {
       if (err instanceof ApiError && err.code === "unauthorized") {
-        logout();
+        logout({ clearRemembered: true });
         return;
       }
       setError(err instanceof ApiError ? err.message : "Failed to create payment.");
