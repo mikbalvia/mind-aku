@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type ToolId = "desktop" | "claude" | "codex" | "openclaw";
+type ToolId = "vscode" | "desktop" | "claude" | "codex" | "openclaw";
 
-const TOOL_ORDER: ToolId[] = ["desktop", "claude", "codex", "openclaw"];
+const TOOL_ORDER: ToolId[] = ["vscode", "desktop", "claude", "codex", "openclaw"];
 
 const CLAUDE_DOCS = "https://code.claude.com/docs/en/quickstart";
 const CODEX_DOCS = "https://learn.chatgpt.com/docs/codex/cli#getting-started";
@@ -20,6 +20,8 @@ const CODEX_IDE = "https://learn.chatgpt.com/docs/codex/ide";
 const CLAUDE_DESKTOP_DOWNLOAD = "https://claude.com/download";
 const OPENCLAW_DOCS = "https://docs.openclaw.ai/install";
 const OPENCLAW_PROVIDERS = "https://docs.openclaw.ai/concepts/model-providers/";
+const VSCODE_LM_DOCS = "https://code.visualstudio.com/docs/copilot/customization/language-models";
+const VSCODE_DOWNLOAD = "https://code.visualstudio.com/download";
 
 type CliTool = {
   kind: "cli";
@@ -48,7 +50,20 @@ type OpenClawTool = {
   blurb: string;
 };
 
-const tools: Record<ToolId, CliTool | DesktopTool | OpenClawTool> = {
+type VsCodeTool = {
+  kind: "vscode";
+  label: string;
+  short: string;
+  blurb: string;
+};
+
+const tools: Record<ToolId, CliTool | DesktopTool | OpenClawTool | VsCodeTool> = {
+  vscode: {
+    kind: "vscode",
+    label: "VS Code Chat",
+    short: "VS Code",
+    blurb: "Integrasi Chat / Agent di Visual Studio Code via Custom Endpoint Mind Aku.",
+  },
   desktop: {
     kind: "desktop",
     label: "Claude Desktop",
@@ -204,6 +219,224 @@ function ManualShot({
         {caption}
       </figcaption>
     </figure>
+  );
+}
+
+function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
+  const v1Url = AI_BASE_URL.replace(/\/$/, "");
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function onCopy(id: string, value: string) {
+    const ok = await copyText(value);
+    if (!ok) return;
+    setCopied(id);
+    window.setTimeout(() => setCopied(null), 2000);
+  }
+
+  return (
+    <div className="space-y-5">
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <StepLabel n={2}>Siapkan Visual Studio Code</StepLabel>
+              <h3 className="font-display text-xl font-medium text-foreground">
+                Chat + Language Models
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Pakai Chat di VS Code (atau Cursor) dengan model Mind Aku lewat{" "}
+                <strong className="text-foreground">Custom Endpoint</strong>. Auto-config akan
+                menulis <code>chatLanguageModels.json</code> dan force env key di shell kamu.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm">
+                <a href={VSCODE_DOWNLOAD} target="_blank" rel="noopener noreferrer">
+                  Download VS Code <ExternalLink />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <a href={VSCODE_LM_DOCS} target="_blank" rel="noopener noreferrer">
+                  Docs <ExternalLink />
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>Install Visual Studio Code terbaru (stabil atau Insiders).</li>
+            <li>
+              Pastikan fitur <strong>Chat</strong> tersedia (panel Chat di sidebar).
+            </li>
+            <li>
+              Opsional: Cursor juga didukung — auto-config menulis ke folder User Cursor jika
+              terpasang.
+            </li>
+          </ol>
+
+          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+            Model Mind Aku muncul di grup <strong>mindaku</strong> di model picker Chat. Thinking
+            effort default: <strong>high</strong> untuk semua model dari{" "}
+            <code>/v1/models</code>.
+          </div>
+        </CardContent>
+      </Card>
+
+      <div>
+        <StepLabel n={3}>Auto-config Mind Aku</StepLabel>
+        {apiKey ? (
+          <ClientSetupCard
+            apiKey={apiKey}
+            toolLabel="VS Code"
+            modelsNote="Perintah ini mengisi chatLanguageModels.json (semua model dari /v1/models), force OPENAI_API_KEY + ANTHROPIC_API_KEY ke shell profile, lalu siap dipakai di Chat."
+          />
+        ) : (
+          <Card className="border-border/80 bg-card/90">
+            <CardContent className="p-6 text-sm text-muted-foreground">
+              Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={4}>Reload & pilih model</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Aktifkan model mindaku di Chat
+          </h3>
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>
+              Setelah auto-config selesai, di VS Code jalankan{" "}
+              <strong>Developer: Reload Window</strong> (Command Palette).
+            </li>
+            <li>
+              Buka panel <strong>Chat</strong>, lalu buka <strong>model picker</strong>.
+            </li>
+            <li>
+              Pilih model di grup <strong>mindaku</strong> (daftar mengikuti API{" "}
+              <code>/v1/models</code>).
+            </li>
+            <li>
+              Klik panah <strong>&gt;</strong> di samping nama model → set{" "}
+              <strong>Thinking Effort</strong> (disarankan <strong>High</strong>).
+            </li>
+          </ol>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {[
+              {
+                title: "macOS path",
+                text: "~/Library/Application Support/Code/User/chatLanguageModels.json",
+              },
+              {
+                title: "Windows path",
+                text: "%APPDATA%\\Code\\User\\chatLanguageModels.json",
+              },
+              {
+                title: "Linux path",
+                text: "~/.config/Code/User/chatLanguageModels.json",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-lg border border-border bg-muted/30 px-3 py-3 text-sm"
+              >
+                <p className="font-medium text-foreground">{item.title}</p>
+                <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{item.text}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Kalau daftar model di gateway berubah, jalankan ulang perintah auto-config.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <CardContent className="p-6">
+          <StepLabel n={5}>Manual (opsional)</StepLabel>
+          <h3 className="font-display text-xl font-medium text-foreground">
+            Tambah Custom Endpoint sendiri
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Hanya jika auto-config gagal. Di VS Code: model picker →{" "}
+            <strong className="text-foreground">Manage Language Models</strong> →{" "}
+            <strong className="text-foreground">Add Models</strong> →{" "}
+            <strong className="text-foreground">Custom Endpoint</strong>.
+          </p>
+
+          <div className="mt-5 space-y-3">
+            <WizardField label="Vendor / group name" value="mindaku" mono={false} />
+            <WizardField
+              label="API type"
+              value="chat-completions"
+              copyId="vscode-api-type"
+              copied={copied}
+              onCopy={onCopy}
+            />
+            <WizardField
+              label="URL (OpenAI /v1)"
+              value={v1Url}
+              copyId="vscode-v1"
+              copied={copied}
+              onCopy={onCopy}
+            />
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                API key
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Tempel API key Mind Aku kamu
+                {apiKey ? " (dari sesi login portal ini)." : " (dari portal setelah login)."}
+              </p>
+              {apiKey ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <code className="max-w-full truncate text-sm text-foreground">{apiKey}</code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void onCopy("vscode-key", apiKey)}
+                  >
+                    {copied === "vscode-key" ? <Check /> : <Copy />}
+                    {copied === "vscode-key" ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>
+              Di <code>chatLanguageModels.json</code>, set per model:{" "}
+              <code>thinking: true</code>,{" "}
+              <code>supportsReasoningEffort: [&quot;low&quot;,&quot;medium&quot;,&quot;high&quot;]</code>
+              , <code>reasoningEffortFormat: &quot;chat-completions&quot;</code>.
+            </li>
+            <li>
+              Di <code>settings</code> provider, set{" "}
+              <code>&quot;reasoningEffort&quot;: &quot;high&quot;</code> per model id.
+            </li>
+            <li>Save file → Reload Window → pilih model mindaku di Chat.</li>
+          </ol>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Referensi resmi:{" "}
+            <a
+              href={VSCODE_LM_DOCS}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              AI language models in VS Code
+            </a>
+            .
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -709,7 +942,7 @@ export function SetupPage() {
     <div>
       <PageHeader
         title="Setup"
-        description="Pilih satu tool: Claude Desktop, Claude Code, Codex CLI, atau OpenClaw — lalu ikuti langkahnya."
+        description="Pilih satu tool: VS Code Chat, Claude Desktop, Claude Code, Codex CLI, atau OpenClaw — lalu ikuti langkahnya."
       />
 
       <div className="space-y-5">
@@ -722,11 +955,12 @@ export function SetupPage() {
               Cukup pilih salah satu
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Claude Desktop, Claude Code, Codex CLI, atau OpenClaw — pilih yang ingin kamu pakai.
-              Langkah berikutnya menyesuaikan pilihanmu.
+              Mulai dari <strong className="text-foreground">VS Code Chat</strong>, atau pilih
+              Claude Desktop / Claude Code / Codex / OpenClaw. Langkah berikutnya menyesuaikan
+              pilihanmu.
             </p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {TOOL_ORDER.map((id) => {
                 const item = tools[id];
                 const active = tool === id;
@@ -759,13 +993,16 @@ export function SetupPage() {
         {!selected ? (
           <Card className="border-dashed border-border/80 bg-card/50">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Pilih <strong className="text-foreground">Claude Desktop</strong>,{" "}
+              Pilih <strong className="text-foreground">VS Code Chat</strong>,{" "}
+              <strong className="text-foreground">Claude Desktop</strong>,{" "}
               <strong className="text-foreground">Claude Code</strong>,{" "}
               <strong className="text-foreground">Codex CLI</strong>, atau{" "}
               <strong className="text-foreground">OpenClaw</strong> di atas untuk melihat panduan
               lengkap.
             </CardContent>
           </Card>
+        ) : selected.kind === "vscode" ? (
+          <VsCodeChatGuide apiKey={apiKey} />
         ) : selected.kind === "desktop" ? (
           <ClaudeDesktopGuide apiKey={apiKey} />
         ) : selected.kind === "openclaw" ? (
