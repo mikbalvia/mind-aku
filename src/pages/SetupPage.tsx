@@ -279,7 +279,8 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             Model Mind Aku muncul di grup <strong>mindaku</strong> di model picker Chat. Thinking
             effort default: <strong>high</strong> untuk semua model dari API models. URL endpoint
             model memakai base gateway <strong>tanpa</strong> <code>/v1</code> — VS Code yang
-            menambahkan path API.
+            menambahkan path API. Auto-config mengirim API key lewat{" "}
+            <code>requestHeaders.Authorization</code> (VS Code mengabaikan apiKey plaintext).
           </div>
         </CardContent>
       </Card>
