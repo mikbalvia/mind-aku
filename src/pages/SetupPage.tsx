@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
@@ -223,7 +224,7 @@ function ManualShot({
 }
 
 function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
-  const v1Url = AI_BASE_URL.replace(/\/$/, "");
+  const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
   const [copied, setCopied] = useState<string | null>(null);
 
   async function onCopy(id: string, value: string) {
@@ -276,8 +277,9 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
 
           <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
             Model Mind Aku muncul di grup <strong>mindaku</strong> di model picker Chat. Thinking
-            effort default: <strong>high</strong> untuk semua model dari{" "}
-            <code>/v1/models</code>.
+            effort default: <strong>high</strong> untuk semua model dari API models. URL endpoint
+            model memakai base gateway <strong>tanpa</strong> <code>/v1</code> — VS Code yang
+            menambahkan path API.
           </div>
         </CardContent>
       </Card>
@@ -288,7 +290,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
           <ClientSetupCard
             apiKey={apiKey}
             toolLabel="VS Code"
-            modelsNote="Perintah ini mengisi chatLanguageModels.json (semua model dari /v1/models), force OPENAI_API_KEY + ANTHROPIC_API_KEY ke shell profile, lalu siap dipakai di Chat."
+            modelsNote="Perintah ini mengisi chatLanguageModels.json (semua model dari API, URL tanpa /v1), force OPENAI_API_KEY + ANTHROPIC_API_KEY ke shell profile, lalu siap dipakai di Chat."
           />
         ) : (
           <Card className="border-border/80 bg-card/90">
@@ -314,14 +316,19 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
               Buka panel <strong>Chat</strong>, lalu buka <strong>model picker</strong>.
             </li>
             <li>
-              Pilih model di grup <strong>mindaku</strong> (daftar mengikuti API{" "}
-              <code>/v1/models</code>).
+              Pilih model di grup <strong>mindaku</strong> (daftar mengikuti API models gateway).
             </li>
             <li>
               Klik panah <strong>&gt;</strong> di samping nama model → set{" "}
               <strong>Thinking Effort</strong> (disarankan <strong>High</strong>).
             </li>
           </ol>
+
+          <ManualShot
+            src="/setup-guides/vscode-models.png"
+            alt="Model picker VS Code Chat menampilkan model mindaku"
+            caption="Contoh model picker: pilih model dari grup mindaku (claude-opus-5, gpt-5.5, deepseek, dll.)"
+          />
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {[
@@ -377,9 +384,9 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
               onCopy={onCopy}
             />
             <WizardField
-              label="URL (OpenAI /v1)"
-              value={v1Url}
-              copyId="vscode-v1"
+              label="URL (base, tanpa /v1)"
+              value={baseUrl}
+              copyId="vscode-base"
               copied={copied}
               onCopy={onCopy}
             />
@@ -408,12 +415,18 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             </div>
           </div>
 
+          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+            Jangan isi <code>/v1</code> di URL model. Dengan <code>apiType: chat-completions</code>,
+            VS Code akan memanggil <code>{baseUrl}/v1/chat/completions</code> sendiri.
+          </div>
+
           <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
               Di <code>chatLanguageModels.json</code>, set per model:{" "}
               <code>thinking: true</code>,{" "}
               <code>supportsReasoningEffort: [&quot;low&quot;,&quot;medium&quot;,&quot;high&quot;]</code>
-              , <code>reasoningEffortFormat: &quot;chat-completions&quot;</code>.
+              , <code>reasoningEffortFormat: &quot;chat-completions&quot;</code>, dan{" "}
+              <code>url</code> = base gateway tanpa <code>/v1</code>.
             </li>
             <li>
               Di <code>settings</code> provider, set{" "}
@@ -924,9 +937,17 @@ function OpenClawGuide({ apiKey }: { apiKey: string | null }) {
   );
 }
 
+function parseToolParam(value: string | null): ToolId | null {
+  if (!value) return null;
+  return (TOOL_ORDER as string[]).includes(value) ? (value as ToolId) : null;
+}
+
 export function SetupPage() {
   const { apiKey } = useAuth();
-  const [tool, setTool] = useState<ToolId | null>(null);
+  const [searchParams] = useSearchParams();
+  const [tool, setTool] = useState<ToolId | null>(() =>
+    parseToolParam(searchParams.get("tool"))
+  );
   const [copied, setCopied] = useState<string | null>(null);
 
   async function onCopy(id: string, value: string) {
