@@ -10,6 +10,8 @@ import { PaymentsPage } from "./pages/PaymentsPage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
 import { SetupPage } from "./pages/SetupPage";
 import { PaymentCancelPage, PaymentSuccessPage } from "./pages/PaymentResultPages";
+import { BuyPage } from "./pages/BuyPage";
+import { BuyCancelPage, BuySuccessPage } from "./pages/BuyResultPages";
 import { HomePage } from "./pages/HomePage";
 import { PublicInfoPage } from "./pages/PublicInfoPages";
 import { WhatsAppWidget } from "./components/WhatsAppWidget";
@@ -20,6 +22,9 @@ export default function App() {
       <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<HomePage />} />
+      <Route path="/beli" element={<BuyPage />} />
+      <Route path="/beli/success" element={<BuySuccessPage />} />
+      <Route path="/beli/cancel" element={<BuyCancelPage />} />
       <Route path="/faq" element={<PublicInfoPage page="faq" />} />
       <Route path="/refund-policy" element={<PublicInfoPage page="refund" />} />
       <Route path="/terms-and-conditions" element={<PublicInfoPage page="terms" />} />

@@ -9,7 +9,52 @@ import {
   type PaymentsConfig,
   type PaymentCreateResponse,
   type PaymentsListResponse,
+  type ShopCheckoutResponse,
+  type ShopClaimResponse,
+  type ShopConfig,
 } from "./types";
+
+async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+  let message = fallback;
+  try {
+    const body = (await response.json()) as { error?: unknown; message?: unknown };
+    const raw = body?.error ?? body?.message;
+    if (typeof raw === "string" && raw.trim()) message = raw;
+    else if (raw && typeof raw === "object") {
+      const nested = (raw as { message?: unknown }).message;
+      if (typeof nested === "string" && nested.trim()) message = nested;
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return message;
+}
+
+async function requestPublic<T>(path: string, init?: RequestInit): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${OMNIROUTE_BASE_URL}${path}`, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch {
+    throw new ApiError("Unable to reach Mind Aku. Check the base URL and CORS settings.", 0, "network");
+  }
+
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, `Request failed (${response.status})`);
+    throw new ApiError(message, response.status, "unknown");
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  return (await response.json()) as T;
+}
 
 async function request<T>(
   path: string,
@@ -47,18 +92,7 @@ async function request<T>(
     );
   }
   if (!response.ok) {
-    let message = `Request failed (${response.status})`;
-    try {
-      const body = (await response.json()) as { error?: unknown; message?: unknown };
-      const raw = body?.error ?? body?.message;
-      if (typeof raw === "string" && raw.trim()) message = raw;
-      else if (raw && typeof raw === "object") {
-        const nested = (raw as { message?: unknown }).message;
-        if (typeof nested === "string" && nested.trim()) message = nested;
-      }
-    } catch {
-      // ignore parse errors
-    }
+    const message = await parseErrorMessage(response, `Request failed (${response.status})`);
     throw new ApiError(message, response.status, "unknown");
   }
 
@@ -130,5 +164,70 @@ export function simulatePayment(
 }> {
   return request(`/api/v1/me/payments/${encodeURIComponent(paymentId)}/simulate`, apiKey, {
     method: "POST",
+  });
+}
+
+export function fetchShopConfig(): Promise<ShopConfig> {
+  return requestPublic<ShopConfig>("/api/v1/shop/config");
+}
+
+export function createShopCheckout(body: {
+  name: string;
+  successReturnUrl?: string;
+  cancelReturnUrl?: string;
+  paymentMethodTypeCode?: string;
+  turnstileToken?: string;
+}): Promise<ShopCheckoutResponse> {
+  return requestPublic<ShopCheckoutResponse>("/api/v1/shop/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function claimShopOrder(body: {
+  orderId: string;
+  claimSecret: string;
+}): Promise<ShopClaimResponse> {
+  let response: Response;
+  try {
+    response = await fetch(`${OMNIROUTE_BASE_URL}/api/v1/shop/claim`, {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError("Unable to reach Mind Aku. Check the base URL and CORS settings.", 0, "network");
+  }
+
+  // 202 Accepted = payment still pending (webhook not applied yet).
+  if (response.status === 202 || response.ok) {
+    return (await response.json()) as ShopClaimResponse;
+  }
+
+  const message = await parseErrorMessage(response, `Request failed (${response.status})`);
+  throw new ApiError(message, response.status, "unknown");
+}
+
+export function simulateShopOrder(
+  orderId: string,
+  claimSecret: string
+): Promise<{
+  ok: boolean;
+  applied: boolean;
+  alreadyCredited?: boolean;
+  orderId: string;
+  usdCredit: number;
+  status?: string;
+  credited?: boolean;
+}> {
+  return requestPublic(`/api/v1/shop/orders/${encodeURIComponent(orderId)}/simulate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ claimSecret }),
   });
 }

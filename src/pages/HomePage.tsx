@@ -20,10 +20,13 @@ export function HomePage() {
           {COMPANY.name}<span className="text-primary">.</span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
+          <Link to="/beli" className="hidden px-4 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground sm:block">
+            Beli akses
+          </Link>
           <Link to="/login" className="hidden px-4 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground sm:block">
             Sign in
           </Link>
-          <Button asChild size="sm"><Link to="/login"><span className="sm:hidden">Launch</span><span className="hidden sm:inline">Open console</span> <ArrowUpRight /></Link></Button>
+          <Button asChild size="sm"><Link to="/beli"><span className="sm:hidden">Beli</span><span className="hidden sm:inline">Beli akses</span> <ArrowUpRight /></Link></Button>
         </nav>
       </header>
 
@@ -40,7 +43,7 @@ export function HomePage() {
               {COMPANY.name} menyatukan akses model, observability, dan billing AI dalam satu mission control untuk builder yang bergerak cepat.
             </p>
             <div className="rise-in rise-in-delay-2 mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Button asChild size="lg" className="w-full sm:w-auto"><Link to="/login">Launch your workspace <ArrowUpRight /></Link></Button>
+              <Button asChild size="lg" className="w-full sm:w-auto"><Link to="/beli">Beli akses <ArrowUpRight /></Link></Button>
               <Link to="/login" className="group flex justify-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:justify-start">
                 <Command className="size-4 text-primary" /> Enter with API key
               </Link>

@@ -237,3 +237,42 @@ export type PaymentHistoryItem = {
 export type PaymentsListResponse = {
   data: PaymentHistoryItem[];
 };
+
+export type ShopConfig = {
+  currency: string;
+  amountIdr: number;
+  idrPerUsd: number;
+  rateLabel: string;
+  usdCredit: number;
+  requestsPerMinute: number;
+  configured: boolean;
+  mockEnabled: boolean;
+  productLabel: string;
+  turnstileEnabled?: boolean;
+  turnstileSiteKey?: string;
+  maxPendingPerIp?: number;
+  maxCheckoutsPerHour?: number;
+};
+
+export type ShopCheckoutResponse = {
+  id: string;
+  orderId: string;
+  claimSecret: string;
+  buyerName: string;
+  amountIdr: number;
+  usdCredit: number;
+  idrPerUsd: number;
+  paymentLinkUrl: string | null;
+  status: string;
+  sumopodPaymentId: string;
+  mock?: boolean;
+  expiresAt: string | null;
+};
+
+export type ShopClaimResponse = {
+  status: "pending" | "ready" | string;
+  apiKey?: string;
+  buyerName?: string;
+  usdCredit?: number;
+  amountIdr?: number;
+};
