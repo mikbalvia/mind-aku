@@ -82,3 +82,28 @@ export const REMEMBER_KEY = "new-clients.apiKey.remember";
 export const LOGGED_OUT_KEY = "new-clients.loggedOut";
 /** sessionStorage key prefix for guest checkout claim secrets: `${prefix}${orderId}` */
 export const GUEST_CLAIM_SECRET_PREFIX = "new-clients.guestClaim.";
+
+/** Public starter credit product shown on home + /beli. */
+export const STARTER_CREDIT = {
+  amountIdr: 100_000,
+  usdCredit: 100,
+  idrPerUsd: 1_000,
+  requestsPerMinute: 20,
+} as const;
+
+/** Static public model list shown on the home credit card (names only). */
+export const PUBLIC_MODEL_NAMES: string[] = [
+  "minimax-m3",
+  "claude-haiku-4.5",
+  "glm-5.2",
+  "gpt-5.6-terra",
+  "claude-opus-5",
+  "gpt-5.6-luna",
+  "deepseek-v4-pro",
+  "claude-opus-4.8",
+  "gpt-5.5",
+  "claude-opus-4-8",
+  "claude-sonnet-5",
+  "deepseek-v4-flash",
+  "gpt-5.6-sol",
+];
