@@ -108,7 +108,11 @@ export function HomePage() {
   const usdCredit = shop?.usdCredit ?? STARTER_CREDIT.usdCredit;
   const idrPerUsd = shop?.idrPerUsd ?? STARTER_CREDIT.idrPerUsd;
   const rpm = shop?.requestsPerMinute ?? STARTER_CREDIT.requestsPerMinute;
-  const models: ShopModelItem[] = shop?.models ?? [];
+  const models: ShopModelItem[] = [...(shop?.models ?? [])].sort((a, b) => {
+    const byName = a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
+    if (byName !== 0) return byName;
+    return (b.pricing?.output ?? Number.NEGATIVE_INFINITY) - (a.pricing?.output ?? Number.NEGATIVE_INFINITY);
+  });
 
   return (
     <div className="relative min-h-screen overflow-hidden text-foreground">

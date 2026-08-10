@@ -45,7 +45,17 @@ export function ModelsPage() {
       setError(null);
       try {
         const response = await fetchModels(apiKey!);
-        if (!cancelled) setModels(response.data ?? []);
+        if (!cancelled) {
+          const sorted = [...(response.data ?? [])].sort((a, b) => {
+            const byName = a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
+            if (byName !== 0) return byName;
+            return (
+              (b.pricing?.output ?? Number.NEGATIVE_INFINITY) -
+              (a.pricing?.output ?? Number.NEGATIVE_INFINITY)
+            );
+          });
+          setModels(sorted);
+        }
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof ApiError ? err.message : "Failed to load models.");
