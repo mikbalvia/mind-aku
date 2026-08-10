@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { ArrowUpRight } from "lucide-react";
 import { ApiError } from "../api/types";
 import { REHYDRATE_ERROR_EVENT } from "../auth/constants";
 import { readRememberedApiKey, useAuth } from "../auth/AuthContext";
@@ -9,7 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COMPANY } from "../lib/company";
+import { STARTER_CREDIT } from "../config";
 import { safeInternalPath } from "../lib/safeUrl";
+
+function formatIdr(value: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export function LoginPage() {
   const { apiKey, login, loading } = useAuth();
@@ -131,6 +141,25 @@ export function LoginPage() {
             {loading ? "Connecting…" : "Masuk & build"}
           </Button>
         </form>
+
+        <div className="rise-in rise-in-delay-4 mx-auto mt-8 max-w-md rounded-xl border border-border bg-card/80 p-5 backdrop-blur-md">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+            Pendaftaran
+          </p>
+          <p className="mt-2 font-display text-lg font-semibold text-foreground">
+            Belum punya API key?
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Daftar dengan Starter credit — bayar{" "}
+            {formatIdr(STARTER_CREDIT.amountIdr)}, dapat ${STARTER_CREDIT.usdCredit} credit dan API
+            key langsung aktif.
+          </p>
+          <Button asChild variant="outline" className="mt-4 h-11 w-full">
+            <Link to="/beli">
+              Daftar / beli credit <ArrowUpRight />
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

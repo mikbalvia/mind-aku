@@ -27,8 +27,22 @@ const features = [
   { icon: Database, label: "Top up", text: "Kelola saldo dan eksperimen dengan tenang." },
 ];
 
+const compatibleTools = [
+  "Visual Studio Code",
+  "Claude Desktop",
+  "Codex Desktop",
+  "Antigravity",
+  "Cursor",
+  "Claude Code",
+  "Codex",
+] as const;
+
 const creditHighlights = [
-  { icon: Code2, label: "Claude Code & Codex", text: "Siap untuk coding agent di terminal." },
+  {
+    icon: Code2,
+    label: "Coding agents & IDEs",
+    text: "VS Code, Cursor, Antigravity, Claude Desktop, Codex Desktop, Claude Code & Codex.",
+  },
   { icon: Brain, label: "Thinking", text: "Mode thinking untuk reasoning yang lebih dalam." },
   { icon: Zap, label: "xhigh / ultra", text: "Weight tinggi untuk workload berat." },
   { icon: Sparkles, label: "RPM 20", text: "Rate limit default per API key baru." },
@@ -166,6 +180,22 @@ export function HomePage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   1 USD = {STARTER_CREDIT.idrPerUsd.toLocaleString("id-ID")} IDR
                 </p>
+
+                <div className="mt-6">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    Compatible with
+                  </p>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {compatibleTools.map((tool) => (
+                      <li
+                        key={tool}
+                        className="rounded-lg border border-border/80 bg-background/40 px-2.5 py-1.5 text-xs font-medium text-foreground"
+                      >
+                        {tool}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">
                   {creditHighlights.map(({ icon: Icon, label, text }) => (
