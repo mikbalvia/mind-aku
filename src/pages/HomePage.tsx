@@ -109,9 +109,11 @@ export function HomePage() {
   const idrPerUsd = shop?.idrPerUsd ?? STARTER_CREDIT.idrPerUsd;
   const rpm = shop?.requestsPerMinute ?? STARTER_CREDIT.requestsPerMinute;
   const models: ShopModelItem[] = [...(shop?.models ?? [])].sort((a, b) => {
-    const byName = a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
-    if (byName !== 0) return byName;
-    return (b.pricing?.output ?? Number.NEGATIVE_INFINITY) - (a.pricing?.output ?? Number.NEGATIVE_INFINITY);
+    const byOutput =
+      (b.pricing?.output ?? Number.NEGATIVE_INFINITY) -
+      (a.pricing?.output ?? Number.NEGATIVE_INFINITY);
+    if (byOutput !== 0) return byOutput;
+    return a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
   });
 
   return (

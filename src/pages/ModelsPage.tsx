@@ -47,12 +47,11 @@ export function ModelsPage() {
         const response = await fetchModels(apiKey!);
         if (!cancelled) {
           const sorted = [...(response.data ?? [])].sort((a, b) => {
-            const byName = a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
-            if (byName !== 0) return byName;
-            return (
+            const byOutput =
               (b.pricing?.output ?? Number.NEGATIVE_INFINITY) -
-              (a.pricing?.output ?? Number.NEGATIVE_INFINITY)
-            );
+              (a.pricing?.output ?? Number.NEGATIVE_INFINITY);
+            if (byOutput !== 0) return byOutput;
+            return a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
           });
           setModels(sorted);
         }
