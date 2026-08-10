@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Atmosphere } from "../components/Atmosphere";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "../lib/company";
-import { AI_BASE_URL, OMNIROUTE_BASE_URL, PUBLIC_WEB_URL } from "../config";
+import { AI_BASE_URL, OMNIROUTE_BASE_URL, PUBLIC_WEB_URL, WHATSAPP_GROUP_URL, WHATSAPP_NUMBER, buildAdminWhatsAppHref, buildWhatsAppGroupHref } from "../config";
 
 type PublicPage = "faq" | "refund" | "terms" | "contact";
 
@@ -31,10 +31,15 @@ const pageCopy = {
 } as const;
 
 function ContactLinks() {
+  const groupHref = buildWhatsAppGroupHref();
+  const adminHref = buildAdminWhatsAppHref();
   return (
     <div className="mt-5 flex flex-wrap gap-3">
       <Button asChild size="sm"><a href={`mailto:${COMPANY.adminEmail}`}><Mail /> Email support</a></Button>
-      <Button asChild size="sm" variant="outline"><a href="https://wa.me/6281990609939" target="_blank" rel="noopener noreferrer"><MessageCircle /> WhatsApp</a></Button>
+      <Button asChild size="sm" variant="outline"><a href={adminHref} target="_blank" rel="noopener noreferrer"><MessageCircle /> Chat admin</a></Button>
+      {groupHref ? (
+        <Button asChild size="sm" variant="outline"><a href={groupHref} target="_blank" rel="noopener noreferrer"><MessageCircle /> Channel pengumuman</a></Button>
+      ) : null}
     </div>
   );
 }
@@ -57,7 +62,10 @@ function Content({ page }: { page: PublicPage }) {
     <h2>Pembayaran dan dukungan</h2>
     <h3>Metode pembayaran apa yang tersedia?</h3><p>Pembayaran dilakukan melalui QRIS atau metode digital lain yang tersedia di halaman pembelian pada saat transaksi.</p>
     <h3>Berapa lama limit ditambahkan setelah bayar?</h3><p>Umumnya dalam beberapa menit setelah pembayaran terkonfirmasi. Jika lebih dari 30 menit belum masuk, hubungi support dengan ID transaksi Anda.</p>
-    <h3>Bagaimana cara menghubungi admin?</h3><p>Email: <a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a>, WhatsApp: <a href="https://wa.me/6281990609939">+62 819-9060-9939</a>.</p>
+    <h3>Bagaimana cara menghubungi admin?</h3><p>Email: <a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a>, WhatsApp admin: <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a>. Untuk tanya jawab, order, bukti transfer, atau klaim promo — gunakan chat admin (bukan grup).</p>
+    <h3>Apa itu channel pengumuman WhatsApp?</h3><p>Channel resmi Mind Aku untuk update model, status layanan, dan promo. Hanya admin yang bisa mengirim pesan. Anggota tidak bisa balas di grup.</p>
+    <h3>Kenapa saya tidak bisa chat di grup?</h3><p>Grup dikunci announcement-only agar tetap bersih dari spam. Untuk bantuan atau klaim promo, hubungi admin via WhatsApp pribadi.</p>
+    {WHATSAPP_GROUP_URL ? <p>Join channel: <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">{WHATSAPP_GROUP_URL}</a></p> : null}
   </>;
 
   if (page === "refund") return <>
@@ -77,8 +85,12 @@ function Content({ page }: { page: PublicPage }) {
 
   return <>
     <p>Untuk pertanyaan, bantuan teknis, pemesanan API Key, perpanjangan paket, atau pengajuan refund, hubungi kami melalui saluran berikut.</p>
-    <div className="my-6 rounded-xl border border-border bg-muted/50 p-5 sm:p-6"><h2 className="!mt-0">Mikbalvia Digital</h2><dl className="space-y-4"><div><dt>Email</dt><dd><a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a></dd></div><div><dt>Nomor telepon / WhatsApp</dt><dd><a href="https://wa.me/6281990609939">+62 819-9060-9939</a></dd></div><div><dt>Alamat usaha</dt><dd>Jl. Haji Kocen No. 19, RT/RW 001/006, Kel. Kalimulya, Kec. Cilodong, Depok, Jawa Barat, Indonesia</dd></div><div><dt>Website layanan</dt><dd><a href={PUBLIC_WEB_URL}>{PUBLIC_WEB_URL}</a></dd></div></dl></div>
-    <h2>Jam respons</h2><p>Pesan melalui WhatsApp dan email biasanya dibalas dalam 1–24 jam pada hari kerja.</p><h2>Sebelum menghubungi</h2><p>Siapkan API Key (boleh disamarkan), ID transaksi jika terkait pembayaran, dan screenshot error agar kami dapat membantu lebih cepat.</p><Button asChild className="mt-3"><a href="https://wa.me/6281990609939?text=Hai%20admin%20Mikbalvia%20Digital%2C%20saya%20ingin%20bertanya%20tentang%20layanan%20Mind%20Aku." target="_blank" rel="noopener noreferrer"><MessageCircle /> Chat via WhatsApp</a></Button>
+    <div className="my-6 rounded-xl border border-border bg-muted/50 p-5 sm:p-6"><h2 className="!mt-0">Mikbalvia Digital</h2><dl className="space-y-4"><div><dt>Email</dt><dd><a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a></dd></div><div><dt>Chat admin (WhatsApp)</dt><dd><a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a> — tanya jawab, order, bukti transfer, klaim promo</dd></div>{WHATSAPP_GROUP_URL ? <div><dt>Channel pengumuman</dt><dd><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">Join grup WhatsApp</a> — hanya admin yang kirim pesan (update &amp; promo)</dd></div> : null}<div><dt>Alamat usaha</dt><dd>Jl. Haji Kocen No. 19, RT/RW 001/006, Kel. Kalimulya, Kec. Cilodong, Depok, Jawa Barat, Indonesia</dd></div><div><dt>Website layanan</dt><dd><a href={PUBLIC_WEB_URL}>{PUBLIC_WEB_URL}</a></dd></div></dl></div>
+    <h2>Jam respons</h2><p>Pesan melalui WhatsApp dan email biasanya dibalas dalam 1–24 jam pada hari kerja.</p><h2>Sebelum menghubungi</h2><p>Siapkan API Key (boleh disamarkan), ID transaksi jika terkait pembayaran, dan screenshot error agar kami dapat membantu lebih cepat.</p>
+    <div className="mt-3 flex flex-wrap gap-3">
+      <Button asChild><a href={buildAdminWhatsAppHref()} target="_blank" rel="noopener noreferrer"><MessageCircle /> Chat via WhatsApp</a></Button>
+      {WHATSAPP_GROUP_URL ? <Button asChild variant="outline"><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle /> Join channel pengumuman</a></Button> : null}
+    </div>
   </>;
 }
 

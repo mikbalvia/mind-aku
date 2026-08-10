@@ -4,6 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { COMPANY } from "../lib/company";
 import { ApiKeySession } from "./ApiKeySession";
 import { VsCodeChatAnnouncementPopup } from "./VsCodeChatAnnouncementPopup";
+import { CommunityJoinModal } from "./CommunityJoinModal";
 import { Atmosphere } from "./Atmosphere";
 import { PageEnter } from "./PageEnter";
 import { Button } from "@/components/ui/button";
@@ -160,6 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <VsCodeChatAnnouncementPopup />
+      <CommunityJoinModal />
     </div>
   );
 }

@@ -3,6 +3,22 @@ export function formatIdrPerUsdRate(idrPerUsd: number): string {
   return `1 USD = ${idrPerUsd.toLocaleString("id-ID")} IDR`;
 }
 
+export function formatIdr(value: number | null | undefined, fractionDigits = 0): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+}
+
+/** Convert USD (e.g. per 1M tokens) to IDR using live payment FX. */
+export function usdToIdr(usd: number | null | undefined, idrPerUsd: number): number | null {
+  if (usd == null || Number.isNaN(usd) || !(idrPerUsd > 0)) return null;
+  return usd * idrPerUsd;
+}
+
 export function formatUsd(value: number | null | undefined, fractionDigits = 2): string {
   if (value == null || Number.isNaN(value)) return "—";
   return new Intl.NumberFormat("en-US", {

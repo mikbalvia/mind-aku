@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   ArrowUpRight,
   Bot,
@@ -16,9 +17,21 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { fetchShopConfig } from "../api/client";
+import { ApiError } from "../api/types";
+import type { ShopConfig, ShopModelItem } from "../api/types";
 import { COMPANY } from "../lib/company";
 import { Atmosphere } from "../components/Atmosphere";
-import { PUBLIC_MODEL_NAMES, STARTER_CREDIT } from "../config";
+import { STARTER_CREDIT } from "../config";
+import { formatIdr, formatIdrPerUsdRate, usdToIdr } from "../lib/format";
 
 const features = [
   { icon: Bot, label: "Models", text: "Satu pintu ke model AI yang siap dipakai." },
@@ -48,15 +61,55 @@ const creditHighlights = [
   { icon: Sparkles, label: "RPM 20", text: "Rate limit default per API key baru." },
 ];
 
-function formatIdr(value: number): string {
-  return new Intl.NumberFormat("id-ID", {
+function formatTokenPriceIdr(usd: number | null | undefined, idrPerUsd: number): string {
+  const idr = usdToIdr(usd, idrPerUsd);
+  if (idr == null) return "—";
+  // Keep whole rupiah for typical rates; show decimals only for sub-rupiah edge cases.
+  const digits = idr >= 1 || idr === 0 ? 0 : 2;
+  return formatIdr(idr, digits);
+}
+
+function formatUsdCredit(value: number): string {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
+    currency: "USD",
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
 export function HomePage() {
+  const [shop, setShop] = useState<ShopConfig | null>(null);
+  const [shopLoading, setShopLoading] = useState(true);
+  const [shopError, setShopError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setShopLoading(true);
+      setShopError(null);
+      try {
+        const config = await fetchShopConfig();
+        if (!cancelled) setShop(config);
+      } catch (err) {
+        if (!cancelled) {
+          setShopError(err instanceof ApiError ? err.message : "Gagal memuat katalog model.");
+        }
+      } finally {
+        if (!cancelled) setShopLoading(false);
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const amountIdr = shop?.amountIdr ?? STARTER_CREDIT.amountIdr;
+  const usdCredit = shop?.usdCredit ?? STARTER_CREDIT.usdCredit;
+  const idrPerUsd = shop?.idrPerUsd ?? STARTER_CREDIT.idrPerUsd;
+  const rpm = shop?.requestsPerMinute ?? STARTER_CREDIT.requestsPerMinute;
+  const models: ShopModelItem[] = shop?.models ?? [];
+
   return (
     <div className="relative min-h-screen overflow-hidden text-foreground">
       <Atmosphere />
@@ -160,11 +213,11 @@ export function HomePage() {
               <p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">Starter credit</p>
               <h2 className="mt-2 font-display text-2xl font-bold md:text-3xl">Beli credit, langsung dapat API key.</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Rate tetap 1 USD = {STARTER_CREDIT.idrPerUsd.toLocaleString("id-ID")} IDR. Bayar{" "}
-                {formatIdr(STARTER_CREDIT.amountIdr)}, dapat ${STARTER_CREDIT.usdCredit} credit di API key.
+                Rate {formatIdrPerUsdRate(idrPerUsd)}. Bayar {formatIdr(amountIdr)}, dapat{" "}
+                {formatUsdCredit(usdCredit)} credit di API key.
               </p>
             </div>
-            <p className="font-mono text-xs text-muted-foreground">PAYG · QRIS · RPM {STARTER_CREDIT.requestsPerMinute}</p>
+            <p className="font-mono text-xs text-muted-foreground">PAYG · QRIS · RPM {rpm}</p>
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card/70 shadow-[0_0_60px_rgba(255,90,31,.08)] backdrop-blur-md">
@@ -174,12 +227,10 @@ export function HomePage() {
                   Paket tunggal
                 </p>
                 <p className="mt-3 font-display text-5xl font-extrabold tracking-tight text-foreground">
-                  {formatIdr(STARTER_CREDIT.amountIdr)}
+                  {formatIdr(amountIdr)}
                 </p>
-                <p className="mt-2 text-lg text-primary">= ${STARTER_CREDIT.usdCredit} credit</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  1 USD = {STARTER_CREDIT.idrPerUsd.toLocaleString("id-ID")} IDR
-                </p>
+                <p className="mt-2 text-lg text-primary">= {formatUsdCredit(usdCredit)} credit</p>
+                <p className="mt-1 text-sm text-muted-foreground">{formatIdrPerUsdRate(idrPerUsd)}</p>
 
                 <div className="mt-6">
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
@@ -223,23 +274,61 @@ export function HomePage() {
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       Models
                     </p>
-                    <p className="mt-1 text-sm text-muted-foreground">Model yang tersedia di paket ini</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Harga input / output per 1M tokens (IDR)
+                    </p>
                   </div>
                   <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    {PUBLIC_MODEL_NAMES.length} models
+                    {shopLoading ? "…" : `${models.length} models`}
                   </span>
                 </div>
 
-                <ul className="grid max-h-[420px] gap-2 overflow-auto rounded-xl border border-border p-3 sm:grid-cols-2 sm:p-4">
-                  {PUBLIC_MODEL_NAMES.map((name) => (
-                    <li
-                      key={name}
-                      className="rounded-lg border border-border/70 bg-background/40 px-3 py-2.5 font-mono text-xs text-foreground sm:text-sm"
-                    >
-                      {name}
-                    </li>
-                  ))}
-                </ul>
+                {shopError ? (
+                  <p className="rounded-xl border border-border bg-background/40 px-4 py-6 text-sm text-muted-foreground">
+                    {shopError}
+                  </p>
+                ) : null}
+
+                {shopLoading && !shopError ? (
+                  <p className="rounded-xl border border-border bg-background/40 px-4 py-6 text-sm text-muted-foreground">
+                    Memuat katalog model…
+                  </p>
+                ) : null}
+
+                {!shopLoading && !shopError && models.length === 0 ? (
+                  <p className="rounded-xl border border-border bg-background/40 px-4 py-6 text-sm text-muted-foreground">
+                    Belum ada model yang tersedia di paket ini.
+                  </p>
+                ) : null}
+
+                {!shopLoading && models.length > 0 ? (
+                  <div className="max-h-[420px] overflow-auto rounded-xl border border-border bg-background/40">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Model</TableHead>
+                          <TableHead className="text-right">Input</TableHead>
+                          <TableHead className="text-right">Output</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {models.map((model) => (
+                          <TableRow key={model.id}>
+                            <TableCell className="font-mono text-xs sm:text-sm">
+                              {model.id}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-xs sm:text-sm">
+                              {formatTokenPriceIdr(model.pricing?.input, idrPerUsd)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-xs sm:text-sm">
+                              {formatTokenPriceIdr(model.pricing?.output, idrPerUsd)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

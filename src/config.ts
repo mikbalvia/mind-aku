@@ -18,6 +18,68 @@ export const WHATSAPP_MESSAGE =
   (import.meta.env.VITE_WHATSAPP_MESSAGE as string | undefined) ||
   "Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.";
 
+/** Announcement-only WhatsApp group invite (`https://chat.whatsapp.com/...`). Empty = hide join UI. */
+export const WHATSAPP_GROUP_URL = (() => {
+  const raw = (import.meta.env.VITE_WHATSAPP_GROUP_URL as string | undefined)?.trim() || "";
+  if (!raw) return "";
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") return "";
+    const host = parsed.hostname.toLowerCase();
+    if (host !== "chat.whatsapp.com") return "";
+    return raw;
+  } catch {
+    return "";
+  }
+})();
+
+export type CommunityCampaign = {
+  id: string;
+  teaser: string;
+  endsAt?: string;
+  claimViaAdmin: true;
+};
+
+/**
+ * Optional promo teaser for the announcement channel.
+ * Set via env; leave unset for no active campaign.
+ */
+function readCommunityCampaign(): CommunityCampaign | null {
+  const id = (import.meta.env.VITE_COMMUNITY_CAMPAIGN_ID as string | undefined)?.trim();
+  const teaser = (import.meta.env.VITE_COMMUNITY_CAMPAIGN_TEASER as string | undefined)?.trim();
+  if (!id || !teaser) return null;
+  const endsAt = (import.meta.env.VITE_COMMUNITY_CAMPAIGN_ENDS_AT as string | undefined)?.trim();
+  return {
+    id,
+    teaser,
+    endsAt: endsAt || undefined,
+    claimViaAdmin: true,
+  };
+}
+
+/** Active campaign, or null if unset / expired. */
+export function getActiveCommunityCampaign(): CommunityCampaign | null {
+  const campaign = readCommunityCampaign();
+  if (!campaign) return null;
+  if (campaign.endsAt) {
+    const end = Date.parse(campaign.endsAt);
+    if (!Number.isNaN(end) && Date.now() > end) return null;
+  }
+  return campaign;
+}
+
+export function buildWhatsAppGroupHref(): string | null {
+  return WHATSAPP_GROUP_URL || null;
+}
+
+export function buildAdminWhatsAppHref(message?: string): string {
+  const text = message?.trim() || WHATSAPP_MESSAGE;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
+
+export const COMMUNITY_CLAIM_WHATSAPP_MESSAGE =
+  "Hai admin Mikbalvia Digital, saya ingin klaim promo dari channel pengumuman Mind Aku.";
+
 /** Manual bank transfer for subscription plans (not SumoPod). */
 export const BCA_TRANSFER = {
   bank: "BCA",
@@ -83,27 +145,13 @@ export const LOGGED_OUT_KEY = "new-clients.loggedOut";
 /** sessionStorage key prefix for guest checkout claim secrets: `${prefix}${orderId}` */
 export const GUEST_CLAIM_SECRET_PREFIX = "new-clients.guestClaim.";
 
-/** Public starter credit product shown on home + /beli. */
+/**
+ * Fallback starter credit product when `/api/v1/shop/config` is unavailable.
+ * Live home/beli values come from shop config (amount, USD credit, FX rate).
+ */
 export const STARTER_CREDIT = {
   amountIdr: 100_000,
   usdCredit: 100,
   idrPerUsd: 1_000,
   requestsPerMinute: 20,
 } as const;
-
-/** Static public model list shown on the home credit card (names only). */
-export const PUBLIC_MODEL_NAMES: string[] = [
-  "minimax-m3",
-  "claude-haiku-4.5",
-  "glm-5.2",
-  "gpt-5.6-terra",
-  "claude-opus-5",
-  "gpt-5.6-luna",
-  "deepseek-v4-pro",
-  "claude-opus-4.8",
-  "gpt-5.5",
-  "claude-opus-4-8",
-  "claude-sonnet-5",
-  "deepseek-v4-flash",
-  "gpt-5.6-sol",
-];

@@ -4,6 +4,7 @@ import { claimShopOrder } from "../api/client";
 import { ApiError } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { Atmosphere } from "../components/Atmosphere";
+import { CommunityJoinSoftCta } from "../components/CommunityBanner";
 import { ErrorBanner } from "../components/page-chrome";
 import { clearGuestClaimSecret, readGuestClaimSecret } from "../lib/guestClaim";
 import { Button } from "@/components/ui/button";
@@ -130,6 +131,7 @@ export function BuySuccessPage() {
             <Button type="button" className="w-full" onClick={() => void onCopy()}>
               {copied ? "Tersalin" : "Copy API key"}
             </Button>
+            <CommunityJoinSoftCta />
             <p className="text-center text-xs text-muted-foreground">
               Mengarahkan ke console…
             </p>

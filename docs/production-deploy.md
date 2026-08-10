@@ -40,6 +40,12 @@ VITE_AI_BASE_URL=https://vip-api.mind-aku.my.id/v1
 VITE_PUBLIC_WEB_URL=https://mind-aku.my.id
 VITE_WHATSAPP_NUMBER=6281990609939
 VITE_WHATSAPP_MESSAGE=Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.
+# Announcement-only group invite (hide join UI if empty)
+# VITE_WHATSAPP_GROUP_URL=https://chat.whatsapp.com/XXXX
+# Optional promo teaser — change CAMPAIGN_ID to re-prompt join modal
+# VITE_COMMUNITY_CAMPAIGN_ID=aug2026-free-starter
+# VITE_COMMUNITY_CAMPAIGN_TEASER=Free starter API key — klaim via chat admin
+# VITE_COMMUNITY_CAMPAIGN_ENDS_AT=2026-08-31T23:59:59+07:00
 ```
 
 Setelah mengubah `.env`, wajib **`npm run build`** ulang agar perubahan terbawa ke `dist/`.

@@ -5,6 +5,7 @@ import { ApiError } from "../api/types";
 import type { CallLog, MeStatus, PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
+import { CommunityBanner } from "../components/CommunityBanner";
 import { SummaryCard } from "../components/metrics";
 import { UsageLimitsPanel } from "../components/UsageLimitsPanel";
 import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
@@ -78,6 +79,8 @@ export function DashboardPage() {
 
       {!loading && !error ? (
         <>
+          <CommunityBanner className="mb-6 scale-in" />
+
           <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
 
           <UsageLimitsPanel

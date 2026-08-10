@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Atmosphere } from "../components/Atmosphere";
+import { CommunityJoinSoftCta } from "../components/CommunityBanner";
 import { Button } from "@/components/ui/button";
 
 export function PaymentSuccessPage() {
@@ -12,7 +13,8 @@ export function PaymentSuccessPage() {
         <p className="rise-in rise-in-delay-1 mt-6 text-sm text-muted-foreground">
           Kalau transfer sukses, saldo pay as you go biasanya update sebentar setelah webhook tiba.
         </p>
-        <Button asChild className="rise-in rise-in-delay-2 mt-8 h-11 px-8">
+        <CommunityJoinSoftCta className="rise-in rise-in-delay-2 mt-6" />
+        <Button asChild className="rise-in rise-in-delay-3 mt-8 h-11 px-8">
           <Link to="/payments">Kembali ke top up</Link>
         </Button>
       </div>

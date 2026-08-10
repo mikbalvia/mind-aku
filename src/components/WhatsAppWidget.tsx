@@ -1,10 +1,19 @@
-import { MessageCircle, X } from "lucide-react";
 import { useState } from "react";
-import { WHATSAPP_MESSAGE, WHATSAPP_NUMBER } from "../config";
+import { MessageCircle, X } from "lucide-react";
+import {
+  buildAdminWhatsAppHref,
+  getActiveCommunityCampaign,
+  WHATSAPP_MESSAGE,
+} from "../config";
 
 export function WhatsAppWidget() {
   const [open, setOpen] = useState(true);
-  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const campaign = getActiveCommunityCampaign();
+  const href = buildAdminWhatsAppHref(
+    campaign
+      ? "Hai admin Mikbalvia Digital, saya ingin klaim promo / bertanya tentang layanan Mind Aku."
+      : WHATSAPP_MESSAGE
+  );
 
   return (
     <div className="whatsapp-widget" aria-live="polite">
@@ -18,9 +27,13 @@ export function WhatsAppWidget() {
           >
             <X className="size-4" />
           </button>
-          <p className="whatsapp-widget__title">Butuh bantuan?</p>
+          <p className="whatsapp-widget__title">
+            {campaign ? "Klaim promo?" : "Butuh bantuan?"}
+          </p>
           <p className="whatsapp-widget__text">
-            Ada yang ingin ditanyakan, order API, atau perpanjang API? Hubungi admin via WhatsApp.
+            {campaign
+              ? "Chat admin untuk klaim promo, order API, atau pertanyaan. Channel pengumuman khusus broadcast admin."
+              : "Ada yang ingin ditanyakan, order API, atau perpanjang API? Hubungi admin via WhatsApp."}
           </p>
           <a
             href={href}

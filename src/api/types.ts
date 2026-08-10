@@ -238,6 +238,12 @@ export type PaymentsListResponse = {
   data: PaymentHistoryItem[];
 };
 
+export type ShopModelItem = {
+  id: string;
+  object: string;
+  pricing?: Pick<ModelPricing, "input" | "output" | "unit"> | null;
+};
+
 export type ShopConfig = {
   currency: string;
   amountIdr: number;
@@ -252,6 +258,8 @@ export type ShopConfig = {
   turnstileSiteKey?: string;
   maxPendingPerIp?: number;
   maxCheckoutsPerHour?: number;
+  /** Models available to starter credit keys (default group), with USD/1M pricing. */
+  models?: ShopModelItem[];
 };
 
 export type ShopCheckoutResponse = {

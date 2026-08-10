@@ -29,6 +29,7 @@ export function VsCodeChatAnnouncementPopup() {
       // ignore
     }
     setOpen(false);
+    window.dispatchEvent(new Event("new-clients:announcement-dismissed"));
   }
 
   if (!open) return null;
