@@ -4,22 +4,24 @@ Customer portal (`new-clients-final`) referral program bound to **API keys** (no
 
 ## Economics
 
-| Party | On each referred paid shop/top-up |
-|-------|-----------------------------------|
-| Buyer | RemainQuota += paid + **10%** bonus (e.g. pay $50 → credit $55) |
-| Affiliate | AffBalance += **10%** of paid (withdrawable, not auto RemainQuota) |
+| Source | Buyer | Affiliate |
+|--------|-------|-----------|
+| Guest shop (`GKP-` / `guest_purchase`) | RemainQuota += paid + **10%** bonus (e.g. pay $100 → credit $110) | AffBalance += **10%** of paid |
+| Portal top-up (`TKP-` / `token_payment`) | RemainQuota += **exact paid** only | AffBalance += **10%** of paid |
 
-Without a valid referral: buyer gets exact paid credit (unchanged).
+Without a valid referral: buyer gets exact paid credit (unchanged). Affiliate commission still requires a valid referrer.
 
 Eligible: guest shop (`GKP-`) + portal top-up (`TKP-`). Subscription BCA is out of scope.
+
+`AFFILIATE_BUYER_BONUS_RATE` applies to guest shop only. Commission rate applies to both.
 
 ## Attribution
 
 1. Affiliate enables program → unique `affCode`
 2. Share `/beli?ref=CODE` (portal stores first-touch in `localStorage` for `AFFILIATE_COOKIE_DAYS`, default 30)
 3. Checkout/top-up sends `refCode`; order stores `referrer_token_id`
-4. On SumoPod webhook complete: settle bonus + commission in the same DB transaction
-5. Buyer sticky `referred_by_token_id` set on first paid attribution (later purchases keep the same affiliate)
+4. On SumoPod webhook complete: settle in the same DB transaction (GKP: buyer bonus + commission; TKP: commission only)
+5. Buyer sticky `referred_by_token_id` set on first paid attribution (later top-ups keep the same affiliate commission)
 
 Self-referral is rejected.
 

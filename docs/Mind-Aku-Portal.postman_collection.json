@@ -546,7 +546,7 @@
     },
     {
       "name": "5. Affiliate",
-      "description": "Program referral per API key. Komisi 10% ke AffBalance; pembeli +10% RemainQuota.",
+      "description": "Program referral per API key. Komisi 10% ke AffBalance. Bonus pembeli +10% RemainQuota hanya di guest shop (GKP); top-up (TKP) hanya komisi affiliate.",
       "item": [
         {
           "name": "GET Affiliate Summary",

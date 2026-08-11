@@ -146,7 +146,7 @@ export function AffiliatePage() {
     <div className="space-y-6">
       <PageHeader
         title="Affiliate"
-        description={`Komisi ${(summary.commissionRate * 100).toFixed(0)}% per pembelian referred. Pembeli dapat bonus ${(summary.buyerBonusRate * 100).toFixed(0)}% credit.`}
+        description={`Komisi ${(summary.commissionRate * 100).toFixed(0)}% per pembelian referred. Bonus ${(summary.buyerBonusRate * 100).toFixed(0)}% credit hanya di pembelian shop; top-up hanya memberi komisi affiliate.`}
       />
       {error ? <ErrorBanner message={error} /> : null}
       {message ? (

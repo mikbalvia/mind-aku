@@ -70,9 +70,7 @@ export function PaymentsPage() {
   const previewIdr =
     config && activeUsd != null && activeUsd > 0 ? Math.ceil(activeUsd * config.idrPerUsd) : null;
 
-  const creditMultiplier = config?.affiliate?.expectedCreditMultiplier ?? 1;
-  const previewCreditUsd =
-    activeUsd != null && activeUsd > 0 ? activeUsd * creditMultiplier : null;
+  const previewCreditUsd = activeUsd != null && activeUsd > 0 ? activeUsd : null;
 
   const mockMode = Boolean(config?.mockEnabled);
 
@@ -266,7 +264,6 @@ export function PaymentsPage() {
                       <p className="mt-1 text-sm text-muted-foreground">
                         Credits {previewCreditUsd != null ? formatUsd(previewCreditUsd) : "—"} ke saldo
                         pay as you go
-                        {creditMultiplier > 1 ? ` (termasuk bonus referral)` : ""}
                       </p>
                     </div>
                     <Button
