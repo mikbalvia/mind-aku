@@ -9,6 +9,9 @@ import { LogsPage } from "./pages/LogsPage";
 import { PaymentsPage } from "./pages/PaymentsPage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
 import { SetupPage } from "./pages/SetupPage";
+import { AffiliatePage } from "./pages/AffiliatePage";
+import { AdminLoginPage } from "./pages/AdminLoginPage";
+import { AdminWithdrawalsPage } from "./pages/AdminWithdrawalsPage";
 import { PaymentCancelPage, PaymentSuccessPage } from "./pages/PaymentResultPages";
 import { BuyPage } from "./pages/BuyPage";
 import { BuyCancelPage, BuySuccessPage } from "./pages/BuyResultPages";
@@ -31,6 +34,8 @@ export default function App() {
       <Route path="/kontak" element={<PublicInfoPage page="contact" />} />
       <Route path="/payments/success" element={<PaymentSuccessPage />} />
       <Route path="/payments/cancel" element={<PaymentCancelPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/console" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
@@ -40,6 +45,7 @@ export default function App() {
         <Route path="/logs" element={<LogsPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/affiliate" element={<AffiliatePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

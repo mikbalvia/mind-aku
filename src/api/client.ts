@@ -12,6 +12,9 @@ import {
   type ShopCheckoutResponse,
   type ShopClaimResponse,
   type ShopConfig,
+  type AffiliateSummary,
+  type AffiliateLedgerItem,
+  type AffiliateWithdrawalItem,
 } from "./types";
 
 async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
@@ -141,6 +144,7 @@ export function createPayment(
     successReturnUrl?: string;
     cancelReturnUrl?: string;
     paymentMethodTypeCode?: string;
+    refCode?: string;
   }
 ): Promise<PaymentCreateResponse> {
   return request<PaymentCreateResponse>("/api/v1/me/payments", apiKey, {
@@ -177,6 +181,7 @@ export function createShopCheckout(body: {
   cancelReturnUrl?: string;
   paymentMethodTypeCode?: string;
   turnstileToken?: string;
+  refCode?: string;
 }): Promise<ShopCheckoutResponse> {
   return requestPublic<ShopCheckoutResponse>("/api/v1/shop/checkout", {
     method: "POST",
@@ -230,4 +235,98 @@ export function simulateShopOrder(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ claimSecret }),
   });
+}
+
+export function fetchAffiliate(apiKey: string): Promise<AffiliateSummary> {
+  return request<AffiliateSummary>("/api/v1/me/affiliate", apiKey);
+}
+
+export function enableAffiliate(apiKey: string): Promise<AffiliateSummary> {
+  return request<AffiliateSummary>("/api/v1/me/affiliate/enable", apiKey, { method: "POST" });
+}
+
+export function fetchAffiliateLedger(
+  apiKey: string
+): Promise<{ data: AffiliateLedgerItem[]; total: number }> {
+  return request("/api/v1/me/affiliate/ledger", apiKey);
+}
+
+export function fetchAffiliateWithdrawals(
+  apiKey: string
+): Promise<{ data: AffiliateWithdrawalItem[]; total: number }> {
+  return request("/api/v1/me/affiliate/withdrawals", apiKey);
+}
+
+export function createAffiliateWithdrawal(
+  apiKey: string,
+  body: {
+    usdAmount: number;
+    bankName: string;
+    bankAccount: string;
+    accountName: string;
+    note?: string;
+  }
+): Promise<AffiliateWithdrawalItem> {
+  return request("/api/v1/me/affiliate/withdrawals", apiKey, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+async function requestAdmin<T>(path: string, adminKey: string, init?: RequestInit): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${OMNIROUTE_BASE_URL}${path}`, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "X-Portal-Admin-Key": adminKey,
+        ...(init?.headers ?? {}),
+      },
+    });
+  } catch {
+    throw new ApiError("Unable to reach Mind Aku. Check the base URL and CORS settings.", 0, "network");
+  }
+  if (response.status === 401) {
+    throw new ApiError("Invalid admin key.", 401, "unauthorized");
+  }
+  if (response.status === 404) {
+    throw new ApiError("Admin API is not configured.", 404, "unknown");
+  }
+  if (!response.ok) {
+    const message = await parseErrorMessage(response, `Request failed (${response.status})`);
+    throw new ApiError(message, response.status, "unknown");
+  }
+  return (await response.json()) as T;
+}
+
+export function fetchAdminWithdrawals(
+  adminKey: string,
+  status?: string
+): Promise<{ data: AffiliateWithdrawalItem[]; total: number }> {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+  return requestAdmin(`/api/v1/admin/affiliate/withdrawals${qs}`, adminKey);
+}
+
+export function patchAdminWithdrawal(
+  adminKey: string,
+  id: number,
+  body: { status: string; adminNote?: string }
+): Promise<AffiliateWithdrawalItem> {
+  return requestAdmin(`/api/v1/admin/affiliate/withdrawals/${id}`, adminKey, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+export function fetchAdminAffiliateStats(adminKey: string): Promise<{
+  unpaidLiabilityUsd: number;
+  pendingWithdrawals: number;
+  commissionRate: number;
+  buyerBonusRate: number;
+}> {
+  return requestAdmin("/api/v1/admin/affiliate/stats", adminKey);
 }

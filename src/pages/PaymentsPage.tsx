@@ -7,6 +7,7 @@ import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components
 import { COMPANY } from "../lib/company";
 import { formatIdrPerUsdRate } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
+import { captureReferralFromUrl, getStoredReferralCode } from "../lib/referral";
 import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,10 @@ export function PaymentsPage() {
   const previewIdr =
     config && activeUsd != null && activeUsd > 0 ? Math.ceil(activeUsd * config.idrPerUsd) : null;
 
+  const creditMultiplier = config?.affiliate?.expectedCreditMultiplier ?? 1;
+  const previewCreditUsd =
+    activeUsd != null && activeUsd > 0 ? activeUsd * creditMultiplier : null;
+
   const mockMode = Boolean(config?.mockEnabled);
 
   const load = useCallback(async () => {
@@ -91,6 +96,11 @@ export function PaymentsPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const days = config?.affiliate?.cookieDays ?? 30;
+    captureReferralFromUrl(days);
+  }, [config?.affiliate?.cookieDays]);
+
   async function onTopUp() {
     if (!apiKey || activeUsd == null || activeUsd < 1) {
       setError("Choose a valid USD amount (minimum $1).");
@@ -101,11 +111,16 @@ export function PaymentsPage() {
     setSuccessMessage(null);
     try {
       const origin = window.location.origin;
+      const refCode =
+        config?.affiliate?.enabled && !config.affiliate.hasReferrer
+          ? getStoredReferralCode() ?? undefined
+          : undefined;
       const payment = await createPayment(apiKey, {
         usdAmount: activeUsd,
         successReturnUrl: `${origin}/payments/success`,
         cancelReturnUrl: `${origin}/payments/cancel`,
         paymentMethodTypeCode: "QRIS",
+        refCode,
       });
 
       if (mockMode || payment.mock || !payment.paymentLinkUrl) {
@@ -249,7 +264,9 @@ export function PaymentsPage() {
                         {previewIdr != null ? formatIdr(previewIdr) : "—"}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Credits {activeUsd != null ? formatUsd(activeUsd) : "—"} ke saldo pay as you go
+                        Credits {previewCreditUsd != null ? formatUsd(previewCreditUsd) : "—"} ke saldo
+                        pay as you go
+                        {creditMultiplier > 1 ? ` (termasuk bonus referral)` : ""}
                       </p>
                     </div>
                     <Button

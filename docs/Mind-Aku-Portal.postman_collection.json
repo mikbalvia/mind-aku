@@ -1,0 +1,734 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-mindaku-portal",
+    "name": "Mind Aku Portal (new-clients-final)",
+    "description": "API yang dipakai `new-clients-final`:\n\n1. **Shop** — beli starter → create API key di bawah Root User\n2. **Portal** — status, models, logs, top-up USD (auth Bearer API key)\n\nAlur lokal (PAYMENT_MOCK=true):\n1. Shop → Config\n2. Shop → Checkout\n3. Shop → Simulate order\n4. Shop → Claim → simpan `apiKey` ke environment\n5. Portal → Status / Logs / Top up",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "apiKey",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "claimSecret",
+      "value": ""
+    },
+    {
+      "key": "paymentId",
+      "value": ""
+    },
+    {
+      "key": "logId",
+      "value": ""
+    },
+    {
+      "key": "buyerName",
+      "value": "Postman Test Buyer"
+    },
+    {
+      "key": "usdAmount",
+      "value": "10"
+    },
+    {
+      "key": "refCode",
+      "value": ""
+    },
+    {
+      "key": "portalAdminKey",
+      "value": ""
+    },
+    {
+      "key": "withdrawalId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Shop — Create API Key (Root User)",
+      "description": "Public endpoints. Setelah bayar (atau simulate mock), claim sekali untuk dapat API key. Key di-create di bawah Root User.",
+      "item": [
+        {
+          "name": "GET Shop Config",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shop/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shop", "config"]
+            },
+            "description": "Harga starter (IDR), kredit USD, rate FX, daftar model, flag mock/turnstile."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Shop Checkout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.orderId) pm.collectionVariables.set('orderId', body.orderId);",
+                  "  if (body.claimSecret) pm.collectionVariables.set('claimSecret', body.claimSecret);",
+                  "  console.log('Saved orderId + claimSecret. mock=', body.mock);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{buyerName}}\",\n  \"successReturnUrl\": \"{{baseUrl}}/payments/success\",\n  \"cancelReturnUrl\": \"{{baseUrl}}/payments/cancel\",\n  \"paymentMethodTypeCode\": \"QRIS\",\n  \"refCode\": \"{{refCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shop/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shop", "checkout"]
+            },
+            "description": "Buat order guest purchase. Optional `refCode` untuk referral. Response menyimpan `orderId` + `claimSecret` ke collection variables.\n\nJika Turnstile aktif, tambahkan field `turnstileToken`."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Shop Simulate (mock only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimSecret\": \"{{claimSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shop/orders/{{orderId}}/simulate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shop", "orders", "{{orderId}}", "simulate"]
+            },
+            "description": "Hanya jalan jika `PAYMENT_MOCK=true`. Menyelesaikan pembayaran & provision API key di bawah Root User."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Shop Claim API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.apiKey) {",
+                  "    pm.collectionVariables.set('apiKey', body.apiKey);",
+                  "    console.log('API key claimed and saved to collection variable apiKey');",
+                  "  }",
+                  "} else if (pm.response.code === 202) {",
+                  "  console.log('Still pending — wait for webhook/simulate then claim again');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"claimSecret\": \"{{claimSecret}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/shop/claim",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "shop", "claim"]
+            },
+            "description": "Ambil API key **sekali**. Status:\n- `200` ready → `apiKey` tersimpan ke variable\n- `202` pending (belum paid)\n- `409` sudah di-claim"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Portal — Auth by API Key",
+      "description": "Semua request di folder ini butuh `Authorization: Bearer {{apiKey}}`.",
+      "item": [
+        {
+          "name": "GET Status (login check)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "status"]
+            },
+            "description": "Validasi API key + usage summary (sama seperti login di portal)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Models",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/models",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "models"]
+            },
+            "description": "Daftar model yang boleh dipakai key ini."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.data && body.data.length > 0 && body.data[0].id) {",
+                  "    pm.collectionVariables.set('logId', body.data[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/logs?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "logs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "status",
+                  "value": "ok",
+                  "disabled": true
+                },
+                {
+                  "key": "model",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Log request untuk API key yang dipakai auth. Query opsional: `status` (ok|error), `model`, `search`."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Log Detail",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/logs/{{logId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "logs", "{{logId}}"]
+            },
+            "description": "Detail satu log. `logId` diisi otomatis dari GET Logs."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Portal — Top up USD",
+      "description": "Top-up kredit USD ke API key yang sedang dipakai (owner key = Root User).",
+      "item": [
+        {
+          "name": "GET Payments Config",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/payments/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "payments", "config"]
+            },
+            "description": "Rate IDR/USD, paket top-up, saldo payg, flag mock."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Payments History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "payments"]
+            },
+            "description": "Riwayat top-up untuk API key ini."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Top-up Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.id) pm.collectionVariables.set('paymentId', body.id);",
+                  "  else if (body.orderId) pm.collectionVariables.set('paymentId', body.orderId);",
+                  "  console.log('paymentId=', pm.collectionVariables.get('paymentId'), 'mock=', body.mock);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usdAmount\": {{usdAmount}},\n  \"successReturnUrl\": \"http://localhost:5173/payments/success\",\n  \"cancelReturnUrl\": \"http://localhost:5173/payments/cancel\",\n  \"paymentMethodTypeCode\": \"QRIS\",\n  \"refCode\": \"{{refCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "payments"]
+            },
+            "description": "Buat pembayaran top-up USD. Optional `refCode` jika key belum punya sticky referrer. Backend konversi ke IDR via SumoPod.\n\nUbah `usdAmount` di collection variables."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Simulate Top-up (mock only)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/payments/{{paymentId}}/simulate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "payments", "{{paymentId}}", "simulate"]
+            },
+            "description": "Hanya jika `PAYMENT_MOCK=true`. Kredit USD ke RemainQuota API key."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. AI Relay (opsional)",
+      "item": [
+        {
+          "name": "POST Chat Completions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiKey}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Hello from Postman\" }\n  ],\n  \"stream\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/chat/completions",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "chat", "completions"]
+            },
+            "description": "Relay OpenAI-compatible. Setelah sukses, cek ulang GET Logs."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Affiliate",
+      "description": "Program referral per API key. Komisi 10% ke AffBalance; pembeli +10% RemainQuota.",
+      "item": [
+        {
+          "name": "GET Affiliate Summary",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Enable Affiliate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.affCode) pm.collectionVariables.set('refCode', body.affCode);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate", "enable"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Affiliate Ledger",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate/ledger",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate", "ledger"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET My Withdrawals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate/withdrawals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate", "withdrawals"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Request Withdrawal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.id) pm.collectionVariables.set('withdrawalId', String(body.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usdAmount\": 10,\n  \"bankName\": \"BCA\",\n  \"bankAccount\": \"1234567890\",\n  \"accountName\": \"Test Affiliate\",\n  \"note\": \"Postman withdraw\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate/withdrawals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate", "withdrawals"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Admin — Affiliate Withdrawals",
+      "description": "Header X-Portal-Admin-Key = PORTAL_ADMIN_KEY. Tanpa key → 404.",
+      "item": [
+        {
+          "name": "GET Admin Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Portal-Admin-Key", "value": "{{portalAdminKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/affiliate/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "affiliate", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Admin Withdrawals",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Portal-Admin-Key", "value": "{{portalAdminKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/affiliate/withdrawals?status=requested",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "affiliate", "withdrawals"],
+              "query": [{ "key": "status", "value": "requested" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH Mark Withdrawal Paid",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Portal-Admin-Key", "value": "{{portalAdminKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"paid\",\n  \"adminNote\": \"Transferred via BCA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/affiliate/withdrawals/{{withdrawalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "affiliate", "withdrawals", "{{withdrawalId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

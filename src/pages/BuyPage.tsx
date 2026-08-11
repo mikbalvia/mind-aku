@@ -7,6 +7,7 @@ import { Atmosphere } from "../components/Atmosphere";
 import { Turnstile } from "../components/Turnstile";
 import { ErrorBanner, LoadingBlock } from "../components/page-chrome";
 import { clearGuestClaimSecret, storeGuestClaimSecret } from "../lib/guestClaim";
+import { captureReferralFromUrl, getStoredReferralCode } from "../lib/referral";
 import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
 import { COMPANY } from "../lib/company";
 import { Button } from "@/components/ui/button";
@@ -37,12 +38,16 @@ export function BuyPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refCode, setRefCode] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setConfig(await fetchShopConfig());
+      const cfg = await fetchShopConfig();
+      setConfig(cfg);
+      const days = cfg.affiliateCookieDays ?? 30;
+      setRefCode(captureReferralFromUrl(days) ?? getStoredReferralCode());
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Gagal memuat produk.");
     } finally {
@@ -82,6 +87,7 @@ export function BuyPage() {
         cancelReturnUrl: `${origin}/beli/cancel`,
         paymentMethodTypeCode: "QRIS",
         turnstileToken: turnstileToken ?? undefined,
+        refCode: refCode ?? undefined,
       });
 
       storeGuestClaimSecret(checkout.orderId, checkout.claimSecret);
@@ -146,6 +152,13 @@ export function BuyPage() {
                 <p className="mt-2 text-sm text-muted-foreground">
                   Kredit ≈ {formatUsd(config.usdCredit)} · RPM {config.requestsPerMinute} · {config.rateLabel}
                 </p>
+                {config.affiliateEnabled && refCode ? (
+                  <p className="mt-3 rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">
+                    Referral aktif ({refCode}): Anda dapat ≈{" "}
+                    {formatUsd(config.usdCredit * (1 + (config.buyerBonusRate ?? 0.1)))} credit
+                    (bonus {((config.buyerBonusRate ?? 0.1) * 100).toFixed(0)}%).
+                  </p>
+                ) : null}
               </div>
             ) : null}
 

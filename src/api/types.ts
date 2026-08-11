@@ -205,6 +205,14 @@ export type PaymentsConfig = {
   topUpAllowed: boolean;
   /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
+  affiliate?: {
+    enabled: boolean;
+    buyerBonusRate: number;
+    commissionRate: number;
+    hasReferrer: boolean;
+    cookieDays: number;
+    expectedCreditMultiplier: number;
+  };
 };
 
 export type PaymentCreateResponse = {
@@ -260,6 +268,10 @@ export type ShopConfig = {
   maxCheckoutsPerHour?: number;
   /** Models available to starter credit keys (default group), with USD/1M pricing. */
   models?: ShopModelItem[];
+  affiliateEnabled?: boolean;
+  buyerBonusRate?: number;
+  commissionRate?: number;
+  affiliateCookieDays?: number;
 };
 
 export type ShopCheckoutResponse = {
@@ -283,4 +295,45 @@ export type ShopClaimResponse = {
   buyerName?: string;
   usdCredit?: number;
   amountIdr?: number;
+};
+
+export type AffiliateSummary = {
+  enabled: boolean;
+  affEnabled: boolean;
+  affCode: string;
+  referralLinkPath: string;
+  balanceUsd: number;
+  heldUsd: number;
+  lifetimeUsd: number;
+  referredCount: number;
+  commissionRate: number;
+  buyerBonusRate: number;
+  minWithdrawUsd: number;
+  cookieDays: number;
+  hasReferrer: boolean;
+};
+
+export type AffiliateLedgerItem = {
+  id: number;
+  sourceOrderId: string;
+  sourceType: string;
+  kind: string;
+  amountUsd: number;
+  status: string;
+  note: string;
+  createdAt: string;
+};
+
+export type AffiliateWithdrawalItem = {
+  id: number;
+  amountUsd: number;
+  status: string;
+  bankName: string;
+  bankAccount: string;
+  accountName: string;
+  note: string;
+  adminNote: string;
+  createdAt: string;
+  reviewedAt: string | null;
+  paidAt: string | null;
 };

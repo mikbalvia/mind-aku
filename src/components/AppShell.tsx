@@ -19,6 +19,7 @@ const navItems = [
   { to: "/logs", label: "Logs", delay: "200ms" },
   { to: "/subscription", label: "Subscription", delay: "240ms" },
   { to: "/payments", label: "Top up", delay: "280ms" },
+  { to: "/affiliate", label: "Affiliate", delay: "320ms" },
 ] as const;
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
