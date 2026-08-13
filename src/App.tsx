@@ -18,6 +18,7 @@ import { BuyCancelPage, BuySuccessPage } from "./pages/BuyResultPages";
 import { HomePage } from "./pages/HomePage";
 import { PublicInfoPage } from "./pages/PublicInfoPages";
 import { WhatsAppWidget } from "./components/WhatsAppWidget";
+import { SUBSCRIPTION_PAGE_ENABLED } from "./config";
 
 export default function App() {
   return (
@@ -43,7 +44,16 @@ export default function App() {
         <Route path="/models" element={<ModelsPage />} />
         <Route path="/usage" element={<UsagePage />} />
         <Route path="/logs" element={<LogsPage />} />
-        <Route path="/subscription" element={<SubscriptionPage />} />
+        <Route
+          path="/subscription"
+          element={
+            SUBSCRIPTION_PAGE_ENABLED ? (
+              <SubscriptionPage />
+            ) : (
+              <Navigate to="/console" replace />
+            )
+          }
+        />
         <Route path="/payments" element={<PaymentsPage />} />
         <Route path="/affiliate" element={<AffiliatePage />} />
       </Route>

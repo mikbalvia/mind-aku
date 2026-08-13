@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatPercent, formatResetIn, formatUsd, usedPercent } from "../lib/format";
+import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
 type Variant = "compact" | "detailed";
 
@@ -290,11 +291,11 @@ export function UsageLimitsPanel({
                 );
               })}
             </ul>
-          ) : (
+          ) : SUBSCRIPTION_PAGE_ENABLED ? (
             <Link to="/subscription" className="mt-4 inline-block text-sm text-primary hover:underline">
               Lihat paket Subscription →
             </Link>
-          )}
+          ) : null}
         </SummaryCard>
       ) : (
         <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
@@ -308,9 +309,11 @@ export function UsageLimitsPanel({
                   5 jam / harian / mingguan · terpisah dari top up
                 </p>
               </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/subscription">Paket</Link>
-              </Button>
+              {SUBSCRIPTION_PAGE_ENABLED ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/subscription">Paket</Link>
+                </Button>
+              ) : null}
             </div>
 
             {!hasSubs ? (
@@ -318,12 +321,14 @@ export function UsageLimitsPanel({
                 <p className="text-sm text-muted-foreground">
                   Belum ada limit subscription (5 jam / harian / mingguan) pada key ini.
                 </p>
-                <Link
-                  to="/subscription"
-                  className="mt-3 inline-block text-sm text-primary hover:underline"
-                >
-                  Lihat paket Subscription →
-                </Link>
+                {SUBSCRIPTION_PAGE_ENABLED ? (
+                  <Link
+                    to="/subscription"
+                    className="mt-3 inline-block text-sm text-primary hover:underline"
+                  >
+                    Lihat paket Subscription →
+                  </Link>
+                ) : null}
               </div>
             ) : (
               <div className="mt-6 space-y-6">

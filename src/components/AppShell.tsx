@@ -9,8 +9,9 @@ import { Atmosphere } from "./Atmosphere";
 import { PageEnter } from "./PageEnter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
-const navItems = [
+const allNavItems = [
   { to: "/console", label: "Dashboard", delay: "0ms" },
   { to: "/chat", label: "Chat", delay: "40ms" },
   { to: "/setup", label: "Setup", delay: "80ms" },
@@ -21,6 +22,10 @@ const navItems = [
   { to: "/payments", label: "Top up", delay: "280ms" },
   { to: "/affiliate", label: "Affiliate", delay: "320ms" },
 ] as const;
+
+const navItems = SUBSCRIPTION_PAGE_ENABLED
+  ? allNavItems
+  : allNavItems.filter((item) => item.to !== "/subscription");
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   [
