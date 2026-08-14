@@ -258,7 +258,7 @@ export function UsageLimitsPanel({
           }
         >
           {hasSubs ? (
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 space-y-4">
               {subs.map(({ key, label, window }) => {
                 const pct = usedPercent(window.spentUsd, window.limitUsd);
                 return (
@@ -266,7 +266,7 @@ export function UsageLimitsPanel({
                     <div className="flex items-center justify-between gap-2">
                       <span
                         className={cn(
-                          "text-muted-foreground",
+                          "text-foreground",
                           window.exceeded && enabled && "text-destructive"
                         )}
                       >
@@ -281,9 +281,17 @@ export function UsageLimitsPanel({
                         {formatUsd(window.remainingUsd)} / {formatUsd(window.limitUsd)}
                       </span>
                     </div>
-                    {enabled ? <ProgressBar percent={pct} /> : null}
+                    {enabled ? (
+                      <ProgressBar
+                        percent={pct}
+                        className={cn(
+                          "mt-2",
+                          window.exceeded && "[&_[data-slot=progress-indicator]]:bg-destructive"
+                        )}
+                      />
+                    ) : null}
                     {window.resetAt ? (
-                      <p className="mt-1 text-[11px] text-muted-foreground">
+                      <p className="mt-1.5 text-[11px] text-muted-foreground">
                         Reset {formatResetIn(window.resetAt)}
                       </p>
                     ) : null}

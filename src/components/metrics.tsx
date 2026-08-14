@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 export function MetricRow({
   label,
@@ -28,9 +29,15 @@ export function MetricRow({
   );
 }
 
-export function ProgressBar({ percent }: { percent: number | null }) {
+export function ProgressBar({
+  percent,
+  className,
+}: {
+  percent: number | null;
+  className?: string;
+}) {
   const width = percent == null ? 0 : Math.min(100, Math.max(0, percent));
-  return <Progress value={width} className="mt-4 h-2" />;
+  return <Progress value={width} className={cn("mt-2 h-2.5", className)} />;
 }
 
 export function SummaryCard({
