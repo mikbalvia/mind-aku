@@ -8,6 +8,7 @@ type Props = {
   apiKey: string;
   toolLabel?: string;
   modelsNote?: string;
+  lead?: string;
 };
 
 async function copyText(value: string): Promise<boolean> {
@@ -19,7 +20,7 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-export function ClientSetupCard({ apiKey, toolLabel, modelsNote }: Props) {
+export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) {
   const [copied, setCopied] = useState<"mac" | "win" | "base" | "v1" | null>(null);
 
   const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
@@ -46,9 +47,11 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote }: Props) {
           Auto-config ke Mind Aku
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          {toolLabel
-            ? `Setelah ${toolLabel} terpasang, jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL.`
-            : "Jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL."}{" "}
+          {lead
+            ? lead
+            : toolLabel
+              ? `Setelah ${toolLabel} terpasang, jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL.`
+              : "Jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL."}{" "}
           <strong className="text-foreground">Jangan bagikan perintah ini</strong> ke orang lain.
         </p>
 

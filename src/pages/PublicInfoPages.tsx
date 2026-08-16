@@ -52,11 +52,11 @@ function Content({ page }: { page: PublicPage }) {
     <h3>Di mana saya bisa mengecek sisa kuota?</h3><p>Masuk ke <Link to="/login">portal Mind Aku</Link>, masukkan API Key, lalu buka dashboard untuk melihat saldo, usage, dan request.</p>
     <h2>Penggunaan API</h2>
     <h3>Apa Base URL yang digunakan?</h3><p><code>{AI_BASE_URL}</code></p>
-    <h3>Bagaimana auto-setup Claude Code / Codex / Claude Desktop?</h3>
-    <p>Login ke portal, buka menu <Link to="/setup">Setup</Link>. Pilih <strong>salah satu</strong>: Claude Code, Codex, atau Claude Desktop. Untuk Desktop: download app, aktifkan Developer Mode, isi gateway Mind Aku. Untuk CLI: install → auto-config → (opsional) extension di VS Code / Cursor / Antigravity. Atau jalankan (script akan meminta API key):</p>
+    <h3>Bagaimana auto-setup Claude Code / Codex / OpenClaw / Hermes / Claude Desktop?</h3>
+    <p>Login ke portal, buka menu <Link to="/setup">Setup</Link>. Pilih <strong>salah satu</strong> tool. OpenClaw dan Hermes cukup satu perintah curl (script memasang CLI jika belum ada, lalu menulis katalog model tanpa mengubah nama agen). Claude Desktop: download app, aktifkan Developer Mode, isi gateway Mind Aku. CLI Claude/Codex: install → auto-config → (opsional) extension di VS Code / Cursor / Antigravity. Atau jalankan (script akan meminta API key):</p>
     <p><code>curl -fsSL &quot;{OMNIROUTE_BASE_URL}/setup&quot; | bash</code></p>
     <p>Windows PowerShell: <code>irm &quot;{OMNIROUTE_BASE_URL}/setup&quot; | iex</code></p>
-    <p>Script mengarahkan Claude Code dan Codex ke gateway Mind Aku memakai combo model (Claude Opus/Sonnet/Haiku dan GPT).</p>
+    <p>Script mengarahkan Claude Code, Codex, OpenClaw, dan Hermes ke gateway Mind Aku. Daftar model diambil dari API gateway.</p>
     <h3>Apakah API Key boleh dibagikan?</h3><p>Tidak. API Key bersifat pribadi dan menjadi tanggung jawab pemilik. Jangan membagikannya ke pihak lain.</p>
     <h3>Bagaimana jika kuota habis?</h3><p>Anda dapat membeli tambahan limit melalui menu Top up pada console atau menghubungi admin untuk perpanjangan paket.</p>
     <h2>Pembayaran dan dukungan</h2>

@@ -5,14 +5,14 @@ import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
 import { PageHeader } from "../components/page-chrome";
-import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
+import { OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type ToolId = "vscode" | "desktop" | "claude" | "codex" | "openclaw";
+type ToolId = "vscode" | "desktop" | "claude" | "codex" | "openclaw" | "hermes";
 
-const TOOL_ORDER: ToolId[] = ["vscode", "desktop", "claude", "codex", "openclaw"];
+const TOOL_ORDER: ToolId[] = ["vscode", "desktop", "claude", "codex", "openclaw", "hermes"];
 
 const CLAUDE_DOCS = "https://code.claude.com/docs/en/quickstart";
 const CODEX_DOCS = "https://learn.chatgpt.com/docs/codex/cli#getting-started";
@@ -20,7 +20,7 @@ const CLAUDE_VSCODE = "https://code.claude.com/docs/en/vs-code";
 const CODEX_IDE = "https://learn.chatgpt.com/docs/codex/ide";
 const CLAUDE_DESKTOP_DOWNLOAD = "https://claude.com/download";
 const OPENCLAW_DOCS = "https://docs.openclaw.ai/install";
-const OPENCLAW_PROVIDERS = "https://docs.openclaw.ai/concepts/model-providers/";
+const HERMES_DOCS = "https://hermes-agent.nousresearch.com/docs/getting-started/quickstart";
 const VSCODE_LM_DOCS = "https://code.visualstudio.com/docs/copilot/customization/language-models";
 const VSCODE_DOWNLOAD = "https://code.visualstudio.com/download";
 
@@ -44,11 +44,18 @@ type DesktopTool = {
   blurb: string;
 };
 
-type OpenClawTool = {
-  kind: "openclaw";
+type CurlClientTool = {
+  kind: "curl-client";
   label: string;
   short: string;
   blurb: string;
+  docs: string;
+  docsLabel: string;
+  runCmd: string;
+  lead: string;
+  modelsNote: string;
+  afterTitle: string;
+  afterSteps: string[];
 };
 
 type VsCodeTool = {
@@ -58,7 +65,7 @@ type VsCodeTool = {
   blurb: string;
 };
 
-const tools: Record<ToolId, CliTool | DesktopTool | OpenClawTool | VsCodeTool> = {
+const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool> = {
   vscode: {
     kind: "vscode",
     label: "VS Code Chat",
@@ -72,10 +79,40 @@ const tools: Record<ToolId, CliTool | DesktopTool | OpenClawTool | VsCodeTool> =
     blurb: "Aplikasi desktop Claude dengan gateway Mind Aku (tanpa akun Claude.ai).",
   },
   openclaw: {
-    kind: "openclaw",
+    kind: "curl-client",
     label: "OpenClaw",
     short: "OpenClaw",
-    blurb: "Agent OpenClaw via Custom Provider → Mind Aku (OpenAI-compatible).",
+    blurb: "Agent OpenClaw ke Mind Aku — cukup satu perintah curl.",
+    docs: OPENCLAW_DOCS,
+    docsLabel: "OpenClaw install docs",
+    runCmd: "openclaw tui",
+    lead: "Jalankan satu perintah di bawah. Script akan memasang OpenClaw jika belum ada, lalu menulis katalog model Mind Aku. Nama agen dan setup lama tidak diubah.",
+    modelsNote:
+      "Katalog model diambil live dari /v1/models. Default claude-sonnet-5 hanya jika belum ada primary. Lalu jalankan: openclaw tui",
+    afterTitle: "Buka agen OpenClaw",
+    afterSteps: [
+      "Setelah curl selesai, jalankan openclaw tui (ini masuk chat agen, bukan asisten setup Crestodian).",
+      "Daftar model Mind Aku ada di /models atau openclaw models list --provider mindaku.",
+      "Pilih model mindaku/… di picker. Default baru: claude-sonnet-5.",
+    ],
+  },
+  hermes: {
+    kind: "curl-client",
+    label: "Hermes",
+    short: "Hermes",
+    blurb: "Hermes Agent ke Mind Aku — cukup satu perintah curl.",
+    docs: HERMES_DOCS,
+    docsLabel: "Hermes quickstart",
+    runCmd: "hermes",
+    lead: "Jalankan satu perintah di bawah. Script akan memasang Hermes jika belum ada, lalu menulis katalog model Mind Aku. Nama agen dan model/setup yang sudah ada tidak diubah.",
+    modelsNote:
+      "Katalog model diambil live dari /v1/models dan providers.mindaku. Default claude-sonnet-5 hanya jika model belum dikonfigurasi. Lalu jalankan: hermes",
+    afterTitle: "Buka Hermes",
+    afterSteps: [
+      "Setelah curl selesai, jalankan hermes (atau hermes --tui).",
+      "Lihat daftar model Mind Aku lewat /model atau hermes model.",
+      "Pilih model dari provider mindaku. Default baru: claude-sonnet-5.",
+    ],
   },
   claude: {
     kind: "cli",
@@ -749,186 +786,76 @@ function WizardField({
   );
 }
 
-function OpenClawGuide({ apiKey }: { apiKey: string | null }) {
-  const v1Url = AI_BASE_URL.replace(/\/$/, "");
-  const [copied, setCopied] = useState<string | null>(null);
-
-  async function onCopy(id: string, value: string) {
-    const ok = await copyText(value);
-    if (!ok) return;
-    setCopied(id);
-    window.setTimeout(() => setCopied(null), 2000);
-  }
-
-  const installCmds = [
-    {
-      label: "macOS / Linux",
-      command: "curl -fsSL https://openclaw.ai/install.sh | bash",
-      id: "openclaw-unix",
-    },
-    {
-      label: "Windows PowerShell",
-      command: "iwr -useb https://openclaw.ai/install.ps1 | iex",
-      id: "openclaw-win",
-    },
-    {
-      label: "npm (opsional)",
-      command: "npm install -g openclaw@latest && openclaw onboard --install-daemon",
-      id: "openclaw-npm",
-    },
-  ];
-
+function CurlClientGuide({
+  apiKey,
+  tool,
+}: {
+  apiKey: string | null;
+  tool: CurlClientTool;
+}) {
   return (
     <div className="space-y-5">
+      <div>
+        <StepLabel n={2}>Auto-config Mind Aku</StepLabel>
+        {apiKey ? (
+          <ClientSetupCard
+            apiKey={apiKey}
+            toolLabel={tool.label}
+            lead={tool.lead}
+            modelsNote={tool.modelsNote}
+          />
+        ) : (
+          <Card className="border-border/80 bg-card/90">
+            <CardContent className="p-6 text-sm text-muted-foreground">
+              Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
       <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <StepLabel n={2}>Install OpenClaw</StepLabel>
+              <StepLabel n={3}>{tool.afterTitle}</StepLabel>
               <h3 className="font-display text-xl font-medium text-foreground">
-                Pasang CLI OpenClaw
+                Setelah curl selesai
               </h3>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Install sesuai OS, lalu cek dengan <code>openclaw --version</code>.
+                Tidak perlu isi Custom Provider manual. Katalog model sudah ditulis script.
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
-              <a href={OPENCLAW_DOCS} target="_blank" rel="noopener noreferrer">
+              <a href={tool.docs} target="_blank" rel="noopener noreferrer">
                 Docs <ExternalLink />
               </a>
             </Button>
           </div>
 
-          <div className="mt-5 space-y-4">
-            {installCmds.map((cmd) => (
-              <InstallCommand
-                key={cmd.id}
-                label={cmd.label}
-                command={cmd.command}
-                copyId={cmd.id}
-                copied={copied}
-                onCopy={onCopy}
-              />
+          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            {tool.afterSteps.map((step) => (
+              <li key={step}>{step}</li>
             ))}
+          </ol>
+
+          <div className="mt-5">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Jalankan
+            </p>
+            <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-foreground">
+              <code>{tool.runCmd}</code>
+            </pre>
           </div>
 
           <p className="mt-4 text-xs text-muted-foreground">
             Panduan resmi:{" "}
             <a
-              href={OPENCLAW_DOCS}
+              href={tool.docs}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              docs.openclaw.ai/install
-            </a>
-            .
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={3}>Set model · Custom Provider</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Hubungkan ke Mind Aku
-          </h3>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Di wizard / settings model OpenClaw, pilih{" "}
-            <strong className="text-foreground">Custom Provider</strong> lalu isi seperti di bawah.
-          </p>
-
-          <div className="mt-5 space-y-3">
-            <WizardField label="Model / auth provider" value="Custom Provider" mono={false} />
-            <WizardField
-              label="API Base URL"
-              value={v1Url}
-              copyId="oc-base"
-              copied={copied}
-              onCopy={onCopy}
-            />
-            <WizardField
-              label="How do you want to provide this API key?"
-              value="Paste API key now"
-              mono={false}
-            />
-            <div className="rounded-lg border border-border bg-muted/30 p-3">
-              <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                API Key
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Tempel API key Mind Aku kamu
-                {apiKey ? " (dari sesi login portal ini)." : " (dari portal setelah login)."}
-              </p>
-              {apiKey ? (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <code className="max-w-full truncate text-sm text-foreground">{apiKey}</code>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void onCopy("oc-key", apiKey)}
-                  >
-                    {copied === "oc-key" ? <Check /> : <Copy />}
-                    {copied === "oc-key" ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-            <WizardField
-              label="Endpoint compatibility"
-              value="OpenAI-compatible"
-              mono={false}
-            />
-            <WizardField
-              label="Model ID"
-              value="claude-opus-5"
-              copyId="oc-model"
-              copied={copied}
-              onCopy={onCopy}
-            />
-            <WizardField label="Endpoint ID" value="mind" copyId="oc-endpoint" copied={copied} onCopy={onCopy} />
-          </div>
-
-          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            Setelah benar, OpenClaw menampilkan <strong>Verification successful</strong>. Model
-            lain yang bisa dicoba: <code>claude-sonnet-5</code>, <code>claude-haiku-4.5</code>,{" "}
-            <code>gpt-5.5</code>, <code>gpt-5.6-sol</code>, dll. (lihat menu Models).
-          </div>
-
-          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
-            <li>
-              Buka pengaturan model / auth provider di OpenClaw (onboard atau settings).
-            </li>
-            <li>
-              Pilih <strong>Custom Provider</strong>.
-            </li>
-            <li>
-              Isi <strong>API Base URL</strong> = <code>{v1Url}</code> (wajib ada{" "}
-              <code>/v1</code>).
-            </li>
-            <li>
-              Pilih <strong>Paste API key now</strong>, lalu tempel API key Mind Aku.
-            </li>
-            <li>
-              Set <strong>Endpoint compatibility</strong> = <strong>OpenAI-compatible</strong>.
-            </li>
-            <li>
-              Isi <strong>Model ID</strong> (contoh <code>claude-opus-5</code>) dan{" "}
-              <strong>Endpoint ID</strong> = <code>mind</code>.
-            </li>
-            <li>Tunggu verifikasi sukses, lalu pakai model seperti biasa.</li>
-          </ol>
-
-          <p className="mt-4 text-xs text-muted-foreground">
-            Referensi Custom Provider:{" "}
-            <a
-              href={OPENCLAW_PROVIDERS}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              docs.openclaw.ai/concepts/model-providers
+              {tool.docsLabel}
             </a>
             .
           </p>
@@ -964,7 +891,7 @@ export function SetupPage() {
     <div>
       <PageHeader
         title="Setup"
-        description="Pilih satu tool: VS Code Chat, Claude Desktop, Claude Code, Codex CLI, atau OpenClaw — lalu ikuti langkahnya."
+        description="Pilih satu tool: VS Code Chat, Claude Desktop, Claude Code, Codex CLI, OpenClaw, atau Hermes — lalu ikuti langkahnya."
       />
 
       <div className="space-y-5">
@@ -978,11 +905,11 @@ export function SetupPage() {
             </h3>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
               Mulai dari <strong className="text-foreground">VS Code Chat</strong>, atau pilih
-              Claude Desktop / Claude Code / Codex / OpenClaw. Langkah berikutnya menyesuaikan
-              pilihanmu.
+              Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Langkah berikutnya
+              menyesuaikan pilihanmu.
             </p>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mt-5 flex flex-col gap-3">
               {TOOL_ORDER.map((id) => {
                 const item = tools[id];
                 const active = tool === id;
@@ -992,19 +919,21 @@ export function SetupPage() {
                     type="button"
                     onClick={() => setTool(id)}
                     className={cn(
-                      "rounded-xl border px-4 py-4 text-left transition-all duration-200",
+                      "rounded-xl border px-4 py-3 text-left transition-all duration-200",
                       active
                         ? "border-primary/50 bg-accent shadow-sm"
                         : "border-border hover:border-border/80 hover:bg-card/80"
                     )}
                   >
-                    <p className="font-display text-lg text-foreground">{item.label}</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-display text-lg text-foreground">{item.label}</p>
+                      {active ? (
+                        <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
+                          Dipilih
+                        </p>
+                      ) : null}
+                    </div>
                     <p className="mt-1 text-sm text-muted-foreground">{item.blurb}</p>
-                    {active ? (
-                      <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
-                        Dipilih
-                      </p>
-                    ) : null}
                   </button>
                 );
               })}
@@ -1018,8 +947,9 @@ export function SetupPage() {
               Pilih <strong className="text-foreground">VS Code Chat</strong>,{" "}
               <strong className="text-foreground">Claude Desktop</strong>,{" "}
               <strong className="text-foreground">Claude Code</strong>,{" "}
-              <strong className="text-foreground">Codex CLI</strong>, atau{" "}
-              <strong className="text-foreground">OpenClaw</strong> di atas untuk melihat panduan
+              <strong className="text-foreground">Codex CLI</strong>,{" "}
+              <strong className="text-foreground">OpenClaw</strong>, atau{" "}
+              <strong className="text-foreground">Hermes</strong> di atas untuk melihat panduan
               lengkap.
             </CardContent>
           </Card>
@@ -1027,8 +957,8 @@ export function SetupPage() {
           <VsCodeChatGuide apiKey={apiKey} />
         ) : selected.kind === "desktop" ? (
           <ClaudeDesktopGuide apiKey={apiKey} />
-        ) : selected.kind === "openclaw" ? (
-          <OpenClawGuide apiKey={apiKey} />
+        ) : selected.kind === "curl-client" ? (
+          <CurlClientGuide apiKey={apiKey} tool={selected} />
         ) : (
           <>
             <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
