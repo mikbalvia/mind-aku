@@ -4,11 +4,13 @@ import {
   enableAffiliate,
   fetchAffiliate,
   fetchAffiliateLedger,
+  fetchAffiliateReferrals,
   fetchAffiliateWithdrawals,
 } from "../api/client";
 import { ApiError } from "../api/types";
 import type {
   AffiliateLedgerItem,
+  AffiliateReferralItem,
   AffiliateSummary,
   AffiliateWithdrawalItem,
 } from "../api/types";
@@ -40,6 +42,7 @@ export function AffiliatePage() {
   const { apiKey } = useAuth();
   const [summary, setSummary] = useState<AffiliateSummary | null>(null);
   const [ledger, setLedger] = useState<AffiliateLedgerItem[]>([]);
+  const [referrals, setReferrals] = useState<AffiliateReferralItem[]>([]);
   const [withdrawals, setWithdrawals] = useState<AffiliateWithdrawalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -57,13 +60,15 @@ export function AffiliatePage() {
     setLoading(true);
     setError(null);
     try {
-      const [aff, led, wd] = await Promise.all([
+      const [aff, led, refs, wd] = await Promise.all([
         fetchAffiliate(apiKey),
         fetchAffiliateLedger(apiKey),
+        fetchAffiliateReferrals(apiKey),
         fetchAffiliateWithdrawals(apiKey),
       ]);
       setSummary(aff);
       setLedger(led.data ?? []);
+      setReferrals(refs.data ?? []);
       setWithdrawals(wd.data ?? []);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Gagal memuat affiliate.");
@@ -200,6 +205,32 @@ export function AffiliatePage() {
                 Salin link
               </Button>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-4 p-6">
+          <h2 className="font-heading text-xl font-bold">Yang join</h2>
+          {referrals.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Belum ada yang join lewat link kamu.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {referrals.map((row, index) => (
+                  <TableRow key={`${row.createdAt}-${row.name}-${index}`}>
+                    <TableCell>{row.name.trim() || "—"}</TableCell>
+                    <TableCell>{new Date(row.createdAt).toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

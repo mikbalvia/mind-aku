@@ -4,8 +4,7 @@ import { ApiError } from "../api/types";
 import type { PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
-import { COMPANY } from "../lib/company";
-import { formatIdrPerUsdRate } from "../lib/format";
+import { formatIdrPerUsdRate, formatPaygActiveUntil } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
 import { captureReferralFromUrl, getStoredReferralCode } from "../lib/referral";
 import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
@@ -50,8 +49,8 @@ export function PaymentsPage() {
   const { apiKey, status, logout } = useAuth();
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
   const [history, setHistory] = useState<PaymentHistoryItem[]>([]);
-  const [selectedUsd, setSelectedUsd] = useState<number | null>(10);
-  const [customUsd, setCustomUsd] = useState("");
+  const [selectedIdr, setSelectedIdr] = useState<number | null>(10_000);
+  const [customIdr, setCustomIdr] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,18 +58,33 @@ export function PaymentsPage() {
 
   const buyerName = status?.apiKey?.name ?? "API Key Member";
 
-  const activeUsd = useMemo(() => {
-    if (customUsd.trim()) {
-      const parsed = Number(customUsd);
+  const minTopUpIdr = config?.minTopUpIdr ?? 10_000;
+  const activeUnitIdr = config?.activeUnitIdr ?? 100_000;
+  const activePeriodDays = config?.activePeriodDays ?? 30;
+
+  const activeIdr = useMemo(() => {
+    if (customIdr.trim()) {
+      const parsed = Number(customIdr);
       return Number.isFinite(parsed) ? parsed : null;
     }
-    return selectedUsd;
-  }, [customUsd, selectedUsd]);
+    return selectedIdr;
+  }, [customIdr, selectedIdr]);
 
-  const previewIdr =
-    config && activeUsd != null && activeUsd > 0 ? Math.ceil(activeUsd * config.idrPerUsd) : null;
+  const selectedPackage = useMemo(() => {
+    if (!config || customIdr.trim() || activeIdr == null) return null;
+    return config.packages.find((pkg) => pkg.amountIdr === activeIdr) ?? null;
+  }, [config, customIdr, activeIdr]);
 
-  const previewCreditUsd = activeUsd != null && activeUsd > 0 ? activeUsd : null;
+  const previewIdr = activeIdr != null && activeIdr > 0 ? activeIdr : null;
+  const previewCreditUsd =
+    selectedPackage?.usdAmount ??
+    (config && activeIdr != null && activeIdr > 0 && config.idrPerUsd > 0
+      ? activeIdr / config.idrPerUsd
+      : null);
+
+  const amountValid = activeIdr != null && activeIdr >= minTopUpIdr;
+  const previewMonths =
+    previewIdr != null && activeUnitIdr > 0 ? Math.floor(previewIdr / activeUnitIdr) : 0;
 
   const mockMode = Boolean(config?.mockEnabled);
 
@@ -82,7 +96,7 @@ export function PaymentsPage() {
       const [cfg, list] = await Promise.all([fetchPaymentsConfig(apiKey), fetchPayments(apiKey)]);
       setConfig(cfg);
       setHistory(list.data ?? []);
-      if (cfg.packages[1]) setSelectedUsd(cfg.packages[1].usdAmount);
+      if (cfg.packages[0]) setSelectedIdr(cfg.packages[0].amountIdr);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load payments.");
     } finally {
@@ -100,8 +114,8 @@ export function PaymentsPage() {
   }, [config?.affiliate?.cookieDays]);
 
   async function onTopUp() {
-    if (!apiKey || activeUsd == null || activeUsd < 1) {
-      setError("Choose a valid USD amount (minimum $1).");
+    if (!apiKey || !amountValid || activeIdr == null) {
+      setError(`Pilih nominal minimal ${formatIdr(minTopUpIdr)}.`);
       return;
     }
     setSubmitting(true);
@@ -114,7 +128,8 @@ export function PaymentsPage() {
           ? getStoredReferralCode() ?? undefined
           : undefined;
       const payment = await createPayment(apiKey, {
-        usdAmount: activeUsd,
+        amountIdr: activeIdr,
+        usdAmount: selectedPackage?.usdAmount,
         successReturnUrl: `${origin}/payments/success`,
         cancelReturnUrl: `${origin}/payments/cancel`,
         paymentMethodTypeCode: "QRIS",
@@ -175,8 +190,8 @@ export function PaymentsPage() {
           !config?.topUpAllowed
             ? "Top-up tidak tersedia: key ini adalah unlimited, saldo pay-as-you-go tidak relevan."
             : mockMode
-              ? "Mode mock lokal — isi saldo Pay as you go (USD) instan tanpa SumoPod."
-              : "Bayar IDR via SumoPod. Sukses = kredit saldo Pay as you go (USD) di API key kamu."
+              ? `Mode mock lokal. Minimal ${formatIdr(minTopUpIdr)} menambah saldo. Setiap ${formatIdr(activeUnitIdr)} penuh = +1 bulan masa aktif (Rp 120.000 tetap 1 bulan).`
+              : `Minimal ${formatIdr(minTopUpIdr)} menambah saldo. Setiap ${formatIdr(activeUnitIdr)} penuh = +1 bulan. Rp 120.000 tetap 1 bulan; Rp 300.000 = 3 bulan. Sisa saldo tidak hangus.`
         }
       />
 
@@ -214,14 +229,14 @@ export function PaymentsPage() {
                 <>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {config.packages.map((pkg) => {
-                      const active = !customUsd && selectedUsd === pkg.usdAmount;
+                      const active = !customIdr && selectedIdr === pkg.amountIdr;
                       return (
                         <button
                           key={pkg.id}
                           type="button"
                           onClick={() => {
-                            setCustomUsd("");
-                            setSelectedUsd(pkg.usdAmount);
+                            setCustomIdr("");
+                            setSelectedIdr(pkg.amountIdr);
                           }}
                           className={cn(
                             "rounded-lg border px-4 py-4 text-left transition-all duration-200",
@@ -238,18 +253,17 @@ export function PaymentsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="custom-usd" className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Custom USD amount
+                    <Label htmlFor="custom-idr" className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Custom IDR (min {formatIdr(minTopUpIdr)})
                     </Label>
                     <Input
-                      id="custom-usd"
+                      id="custom-idr"
                       type="number"
-                      min={1}
-                      max={1000}
-                      step={1}
-                      placeholder="e.g. 15"
-                      value={customUsd}
-                      onChange={(e) => setCustomUsd(e.target.value)}
+                      min={minTopUpIdr}
+                      step={1000}
+                      placeholder={`e.g. ${minTopUpIdr}`}
+                      value={customIdr}
+                      onChange={(e) => setCustomIdr(e.target.value)}
                     />
                   </div>
 
@@ -263,13 +277,17 @@ export function PaymentsPage() {
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Credits {previewCreditUsd != null ? formatUsd(previewCreditUsd) : "—"} ke saldo
-                        pay as you go
+                        {previewMonths > 0
+                          ? ` · +${previewMonths} bulan masa aktif`
+                          : previewIdr != null
+                            ? ` · tanpa tambah masa aktif (butuh kelipatan ${formatIdr(activeUnitIdr)})`
+                            : ""}
                       </p>
                     </div>
                     <Button
                       type="button"
                       className="min-w-[10rem]"
-                      disabled={submitting || !config.configured || activeUsd == null || activeUsd < 1}
+                      disabled={submitting || !config.configured || !amountValid}
                       onClick={() => void onTopUp()}
                     >
                       {submitting
@@ -292,6 +310,12 @@ export function PaymentsPage() {
               {config.paygBalance?.enabled ? (
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between gap-3 border-b border-border pb-3.5">
+                    <dt className="text-muted-foreground">Masa aktif</dt>
+                    <dd className="text-right text-foreground">
+                      {formatPaygActiveUntil(config.active, config.activeUntil ?? null)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3 border-b border-border pb-3.5">
                     <dt className="text-muted-foreground">Spent</dt>
                     <dd className="tabular-nums text-muted-foreground">
                       {formatUsd(config.paygBalance.spentUsd)}
@@ -310,9 +334,11 @@ export function PaymentsPage() {
                 </p>
               )}
               <p className="text-xs leading-relaxed text-muted-foreground">
-                {mockMode
-                  ? "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
-                  : `After payment succeeds, SumoPod notifies ${COMPANY.name} and your pay-as-you-go saldo increases automatically. Rate is managed by your administrator and can change over time.`}
+                {config.active === false
+                  ? `Masa aktif habis. Top up minimal ${formatIdr(activeUnitIdr)} untuk hidupkan API lagi selama ${activePeriodDays} hari per unit. Sisa saldo tidak hangus.`
+                  : mockMode
+                    ? "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
+                    : `Setelah bayar, saldo bertambah. Masa aktif hanya nambah untuk setiap kelipatan penuh ${formatIdr(activeUnitIdr)}.`}
               </p>
             </CardContent>
           </Card>

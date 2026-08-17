@@ -134,7 +134,8 @@ export function BuyPage() {
           Mulai tanpa API key
         </h1>
         <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
-          Isi nama, bayar via QRIS, lalu dapatkan API key dengan quota sesuai rate currency.
+          Isi nama, bayar via QRIS, lalu dapatkan API key. Minimal {config ? formatIdr(config.amountIdr) : formatIdr(100_000)} ·
+          aktif {config?.activePeriodDays ?? 30} hari · sisa saldo tidak hangus.
         </p>
 
         {loading ? (
@@ -154,13 +155,14 @@ export function BuyPage() {
                   {formatIdr(config.amountIdr)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Kredit ≈ {formatUsd(config.usdCredit)} · RPM {config.requestsPerMinute} · {config.rateLabel}
+                  Kredit ≈ {formatUsd(config.usdCredit)} · aktif {config.activePeriodDays ?? 30} hari · RPM{" "}
+                  {config.requestsPerMinute} · {config.rateLabel}
                 </p>
                 {config.affiliateEnabled && refCode ? (
                   <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">
                     Referral aktif ({refCode}): Anda dapat ≈{" "}
-                    {formatUsd(config.usdCredit * (1 + (config.buyerBonusRate ?? 0.1)))} credit
-                    (bonus {((config.buyerBonusRate ?? 0.1) * 100).toFixed(0)}%).
+                    {formatUsd(config.usdCredit * (1 + (config.buyerBonusRate ?? 0.05)))} credit
+                    (bonus {((config.buyerBonusRate ?? 0.05) * 100).toFixed(0)}%).
                   </p>
                 ) : null}
               </div>

@@ -76,6 +76,10 @@ export function UsagePage() {
             paygBalance={config?.paygBalance}
             usageLimits={config?.usageLimits}
             topUpAllowed={config?.topUpAllowed ?? false}
+            active={config?.active}
+            activeUntil={config?.activeUntil}
+            activeUnitIdr={config?.activeUnitIdr}
+            activePeriodDays={config?.activePeriodDays}
           />
 
           <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">

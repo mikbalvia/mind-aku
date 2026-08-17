@@ -39,10 +39,12 @@ Collection untuk API yang dipakai `new-clients-final` (shop create key + portal 
 |---|---------|--------|
 | 1 | `POST Enable Affiliate` (sebagai affiliate) | Dapat `affCode`, simpan ke `refCode` |
 | 2 | `POST Shop Checkout` dengan `refCode` | Order menyimpan referrer |
-| 3 | Simulate + Claim (shop GKP) | Pembeli +10% credit; affiliate +10% AffBalance |
-| 3b | Top-up TKP + referral | Pembeli exact paid credit; affiliate +10% AffBalance |
-| 4 | `POST Request Withdrawal` | Hold saldo → status `requested` |
-| 5 | Admin `PATCH` → `approved` / `paid` / `rejected` | Pencairan manual |
+| 3 | Simulate + Claim (shop GKP) | Pembeli +5% credit; affiliate +5% AffBalance |
+| 3b | Top-up TKP + referral | Pembeli exact paid credit; affiliate +5% AffBalance |
+| 4 | `GET Affiliate Referrals` | Daftar `name` + `createdAt` orang yang join |
+| 5 | `POST Request Withdrawal` | Hold saldo → status `requested` |
+| 6 | Admin `PATCH` → `approved` / `paid` / `rejected` | Pencairan manual |
+| 7 | Admin `GET Affiliate Referrals` (`?affCode=` opsional) | Nama join per affiliator |
 
 Env backend: `AFFILIATE_*`, `PORTAL_ADMIN_KEY` (lihat `.env.example`).
 

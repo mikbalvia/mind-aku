@@ -4,6 +4,7 @@ import {
   House,
   ChatTeardropText,
   Wrench,
+  Code,
   Stack,
   ChartLineUp,
   ListChecks,
@@ -36,12 +37,13 @@ const allNavItems: NavItem[] = [
   { to: "/console", label: "Dashboard", icon: House, delay: "0ms" },
   { to: "/chat", label: "Chat", icon: ChatTeardropText, delay: "40ms" },
   { to: "/setup", label: "Setup", icon: Wrench, delay: "80ms" },
-  { to: "/models", label: "Models", icon: Stack, delay: "120ms" },
-  { to: "/usage", label: "Usage", icon: ChartLineUp, delay: "160ms" },
-  { to: "/logs", label: "Logs", icon: ListChecks, delay: "200ms" },
-  { to: "/subscription", label: "Subscription", icon: Crown, delay: "240ms" },
-  { to: "/payments", label: "Top up", icon: CreditCard, delay: "280ms" },
-  { to: "/affiliate", label: "Affiliate", icon: UsersThree, delay: "320ms" },
+  { to: "/sample-api", label: "Sample API", icon: Code, delay: "100ms" },
+  { to: "/models", label: "Models", icon: Stack, delay: "140ms" },
+  { to: "/usage", label: "Usage", icon: ChartLineUp, delay: "180ms" },
+  { to: "/logs", label: "Logs", icon: ListChecks, delay: "220ms" },
+  { to: "/subscription", label: "Subscription", icon: Crown, delay: "260ms" },
+  { to: "/payments", label: "Top up", icon: CreditCard, delay: "300ms" },
+  { to: "/affiliate", label: "Affiliate", icon: UsersThree, delay: "340ms" },
 ];
 
 const navItems: NavItem[] = SUBSCRIPTION_PAGE_ENABLED

@@ -234,10 +234,13 @@ export function HomePage() {
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 Rate {formatIdrPerUsdRate(idrPerUsd)}. Bayar {formatIdr(amountIdr)}, dapat{" "}
-                {formatUsdCredit(usdCredit)} credit di API key.
+                {formatUsdCredit(usdCredit)} credit · aktif {shop?.activePeriodDays ?? STARTER_CREDIT.activePeriodDays}{" "}
+                hari · sisa saldo tidak hangus.
               </p>
             </div>
-            <p className="font-mono text-xs text-muted-foreground">PAYG · QRIS · RPM {rpm}</p>
+            <p className="font-mono text-xs text-muted-foreground">
+              PAYG · {shop?.activePeriodDays ?? STARTER_CREDIT.activePeriodDays} hari · QRIS · RPM {rpm}
+            </p>
           </div>
 
           <div className="gradient-border overflow-hidden rounded-2xl bg-card/60 shadow-[0_24px_64px_-24px_rgba(0,0,0,0.7)] backdrop-blur-md">
@@ -300,7 +303,7 @@ export function HomePage() {
                   </Button>
                 </motion.div>
                 <p className="mt-3 text-center text-xs text-muted-foreground">
-                  Isi nama → bayar QRIS → API key langsung aktif
+                  Isi nama → bayar QRIS → API key aktif {shop?.activePeriodDays ?? STARTER_CREDIT.activePeriodDays} hari
                 </p>
               </div>
 

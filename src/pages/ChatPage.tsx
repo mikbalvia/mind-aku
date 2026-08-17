@@ -55,6 +55,7 @@ export function ChatPage() {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quotaError, setQuotaError] = useState(false);
+  const [expiredError, setExpiredError] = useState(false);
   const [remaining, setRemaining] = useState<RemainingQuota | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -158,6 +159,7 @@ export function ChatPage() {
     setDraft("");
     setError(null);
     setQuotaError(false);
+    setExpiredError(false);
     setSidebarOpen(false);
     persist(upsertConversation(storeRef.current, created));
   }
@@ -168,6 +170,7 @@ export function ChatPage() {
     if (conv?.model) setSelectedModel(conv.model);
     setError(null);
     setQuotaError(false);
+    setExpiredError(false);
     setSidebarOpen(false);
     persist(setActiveConversation(storeRef.current, id));
   }
@@ -194,6 +197,7 @@ export function ChatPage() {
 
     setError(null);
     setQuotaError(false);
+    setExpiredError(false);
 
     let conversation = ensureConversation();
     conversation = { ...conversation, model: selectedModel };
@@ -249,7 +253,8 @@ export function ChatPage() {
       if (controller.signal.aborted) {
         // keep partial content
       } else if (err instanceof ApiError) {
-        setQuotaError(err.code === "quota" || err.code === "unauthorized");
+        setQuotaError(err.code === "quota");
+        setExpiredError(err.code === "expired" || status?.apiKey?.active === false);
         setError(err.message);
         const latest =
           storeRef.current.conversations.find((c) => c.id === conversation.id) ?? conversation;
@@ -368,7 +373,19 @@ export function ChatPage() {
                 <ErrorBanner message={error} />
                 {quotaError ? (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Quota habis.{" "}
+                    Saldo habis.{" "}
+                    <Link
+                      to="/payments"
+                      className="font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      Top up di sini
+                    </Link>
+                    .
+                  </p>
+                ) : expiredError ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Masa aktif habis. Top up minimal Rp 100.000 untuk perpanjang 30 hari. Sisa saldo
+                    tidak hangus.{" "}
                     <Link
                       to="/payments"
                       className="font-semibold text-primary underline-offset-2 hover:underline"
@@ -394,7 +411,7 @@ export function ChatPage() {
                 streaming={streaming}
               />
               <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                Chat memakai API key kamu lewat OmniRoute — usage mengurangi lifetime quota.
+                Chat memakai API key kamu lewat OmniRoute — usage mengurangi saldo PAYG.
               </p>
             </div>
           </div>

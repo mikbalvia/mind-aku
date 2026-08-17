@@ -546,7 +546,7 @@
     },
     {
       "name": "5. Affiliate",
-      "description": "Program referral per API key. Komisi 10% ke AffBalance. Bonus pembeli +10% RemainQuota hanya di guest shop (GKP); top-up (TKP) hanya komisi affiliate.",
+      "description": "Program referral per API key. Komisi 5% ke AffBalance. Bonus pembeli +5% RemainQuota hanya di guest shop (GKP); top-up (TKP) hanya komisi affiliate.",
       "item": [
         {
           "name": "GET Affiliate Summary",
@@ -609,6 +609,23 @@
               "raw": "{{baseUrl}}/api/v1/me/affiliate/ledger",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "me", "affiliate", "ledger"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Affiliate Referrals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{apiKey}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/affiliate/referrals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "me", "affiliate", "referrals"]
             }
           },
           "response": []
@@ -686,6 +703,23 @@
               "raw": "{{baseUrl}}/api/v1/admin/affiliate/stats",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "admin", "affiliate", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Admin Affiliate Referrals",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Portal-Admin-Key", "value": "{{portalAdminKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/affiliate/referrals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "affiliate", "referrals"],
+              "query": [{ "key": "affCode", "value": "{{refCode}}", "disabled": true }]
             }
           },
           "response": []

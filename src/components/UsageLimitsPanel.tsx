@@ -8,7 +8,7 @@ import { MetricRow, ProgressBar, SummaryCard } from "./metrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatPercent, formatResetIn, formatUsd, usedPercent } from "../lib/format";
+import { formatIdr, formatPercent, formatPaygActiveUntil, formatResetIn, formatUsd, usedPercent } from "../lib/format";
 import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
 type Variant = "compact" | "detailed";
@@ -87,10 +87,16 @@ function PaygCard({
   payg,
   compact,
   topUpAllowed,
+  active,
+  activeUntil,
+  activeUnitIdr = 100_000,
 }: {
   payg: PaygBalance | null | undefined;
   compact: boolean;
   topUpAllowed: boolean;
+  active?: boolean;
+  activeUntil?: string | null;
+  activeUnitIdr?: number;
 }) {
   const hasPayg = payg != null;
   const unlimited = payg?.unlimited ?? false;
@@ -130,9 +136,14 @@ function PaygCard({
             {unlimited
               ? "Pay as you go tanpa batas."
               : hasPayg
-                ? `Spent ${formatUsd(spent)} sepanjang masa · pay as you go · tidak reset.`
+                ? `Spent ${formatUsd(spent)} sepanjang masa · pay as you go · saldo tidak hangus.`
                 : "Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa."}
           </p>
+          {active != null || activeUntil ? (
+            <p className="text-xs text-muted-foreground">
+              Masa aktif: {formatPaygActiveUntil(active, activeUntil)}
+            </p>
+          ) : null}
           {exhausted ? (
             <p className="text-sm text-destructive">
               Saldo top up habis — top up untuk lanjut (tidak ada reset window).
@@ -176,9 +187,14 @@ function PaygCard({
               <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              Spent {formatUsd(spent)} sepanjang masa · top-up akan menambah saldo di
-              sini.
+              Spent {formatUsd(spent)} sepanjang masa · top-up menambah saldo. Kelipatan penuh{" "}
+              {formatIdr(activeUnitIdr)} memperpanjang masa aktif. Sisa saldo tidak hangus.
             </p>
+            {active != null || activeUntil ? (
+              <p className="text-sm text-muted-foreground">
+                Masa aktif: {formatPaygActiveUntil(active, activeUntil)}
+              </p>
+            ) : null}
             {remaining != null && remaining <= 0 ? (
               <p className="text-sm text-destructive">
                 Saldo top up habis — top up untuk lanjut (tidak ada reset window).
@@ -201,6 +217,10 @@ export function UsageLimitsPanel({
   topUpAllowed = true,
   variant = "detailed",
   className,
+  active,
+  activeUntil,
+  activeUnitIdr = 100_000,
+  activePeriodDays = 30,
 }: {
   /** Per-key payg pool, the source of the "Saldo top up" card. */
   paygBalance?: PaygBalance | null;
@@ -210,6 +230,10 @@ export function UsageLimitsPanel({
   topUpAllowed?: boolean;
   variant?: Variant;
   className?: string;
+  active?: boolean;
+  activeUntil?: string | null;
+  activeUnitIdr?: number;
+  activePeriodDays?: number;
 }) {
   const subs = activeSubWindows(usageLimits);
   const hasSubs = subs.length > 0;
@@ -222,7 +246,7 @@ export function UsageLimitsPanel({
   // absent (older backend) we still render a hint card so users know saldo
   // is admin-managed.
   const showPayg = paygBalance == null ? true : !paygBalance.unlimited;
-  const gridCols = compact ? "md:grid-cols-2" : "";
+  const gridCols = compact && showPayg && hasSubs ? "md:grid-cols-2" : "";
   return (
     <div className={cn("grid gap-6", gridCols, className)}>
       {usageLimits && !usageLimits.enabled && hasSubs ? (
@@ -237,73 +261,80 @@ export function UsageLimitsPanel({
         </div>
       ) : null}
 
-      {showPayg ? (
-        <PaygCard payg={paygBalance} compact={compact} topUpAllowed={topUpAllowed} />
+      {active === false ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-foreground md:col-span-2">
+          Masa aktif habis — API tidak bisa dipakai. Top up minimal {formatIdr(activeUnitIdr)} untuk
+          perpanjang {activePeriodDays} hari. Sisa di bawah itu hanya nambah saldo.{" "}
+          {topUpAllowed ? (
+            <Link to="/payments" className="font-semibold text-primary hover:underline">
+              Top up →
+            </Link>
+          ) : null}
+        </div>
       ) : null}
 
-      {compact ? (
+      {showPayg ? (
+        <PaygCard
+          payg={paygBalance}
+          compact={compact}
+          topUpAllowed={topUpAllowed}
+          active={active}
+          activeUntil={activeUntil}
+          activeUnitIdr={activeUnitIdr}
+        />
+      ) : null}
+
+      {hasSubs && compact ? (
         <SummaryCard
           className="scale-in scale-in-delay-2"
           label="Limit subscription"
-          value={
-            hasSubs
-              ? `${subs.filter((s) => !s.window.exceeded).length}/${subs.length} aktif`
-              : "—"
-          }
-          hint={
-            hasSubs
-              ? "Rate cap paket · reset per window"
-              : "Belum ada limit subscription pada key ini."
-          }
+          value={`${subs.filter((s) => !s.window.exceeded).length}/${subs.length} aktif`}
+          hint="Rate cap paket · reset per window"
         >
-          {hasSubs ? (
-            <ul className="space-y-4">
-              {subs.map(({ key, label, window }) => {
-                const pct = usedPercent(window.spentUsd, window.limitUsd);
-                return (
-                  <li key={key} className="space-y-1.5 text-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={cn(
-                          "text-foreground",
-                          window.exceeded && enabled && "text-destructive"
-                        )}
-                      >
-                        {label}
-                      </span>
-                      <span
-                        className={cn(
-                          "tabular-nums text-foreground",
-                          window.exceeded && enabled && "text-destructive"
-                        )}
-                      >
-                        {formatUsd(window.remainingUsd)} / {formatUsd(window.limitUsd)}
-                      </span>
-                    </div>
-                    {enabled ? (
-                      <ProgressBar
-                        percent={pct}
-                        className={cn(
-                          window.exceeded && "[&_[data-slot=progress-indicator]]:bg-destructive"
-                        )}
-                      />
-                    ) : null}
-                    {window.resetAt ? (
-                      <p className="text-[11px] text-muted-foreground">
-                        Reset {formatResetIn(window.resetAt)}
-                      </p>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : SUBSCRIPTION_PAGE_ENABLED ? (
-            <Link to="/subscription" className="inline-block text-sm text-primary hover:underline">
-              Lihat paket Subscription →
-            </Link>
-          ) : null}
+          <ul className="space-y-4">
+            {subs.map(({ key, label, window }) => {
+              const pct = usedPercent(window.spentUsd, window.limitUsd);
+              return (
+                <li key={key} className="space-y-1.5 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={cn(
+                        "text-foreground",
+                        window.exceeded && enabled && "text-destructive"
+                      )}
+                    >
+                      {label}
+                    </span>
+                    <span
+                      className={cn(
+                        "tabular-nums text-foreground",
+                        window.exceeded && enabled && "text-destructive"
+                      )}
+                    >
+                      {formatUsd(window.remainingUsd)} / {formatUsd(window.limitUsd)}
+                    </span>
+                  </div>
+                  {enabled ? (
+                    <ProgressBar
+                      percent={pct}
+                      className={cn(
+                        window.exceeded && "[&_[data-slot=progress-indicator]]:bg-destructive"
+                      )}
+                    />
+                  ) : null}
+                  {window.resetAt ? (
+                    <p className="text-[11px] text-muted-foreground">
+                      Reset {formatResetIn(window.resetAt)}
+                    </p>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
         </SummaryCard>
-      ) : (
+      ) : null}
+
+      {hasSubs && !compact ? (
         <Card className="scale-in scale-in-delay-2">
           <CardContent className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
@@ -322,57 +353,41 @@ export function UsageLimitsPanel({
               ) : null}
             </div>
 
-            {!hasSubs ? (
-              <div className="space-y-3 rounded-lg border border-dashed border-border px-4 py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Belum ada limit subscription (5 jam / harian / mingguan) pada key ini.
-                </p>
-                {SUBSCRIPTION_PAGE_ENABLED ? (
-                  <Link
-                    to="/subscription"
-                    className="inline-block text-sm text-primary hover:underline"
-                  >
-                    Lihat paket Subscription →
-                  </Link>
-                ) : null}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {subs.map(({ key, label, window }) => (
-                  <div
-                    key={key}
-                    className={cn(
-                      "space-y-4 rounded-lg border border-border p-5",
-                      window.exceeded && enabled && "border-destructive/40 bg-destructive/5"
-                    )}
-                  >
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h4 className="font-medium text-foreground">{label}</h4>
-                      <p
-                        className={cn(
-                          "font-heading text-2xl tabular-nums font-semibold",
-                          window.exceeded && enabled ? "text-destructive" : "text-foreground"
-                        )}
-                      >
-                        {formatUsd(window.remainingUsd)}
-                        <span className="ml-1 text-sm font-normal text-muted-foreground">sisa</span>
-                      </p>
-                    </div>
-                    {enabled ? <WindowRows window={window} detailed /> : null}
-                    {window.exceeded && enabled && paygBalance?.enabled && !paygBalance.unlimited &&
-                      paygBalance.remainingUsd != null && paygBalance.remainingUsd > 0 ? (
-                      <p className="text-xs text-muted-foreground">
-                        Saldo top up masih ada, tapi {label.toLowerCase()} habis — tunggu reset
-                        window.
-                      </p>
-                    ) : null}
+            <div className="space-y-4">
+              {subs.map(({ key, label, window }) => (
+                <div
+                  key={key}
+                  className={cn(
+                    "space-y-4 rounded-lg border border-border p-5",
+                    window.exceeded && enabled && "border-destructive/40 bg-destructive/5"
+                  )}
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h4 className="font-medium text-foreground">{label}</h4>
+                    <p
+                      className={cn(
+                        "font-heading text-2xl tabular-nums font-semibold",
+                        window.exceeded && enabled ? "text-destructive" : "text-foreground"
+                      )}
+                    >
+                      {formatUsd(window.remainingUsd)}
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">sisa</span>
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
+                  {enabled ? <WindowRows window={window} detailed /> : null}
+                  {window.exceeded && enabled && paygBalance?.enabled && !paygBalance.unlimited &&
+                    paygBalance.remainingUsd != null && paygBalance.remainingUsd > 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Saldo top up masih ada, tapi {label.toLowerCase()} habis — tunggu reset
+                      window.
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
     </div>
   );
 }

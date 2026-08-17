@@ -40,6 +40,19 @@ export function formatDate(value: string | null | undefined): string {
   return date.toLocaleString();
 }
 
+/** Masa aktif label: date, "Tidak kadaluarsa", or "Habis". */
+export function formatPaygActiveUntil(
+  active: boolean | undefined,
+  activeUntil: string | null | undefined
+): string {
+  if (activeUntil) {
+    const label = formatDate(activeUntil);
+    return active === false ? `Habis (${label})` : label;
+  }
+  if (active === false) return "Habis";
+  return "Tidak kadaluarsa";
+}
+
 export function formatPercent(value: number | null | undefined, digits = 1): string {
   if (value == null || Number.isNaN(value)) return "—";
   return `${value.toFixed(digits)}%`;

@@ -8,7 +8,9 @@ import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
 import { PaymentsPage } from "./pages/PaymentsPage";
 import { SubscriptionPage } from "./pages/SubscriptionPage";
+import { ForbiddenPage } from "./pages/ForbiddenPage";
 import { SetupPage } from "./pages/SetupPage";
+import { SampleApiPage } from "./pages/SampleApiPage";
 import { AffiliatePage } from "./pages/AffiliatePage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminWithdrawalsPage } from "./pages/AdminWithdrawalsPage";
@@ -41,6 +43,7 @@ export default function App() {
         <Route path="/console" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/setup" element={<SetupPage />} />
+        <Route path="/sample-api" element={<SampleApiPage />} />
         <Route path="/models" element={<ModelsPage />} />
         <Route path="/usage" element={<UsagePage />} />
         <Route path="/logs" element={<LogsPage />} />
@@ -50,7 +53,7 @@ export default function App() {
             SUBSCRIPTION_PAGE_ENABLED ? (
               <SubscriptionPage />
             ) : (
-              <Navigate to="/console" replace />
+              <ForbiddenPage />
             )
           }
         />

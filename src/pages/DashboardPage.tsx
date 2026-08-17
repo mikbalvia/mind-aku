@@ -89,6 +89,10 @@ export function DashboardPage() {
             paygBalance={config?.paygBalance}
             usageLimits={config?.usageLimits}
             topUpAllowed={config?.topUpAllowed ?? false}
+            active={config?.active}
+            activeUntil={config?.activeUntil}
+            activeUnitIdr={config?.activeUnitIdr}
+            activePeriodDays={config?.activePeriodDays}
           />
 
           <div className="grid gap-6 md:grid-cols-1">

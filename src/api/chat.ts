@@ -26,7 +26,21 @@ async function readErrorMessage(response: Response): Promise<string> {
 }
 
 function mapHttpError(status: number, message: string): ApiError {
-  if (status === 401) return new ApiError("Invalid or expired API key.", 401, "unauthorized");
+  const lower = message.toLowerCase();
+  if (status === 401) {
+    if (
+      lower.includes("expired") ||
+      lower.includes("kadaluarsa") ||
+      lower.includes("masa aktif")
+    ) {
+      return new ApiError(
+        "Masa aktif habis. Top up minimal Rp 100.000 untuk perpanjang 30 hari.",
+        401,
+        "expired"
+      );
+    }
+    return new ApiError("Invalid or expired API key.", 401, "unauthorized");
+  }
   if (status === 403) {
     return new ApiError(
       "This API key is not allowed to use chat completions. Ask your admin to enable it.",
@@ -44,8 +58,6 @@ function mapHttpError(status: number, message: string): ApiError {
   if (status === 429) {
     return new ApiError(message || "Rate limited. Try again in a moment.", 429, "rate_limit");
   }
-  // Some gateways return 400/403 with quota wording
-  const lower = message.toLowerCase();
   if (
     lower.includes("quota") ||
     lower.includes("lifetime") ||
@@ -157,4 +169,88 @@ export async function* streamChatCompletions(
       // ignore
     }
   }
+}
+
+export type CreateChatCompletionParams = {
+  model: string;
+  messages: ChatMessage[];
+  signal?: AbortSignal;
+};
+
+export type CreateChatCompletionResult = {
+  ok: boolean;
+  status: number;
+  body: unknown;
+  error?: ApiError;
+};
+
+function messageFromBody(body: unknown, fallback: string): string {
+  if (!body || typeof body !== "object") {
+    return typeof body === "string" && body.trim() ? body : fallback;
+  }
+  const record = body as { error?: unknown; message?: unknown };
+  if (typeof record.error === "string" && record.error.trim()) return record.error;
+  if (record.error && typeof record.error === "object") {
+    const nested = (record.error as { message?: unknown }).message;
+    if (typeof nested === "string" && nested.trim()) return nested;
+  }
+  if (typeof record.message === "string" && record.message.trim()) return record.message;
+  return fallback;
+}
+
+/**
+ * Non-streaming OpenAI-compatible chat completion. Returns the raw JSON body
+ * (including gateway errors) so the Sample API page can display it.
+ */
+export async function createChatCompletion(
+  apiKey: string,
+  params: CreateChatCompletionParams
+): Promise<CreateChatCompletionResult> {
+  let response: Response;
+  try {
+    response = await fetch(`${OMNIROUTE_BASE_URL}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: params.model,
+        messages: params.messages,
+        stream: false,
+      }),
+      signal: params.signal,
+    });
+  } catch (err) {
+    if (params.signal?.aborted) throw err;
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
+    throw new ApiError(
+      "Unable to reach Mind Aku. Check the base URL and CORS settings.",
+      0,
+      "network"
+    );
+  }
+
+  const raw = await response.text();
+  let body: unknown = raw || null;
+  if (raw) {
+    try {
+      body = JSON.parse(raw) as unknown;
+    } catch {
+      body = raw;
+    }
+  }
+
+  if (!response.ok) {
+    const message = messageFromBody(body, `Request failed (${response.status})`);
+    return {
+      ok: false,
+      status: response.status,
+      body,
+      error: mapHttpError(response.status, message),
+    };
+  }
+
+  return { ok: true, status: response.status, body };
 }

@@ -3,6 +3,7 @@ export type ApiErrorCode =
   | "forbidden"
   | "network"
   | "quota"
+  | "expired"
   | "rate_limit"
   | "unknown";
 
@@ -39,7 +40,7 @@ export class ApiError extends Error {
 }
 
 export type MeStatus = {
-  apiKey: { id: string; name: string };
+  apiKey: { id: string; name: string; active?: boolean; activeUntil?: string | null };
   usage: {
     cost: {
       period: string;
@@ -203,6 +204,16 @@ export type PaymentsConfig = {
   } | null;
   /** Top-up is only available for pay-as-you-go, non-unlimited keys. */
   topUpAllowed: boolean;
+  /** Masa aktif: true when the key may call the relay. */
+  active?: boolean;
+  /** RFC3339 expiry, or null when the key never expires. */
+  activeUntil?: string | null;
+  /** Minimum top-up in IDR (credits saldo; may not add masa aktif). */
+  minTopUpIdr?: number;
+  /** IDR per 1 month of masa aktif (floor division). */
+  activeUnitIdr?: number;
+  /** Days added to masa aktif per full activeUnitIdr. */
+  activePeriodDays?: number;
   /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
   affiliate?: {
@@ -259,6 +270,7 @@ export type ShopConfig = {
   rateLabel: string;
   usdCredit: number;
   requestsPerMinute: number;
+  activePeriodDays?: number;
   configured: boolean;
   mockEnabled: boolean;
   productLabel: string;
@@ -322,6 +334,18 @@ export type AffiliateLedgerItem = {
   status: string;
   note: string;
   createdAt: string;
+};
+
+export type AffiliateReferralItem = {
+  name: string;
+  createdAt: string;
+};
+
+export type AdminAffiliateReferralItem = {
+  name: string;
+  createdAt: string;
+  affCode: string;
+  affiliatorName: string;
 };
 
 export type AffiliateWithdrawalItem = {

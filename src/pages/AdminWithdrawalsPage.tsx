@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
+  fetchAdminAffiliateReferrals,
   fetchAdminAffiliateStats,
   fetchAdminWithdrawals,
   patchAdminWithdrawal,
 } from "../api/client";
 import { ApiError } from "../api/types";
-import type { AffiliateWithdrawalItem } from "../api/types";
+import type { AdminAffiliateReferralItem, AffiliateWithdrawalItem } from "../api/types";
 import { Atmosphere } from "../components/Atmosphere";
 import { BrandLockup } from "../components/BrandLogo";
 import { clearPortalAdminKey, getPortalAdminKey } from "../lib/referral";
@@ -41,6 +42,11 @@ export function AdminWithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [affCodeInput, setAffCodeInput] = useState("");
+  const [appliedAffCode, setAppliedAffCode] = useState("");
+  const [referrals, setReferrals] = useState<AdminAffiliateReferralItem[]>([]);
+  const [referralTotal, setReferralTotal] = useState(0);
+  const [referralsLoading, setReferralsLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!adminKey) return;
@@ -69,6 +75,28 @@ export function AdminWithdrawalsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadReferrals = useCallback(async () => {
+    if (!adminKey) return;
+    setReferralsLoading(true);
+    try {
+      const list = await fetchAdminAffiliateReferrals(adminKey, appliedAffCode || undefined);
+      setReferrals(list.data ?? []);
+      setReferralTotal(list.total ?? 0);
+      setError(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        clearPortalAdminKey();
+      }
+      setError(err instanceof ApiError ? err.message : "Gagal memuat data admin.");
+    } finally {
+      setReferralsLoading(false);
+    }
+  }, [adminKey, appliedAffCode]);
+
+  useEffect(() => {
+    void loadReferrals();
+  }, [loadReferrals]);
 
   if (!adminKey) {
     return <Navigate to="/admin/login" replace />;
@@ -248,6 +276,76 @@ export function AdminWithdrawalsPage() {
                           ) : null}
                         </div>
                       </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-4 p-6">
+            <div className="space-y-1">
+              <h2 className="font-heading text-xl font-bold">Yang join via affiliate</h2>
+              <p className="text-sm text-muted-foreground">
+                {referralTotal} orang. Filter kode affiliator untuk lihat per orang.
+              </p>
+            </div>
+            <form
+              className="flex flex-wrap items-end gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setAppliedAffCode(affCodeInput.trim());
+              }}
+            >
+              <div className="min-w-[12rem] flex-1 space-y-2">
+                <label className="text-sm font-medium" htmlFor="aff-code-filter">
+                  Kode affiliator
+                </label>
+                <Input
+                  id="aff-code-filter"
+                  value={affCodeInput}
+                  onChange={(e) => setAffCodeInput(e.target.value)}
+                  placeholder="Semua affiliator"
+                />
+              </div>
+              <Button type="submit" variant="outline">
+                Filter
+              </Button>
+              {appliedAffCode ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setAffCodeInput("");
+                    setAppliedAffCode("");
+                  }}
+                >
+                  Reset
+                </Button>
+              ) : null}
+            </form>
+            {referralsLoading ? <p className="text-sm text-muted-foreground">Memuat referral…</p> : null}
+            {referrals.length === 0 && !referralsLoading ? (
+              <p className="text-sm text-muted-foreground">Tidak ada yang join.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Kode affiliator</TableHead>
+                    <TableHead>Nama affiliator</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {referrals.map((row, index) => (
+                    <TableRow key={`${row.affCode}-${row.createdAt}-${row.name}-${index}`}>
+                      <TableCell>{row.name.trim() || "—"}</TableCell>
+                      <TableCell>{new Date(row.createdAt).toLocaleString()}</TableCell>
+                      <TableCell className="font-mono text-xs">{row.affCode.trim() || "—"}</TableCell>
+                      <TableCell>{row.affiliatorName.trim() || "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -81,7 +81,7 @@ export const COMMUNITY_CLAIM_WHATSAPP_MESSAGE =
   "Hai admin Mikbalvia Digital, saya ingin klaim promo dari channel pengumuman Mind Aku.";
 
 /** Set true to show the Subscription menu, purchase page, and related CTAs. */
-export const SUBSCRIPTION_PAGE_ENABLED = true;
+export const SUBSCRIPTION_PAGE_ENABLED = false;
 
 /** Manual bank transfer for subscription plans (not SumoPod). */
 export const BCA_TRANSFER = {
@@ -157,4 +157,5 @@ export const STARTER_CREDIT = {
   usdCredit: 100,
   idrPerUsd: 1_000,
   requestsPerMinute: 20,
+  activePeriodDays: 30,
 } as const;

@@ -14,6 +14,8 @@ import {
   type ShopConfig,
   type AffiliateSummary,
   type AffiliateLedgerItem,
+  type AffiliateReferralItem,
+  type AdminAffiliateReferralItem,
   type AffiliateWithdrawalItem,
 } from "./types";
 
@@ -140,7 +142,8 @@ export function fetchPayments(apiKey: string): Promise<PaymentsListResponse> {
 export function createPayment(
   apiKey: string,
   body: {
-    usdAmount: number;
+    usdAmount?: number;
+    amountIdr?: number;
     successReturnUrl?: string;
     cancelReturnUrl?: string;
     paymentMethodTypeCode?: string;
@@ -251,6 +254,12 @@ export function fetchAffiliateLedger(
   return request("/api/v1/me/affiliate/ledger", apiKey);
 }
 
+export function fetchAffiliateReferrals(
+  apiKey: string
+): Promise<{ data: AffiliateReferralItem[]; total: number }> {
+  return request("/api/v1/me/affiliate/referrals", apiKey);
+}
+
 export function fetchAffiliateWithdrawals(
   apiKey: string
 ): Promise<{ data: AffiliateWithdrawalItem[]; total: number }> {
@@ -329,4 +338,12 @@ export function fetchAdminAffiliateStats(adminKey: string): Promise<{
   buyerBonusRate: number;
 }> {
   return requestAdmin("/api/v1/admin/affiliate/stats", adminKey);
+}
+
+export function fetchAdminAffiliateReferrals(
+  adminKey: string,
+  affCode?: string
+): Promise<{ data: AdminAffiliateReferralItem[]; total: number }> {
+  const qs = affCode ? `?affCode=${encodeURIComponent(affCode)}` : "";
+  return requestAdmin(`/api/v1/admin/affiliate/referrals${qs}`, adminKey);
 }

@@ -6,8 +6,8 @@ Customer portal (`new-clients-final`) referral program bound to **API keys** (no
 
 | Source | Buyer | Affiliate |
 |--------|-------|-----------|
-| Guest shop (`GKP-` / `guest_purchase`) | RemainQuota += paid + **10%** bonus (e.g. pay $100 → credit $110) | AffBalance += **10%** of paid |
-| Portal top-up (`TKP-` / `token_payment`) | RemainQuota += **exact paid** only | AffBalance += **10%** of paid |
+| Guest shop (`GKP-` / `guest_purchase`) | RemainQuota += paid + **5%** bonus (e.g. pay $100 → credit $105) | AffBalance += **5%** of paid |
+| Portal top-up (`TKP-` / `token_payment`) | RemainQuota += **exact paid** only | AffBalance += **5%** of paid |
 
 Without a valid referral: buyer gets exact paid credit (unchanged). Affiliate commission still requires a valid referrer.
 
@@ -36,19 +36,30 @@ Self-referral is rejected.
 
 ```bash
 AFFILIATE_ENABLED=true
-AFFILIATE_COMMISSION_RATE=0.10
-AFFILIATE_BUYER_BONUS_RATE=0.10
+AFFILIATE_COMMISSION_RATE=0.05
+AFFILIATE_BUYER_BONUS_RATE=0.05
 AFFILIATE_COOKIE_DAYS=30
 AFFILIATE_MIN_WITHDRAW_USD=10
 PORTAL_ADMIN_KEY=replace-with-long-random-admin-secret
 ```
 
+## Who joined
+
+Affiliators and portal admins can list referred buyers by `Token.Name` (shop checkout stores buyer name here). API keys and quota are never returned.
+
+| Role | Path | Fields |
+|------|------|--------|
+| Affiliator | `GET /api/v1/me/affiliate/referrals` | `name`, `createdAt` |
+| Admin | `GET /api/v1/admin/affiliate/referrals?affCode=` | `name`, `createdAt`, `affCode`, `affiliatorName` |
+
+Admin `affCode` is optional: omit it for all joins, or pass an affiliator code to filter. UI: `/affiliate` (customer) and `/admin/withdrawals` (admin).
+
 ## API
 
 | Method | Path | Auth |
 |--------|------|------|
-| GET/POST | `/api/v1/me/affiliate`, `/enable`, `/ledger`, `/withdrawals` | Bearer API key |
-| GET/PATCH | `/api/v1/admin/affiliate/withdrawals`, `/stats` | `X-Portal-Admin-Key` |
+| GET/POST | `/api/v1/me/affiliate`, `/enable`, `/ledger`, `/referrals`, `/withdrawals` | Bearer API key |
+| GET/PATCH | `/api/v1/admin/affiliate/withdrawals`, `/stats`, `/referrals` | `X-Portal-Admin-Key` |
 | POST | `/api/v1/shop/checkout` + `refCode` | public |
 | POST | `/api/v1/me/payments` + `refCode` | Bearer |
 
