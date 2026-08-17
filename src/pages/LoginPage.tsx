@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { ApiError } from "../api/types";
 import { REHYDRATE_ERROR_EVENT } from "../auth/constants";
 import { readRememberedApiKey, useAuth } from "../auth/AuthContext";
 import { Atmosphere } from "../components/Atmosphere";
+import { BrandLogo } from "../components/BrandLogo";
 import { ErrorBanner } from "../components/page-chrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,8 @@ export function LoginPage() {
 
       <div className="relative z-10 w-full max-w-xl">
         <div className="text-center">
-          <p className="brand-reveal font-display text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl">
+          <BrandLogo className="brand-reveal mx-auto size-16 drop-shadow-[0_0_28px_rgba(249,115,22,0.5)] sm:size-[4.5rem]" />
+          <p className="brand-reveal mt-5 font-heading text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl">
             {COMPANY.name}
           </p>
           <p className="rise-in rise-in-delay-1 mt-4 text-[11px] font-bold uppercase tracking-[0.28em] text-primary">
@@ -78,7 +80,7 @@ export function LoginPage() {
           </p>
         </div>
 
-        <h1 className="rise-in rise-in-delay-2 mx-auto mt-8 max-w-md text-center font-display text-3xl font-bold leading-tight tracking-tight text-foreground md:mt-10 md:text-4xl">
+        <h1 className="rise-in rise-in-delay-2 mx-auto mt-8 max-w-md text-center font-heading text-3xl font-bold leading-tight tracking-tight text-foreground md:mt-10 md:text-4xl">
           Haus IT &amp; AI?{" "}
           <span className="bg-gradient-to-r from-primary to-[var(--signal)] bg-clip-text text-transparent">
             Plug in.
@@ -142,21 +144,21 @@ export function LoginPage() {
           </Button>
         </form>
 
-        <div className="rise-in rise-in-delay-4 mx-auto mt-8 max-w-md rounded-xl border border-border bg-card/80 p-5 backdrop-blur-md">
+        <div className="rise-in rise-in-delay-4 mx-auto mt-8 max-w-md space-y-2 rounded-xl border border-border bg-card/85 p-5 backdrop-blur-md">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
             Pendaftaran
           </p>
-          <p className="mt-2 font-display text-lg font-semibold text-foreground">
+          <p className="font-heading text-lg font-semibold text-foreground">
             Belum punya API key?
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Daftar dengan Starter credit — bayar{" "}
             {formatIdr(STARTER_CREDIT.amountIdr)}, dapat ${STARTER_CREDIT.usdCredit} credit dan API
             key langsung aktif.
           </p>
-          <Button asChild variant="outline" className="mt-4 h-11 w-full">
+          <Button asChild variant="outline" className="mt-1 h-11 w-full">
             <Link to="/beli">
-              Daftar / beli credit <ArrowUpRight />
+              Daftar / beli credit <ArrowUpRight weight="bold" />
             </Link>
           </Button>
         </div>

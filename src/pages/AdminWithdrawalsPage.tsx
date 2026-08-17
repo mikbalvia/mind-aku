@@ -8,8 +8,8 @@ import {
 import { ApiError } from "../api/types";
 import type { AffiliateWithdrawalItem } from "../api/types";
 import { Atmosphere } from "../components/Atmosphere";
+import { BrandLockup } from "../components/BrandLogo";
 import { clearPortalAdminKey, getPortalAdminKey } from "../lib/referral";
-import { COMPANY } from "../lib/company";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -95,8 +95,8 @@ export function AdminWithdrawalsPage() {
       <div className="relative z-10 mx-auto max-w-5xl space-y-6 px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-display text-3xl font-extrabold tracking-tight">{COMPANY.name}</p>
-            <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-primary">
+            <BrandLockup />
+            <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
               Admin · Pencairan affiliate
             </p>
           </div>
@@ -120,21 +120,21 @@ export function AdminWithdrawalsPage() {
         {stats ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="space-y-1.5 p-6">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Liability belum cair
                 </p>
-                <p className="mt-2 font-display text-2xl font-extrabold">
+                <p className="font-heading text-2xl font-extrabold">
                   {formatUsd(stats.unpaidLiabilityUsd)}
                 </p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="space-y-1.5 p-6">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Pending / approved
                 </p>
-                <p className="mt-2 font-display text-2xl font-extrabold">{stats.pendingWithdrawals}</p>
+                <p className="font-heading text-2xl font-extrabold">{stats.pendingWithdrawals}</p>
               </CardContent>
             </Card>
           </div>
@@ -165,7 +165,7 @@ export function AdminWithdrawalsPage() {
         {loading ? <p className="text-sm text-muted-foreground">Memuat…</p> : null}
 
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             {rows.length === 0 && !loading ? (
               <p className="text-sm text-muted-foreground">Tidak ada data.</p>
             ) : (

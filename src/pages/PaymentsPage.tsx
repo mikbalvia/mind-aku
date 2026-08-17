@@ -190,11 +190,11 @@ export function PaymentsPage() {
 
       {!loading && config ? (
         <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-            <CardContent className="p-4 sm:p-6">
+          <Card className="scale-in scale-in-delay-1 border-border bg-card shadow-sm">
+            <CardContent className="space-y-5 p-4 sm:p-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h3 className="font-display text-2xl font-medium text-foreground">Select credit</h3>
+                  <h3 className="font-heading text-2xl font-medium text-foreground">Select credit</h3>
                   <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
                     {mockMode ? "Mock · " : ""}
                     {formatIdrPerUsdRate(config.idrPerUsd)}
@@ -206,13 +206,13 @@ export function PaymentsPage() {
               </div>
 
               {!config.topUpAllowed ? (
-                <div className="mt-6 rounded-lg border border-border bg-card/40 px-4 py-6 text-sm text-muted-foreground">
+                <div className="rounded-lg border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground">
                   Top-up tidak tersedia: API key ini unlimited, saldo pay-as-you-go tidak
                   diperlukan. Hubungi admin jika ini tidak sesuai.
                 </div>
               ) : (
                 <>
-                  <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {config.packages.map((pkg) => {
                       const active = !customUsd && selectedUsd === pkg.usdAmount;
                       return (
@@ -226,18 +226,18 @@ export function PaymentsPage() {
                           className={cn(
                             "rounded-lg border px-4 py-4 text-left transition-all duration-200",
                             active
-                              ? "border-primary/40 bg-accent"
-                              : "border-border hover:border-border/80"
+                              ? "border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_var(--primary),0_8px_24px_-12px_rgba(249,115,22,0.5)]"
+                              : "border-border text-foreground hover:border-primary/40 hover:bg-primary/5"
                           )}
                         >
-                          <div className="font-display text-xl text-foreground">{pkg.label}</div>
-                          <div className="mt-1 text-xs text-muted-foreground">{formatIdr(pkg.amountIdr)}</div>
+                          <div className="font-heading text-xl text-foreground">{pkg.label}</div>
+                          <div className="mt-1 text-xs font-semibold text-primary">{formatIdr(pkg.amountIdr)}</div>
                         </button>
                       );
                     })}
                   </div>
 
-                  <div className="mt-6 space-y-2">
+                  <div className="space-y-2">
                     <Label htmlFor="custom-usd" className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                       Custom USD amount
                     </Label>
@@ -253,12 +253,12 @@ export function PaymentsPage() {
                     />
                   </div>
 
-                  <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
                     <div>
                       <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                         {mockMode ? "Simulated charge" : "You pay"}
                       </p>
-                      <p className="mt-1 font-display text-2xl text-foreground">
+                      <p className="mt-1 font-heading text-2xl text-foreground">
                         {previewIdr != null ? formatIdr(previewIdr) : "—"}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
@@ -286,18 +286,18 @@ export function PaymentsPage() {
             </CardContent>
           </Card>
 
-          <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-            <CardContent className="p-6">
-              <h3 className="font-display text-2xl font-medium text-foreground">Saldo pay as you go</h3>
+          <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
+            <CardContent className="space-y-5 p-6">
+              <h3 className="font-heading text-2xl font-medium text-foreground">Saldo pay as you go</h3>
               {config.paygBalance?.enabled ? (
-                <dl className="mt-5 space-y-3 text-sm">
-                  <div className="flex justify-between gap-3 border-b border-border pb-3">
+                <dl className="space-y-3 text-sm">
+                  <div className="flex justify-between gap-3 border-b border-border pb-3.5">
                     <dt className="text-muted-foreground">Spent</dt>
                     <dd className="tabular-nums text-muted-foreground">
                       {formatUsd(config.paygBalance.spentUsd)}
                     </dd>
                   </div>
-                  <div className="flex justify-between gap-3">
+                  <div className="flex justify-between gap-3 pt-1">
                     <dt className="text-muted-foreground">Remaining</dt>
                     <dd className="tabular-nums font-medium text-primary">
                       {config.paygBalance.unlimited ? "Unlimited" : formatUsd(config.paygBalance.remainingUsd)}
@@ -305,11 +305,11 @@ export function PaymentsPage() {
                   </div>
                 </dl>
               ) : (
-                <p className="mt-5 text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Saldo ini tidak tersedia untuk key ini (unlimited).
                 </p>
               )}
-              <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 {mockMode
                   ? "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
                   : `After payment succeeds, SumoPod notifies ${COMPANY.name} and your pay-as-you-go saldo increases automatically. Rate is managed by your administrator and can change over time.`}
@@ -321,13 +321,13 @@ export function PaymentsPage() {
 
       {!loading ? (
         <div className="mt-8">
-          <h3 className="font-display text-xl font-medium text-foreground">Payment history</h3>
+          <h3 className="font-heading text-xl font-medium text-foreground">Payment history</h3>
           {history.length === 0 ? (
             <div className="mt-4">
               <EmptyState title="No top-ups yet" description="Completed payments will appear here." />
             </div>
           ) : (
-            <Card className="mt-4 overflow-hidden border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+            <Card className="mt-4 overflow-hidden border-border bg-card shadow-sm">
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>

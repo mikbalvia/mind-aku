@@ -4,6 +4,7 @@ import { createShopCheckout, fetchShopConfig, simulateShopOrder } from "../api/c
 import { ApiError } from "../api/types";
 import type { ShopConfig } from "../api/types";
 import { Atmosphere } from "../components/Atmosphere";
+import { BrandLogo } from "../components/BrandLogo";
 import { Turnstile } from "../components/Turnstile";
 import { ErrorBanner, LoadingBlock } from "../components/page-chrome";
 import { clearGuestClaimSecret, storeGuestClaimSecret } from "../lib/guestClaim";
@@ -119,14 +120,17 @@ export function BuyPage() {
       <Atmosphere />
       <div className="relative z-10 w-full max-w-lg">
         <div className="text-center">
-          <Link to="/" className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            {COMPANY.name}
-            <span className="text-primary">.</span>
+          <Link to="/" className="inline-flex flex-col items-center">
+            <BrandLogo className="size-14 drop-shadow-[0_0_24px_rgba(249,115,22,0.45)]" />
+            <span className="mt-4 font-heading text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+              {COMPANY.name}
+              <span className="text-primary">.</span>
+            </span>
           </Link>
           <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.28em] text-primary">Beli akses baru</p>
         </div>
 
-        <h1 className="mt-8 text-center font-display text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="mt-8 text-center font-heading text-3xl font-bold tracking-tight text-foreground">
           Mulai tanpa API key
         </h1>
         <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
@@ -138,22 +142,22 @@ export function BuyPage() {
             <LoadingBlock label="Memuat produk…" />
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="mt-10 space-y-6 rounded-xl border border-border bg-card/80 p-6 backdrop-blur-md">
+          <form onSubmit={onSubmit} className="mt-10 space-y-6 rounded-xl border border-border bg-card/85 p-6 backdrop-blur-md">
             {error ? <ErrorBanner message={error} /> : null}
 
             {config ? (
-              <div className="rounded-lg border border-border bg-background/50 p-4">
+              <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   {config.productLabel}
                 </p>
-                <p className="mt-2 font-display text-3xl font-bold text-foreground">
+                <p className="font-heading text-3xl font-bold text-foreground">
                   {formatIdr(config.amountIdr)}
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Kredit ≈ {formatUsd(config.usdCredit)} · RPM {config.requestsPerMinute} · {config.rateLabel}
                 </p>
                 {config.affiliateEnabled && refCode ? (
-                  <p className="mt-3 rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">
                     Referral aktif ({refCode}): Anda dapat ≈{" "}
                     {formatUsd(config.usdCredit * (1 + (config.buyerBonusRate ?? 0.1)))} credit
                     (bonus {((config.buyerBonusRate ?? 0.1) * 100).toFixed(0)}%).

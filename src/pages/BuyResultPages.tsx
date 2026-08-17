@@ -115,7 +115,7 @@ export function BuySuccessPage() {
     <div className="relative flex min-h-screen items-center justify-center px-6">
       <Atmosphere />
       <div className="relative z-10 w-full max-w-md text-center">
-        <p className="brand-reveal font-display text-4xl font-extrabold text-foreground">
+        <p className="brand-reveal font-heading text-4xl font-extrabold text-foreground">
           {status === "ready" ? "Siap dipakai" : status === "error" ? "Ada masalah" : "Hampir selesai"}
         </p>
         <div className="mx-auto mt-5 accent-line" />
@@ -160,7 +160,7 @@ export function BuyCancelPage() {
     <div className="relative flex min-h-screen items-center justify-center px-6">
       <Atmosphere />
       <div className="relative z-10 max-w-md text-center">
-        <p className="brand-reveal font-display text-4xl font-extrabold text-foreground">Dibatalkan</p>
+        <p className="brand-reveal font-heading text-4xl font-extrabold text-foreground">Dibatalkan</p>
         <div className="mx-auto mt-5 accent-line" />
         <p className="rise-in rise-in-delay-1 mt-6 text-sm text-muted-foreground">
           Tidak ada charge. Kembali kapan saja kalau mau beli akses.

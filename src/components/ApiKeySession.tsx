@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Copy, Check, Eye, EyeSlash } from "@phosphor-icons/react";
 import { maskApiKey } from "../lib/apiKeyDisplay";
 import { Button } from "@/components/ui/button";
 
@@ -66,10 +67,23 @@ export function ApiKeySession({ apiKey, memberName }: ApiKeySessionProps) {
           {display}
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="xs" onClick={() => setRevealed((v) => !v)}>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            onClick={() => setRevealed((v) => !v)}
+          >
+            {revealed ? <EyeSlash weight="bold" /> : <Eye weight="bold" />}
             {revealed ? "Hide" : "Reveal"}
           </Button>
-          <Button type="button" variant="outline" size="xs" className="text-primary" onClick={() => void onCopy()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="xs"
+            className="text-primary"
+            onClick={() => void onCopy()}
+          >
+            {copied ? <Check weight="bold" /> : <Copy weight="bold" />}
             {copied ? "Copied" : "Copy"}
           </Button>
         </div>

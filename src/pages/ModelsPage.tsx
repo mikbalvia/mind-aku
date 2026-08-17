@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ExternalLink } from "lucide-react";
+import { ArrowSquareOut } from "@phosphor-icons/react";
 import { fetchModels } from "../api/client";
 import { ApiError } from "../api/types";
 import type { ModelItem } from "../api/types";
@@ -86,7 +86,7 @@ export function ModelsPage() {
         description="Katalog model yang bisa kamu tembak. Rate dalam USD per 1M tokens."
       />
 
-      <Card className="mb-5 scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+      <Card className="mb-5 scale-in border-border bg-card shadow-sm">
         <CardContent className="p-5">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
             Notes · Pricing
@@ -103,7 +103,7 @@ export function ModelsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary hover:underline"
               >
-                OpenAI Pricing <ExternalLink className="size-3.5" />
+                OpenAI Pricing <ArrowSquareOut className="size-3.5" />
               </a>
               <span className="text-muted-foreground"> — platform.openai.com/docs/pricing</span>
             </li>
@@ -114,7 +114,7 @@ export function ModelsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary hover:underline"
               >
-                Claude Pricing <ExternalLink className="size-3.5" />
+                Claude Pricing <ArrowSquareOut className="size-3.5" />
               </a>
               <span className="text-muted-foreground">
                 {" "}
@@ -136,7 +136,7 @@ export function ModelsPage() {
       ) : null}
 
       {!loading && models.length > 0 ? (
-        <Card className="scale-in overflow-hidden border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+        <Card className="scale-in overflow-hidden border-border bg-card shadow-sm">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

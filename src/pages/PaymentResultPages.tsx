@@ -8,7 +8,7 @@ export function PaymentSuccessPage() {
     <div className="relative flex min-h-screen items-center justify-center px-6">
       <Atmosphere />
       <div className="relative z-10 max-w-md text-center">
-        <p className="brand-reveal font-display text-4xl font-extrabold text-foreground">Credit masuk</p>
+        <p className="brand-reveal font-heading text-4xl font-extrabold text-foreground">Credit masuk</p>
         <div className="mx-auto mt-5 accent-line" />
         <p className="rise-in rise-in-delay-1 mt-6 text-sm text-muted-foreground">
           Kalau transfer sukses, saldo pay as you go biasanya update sebentar setelah webhook tiba.
@@ -27,7 +27,7 @@ export function PaymentCancelPage() {
     <div className="relative flex min-h-screen items-center justify-center px-6">
       <Atmosphere />
       <div className="relative z-10 max-w-md text-center">
-        <p className="brand-reveal font-display text-4xl font-extrabold text-foreground">Dibatalkan</p>
+        <p className="brand-reveal font-heading text-4xl font-extrabold text-foreground">Dibatalkan</p>
         <div className="mx-auto mt-5 accent-line" />
         <p className="rise-in rise-in-delay-1 mt-6 text-sm text-muted-foreground">
           Tidak ada charge. Balik kapan saja kalau mau top up lagi.

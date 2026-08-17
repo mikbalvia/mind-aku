@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import {
   ArrowDown,
   Check,
-  ChevronRight,
+  CaretRight,
   Copy,
   Flame,
   Gauge,
-  Sparkles,
+  Sparkle,
   X,
-  Zap,
-} from "lucide-react";
+  Lightning,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -37,9 +37,9 @@ const NEW_MODELS: ModelHighlight[] = [
     name: "deepseek-v4-pro",
     family: "DeepSeek",
     badge: "Pro",
-    accent: "from-cyan-500/30 via-cyan-400/15 to-transparent",
-    glow: "rgba(34, 211, 238, 0.45)",
-    icon: <Gauge className="size-4" />,
+    accent: "from-primary/30 via-primary/15 to-transparent",
+    glow: "rgba(249, 115, 22, 0.45)",
+    icon: <Gauge weight="duotone" className="size-4" />,
     description:
       "Reasoning dalam untuk agent, code review, dan analisis panjang. Kualitas setingkat flagship, harga inference.",
     input: 0.35,
@@ -52,9 +52,9 @@ const NEW_MODELS: ModelHighlight[] = [
     name: "deepseek-v4-flash",
     family: "DeepSeek",
     badge: "Flash",
-    accent: "from-sky-500/30 via-sky-400/15 to-transparent",
-    glow: "rgba(56, 189, 248, 0.45)",
-    icon: <Zap className="size-4" />,
+    accent: "from-primary/25 via-primary/10 to-transparent",
+    glow: "rgba(251, 146, 60, 0.45)",
+    icon: <Lightning weight="duotone" className="size-4" />,
     description:
       "Latency rendah, throughput tinggi. Ideal untuk chat harian, autocomplete, dan pipeline RAG volume besar.",
     input: 0.08,
@@ -67,9 +67,9 @@ const NEW_MODELS: ModelHighlight[] = [
     name: "minimax-m3",
     family: "MiniMax",
     badge: "M3",
-    accent: "from-amber-500/30 via-orange-400/15 to-transparent",
-    glow: "rgba(251, 146, 60, 0.45)",
-    icon: <Sparkles className="size-4" />,
+    accent: "from-primary/30 via-primary/15 to-transparent",
+    glow: "rgba(249, 115, 22, 0.45)",
+    icon: <Sparkle weight="duotone" className="size-4" />,
     description:
       "Model multimodal yang ringan. Multibahasa kuat, cocok untuk customer support dan ringkasan dokumen.",
     input: 0.20,
@@ -82,9 +82,9 @@ const NEW_MODELS: ModelHighlight[] = [
     name: "glm-5.2",
     family: "Zhipu · GLM",
     badge: "5.2",
-    accent: "from-violet-500/30 via-fuchsia-400/15 to-transparent",
-    glow: "rgba(167, 139, 250, 0.45)",
-    icon: <Flame className="size-4" />,
+    accent: "from-primary/30 via-primary/15 to-transparent",
+    glow: "rgba(249, 115, 22, 0.45)",
+    icon: <Flame weight="duotone" className="size-4" />,
     description:
       "Generasi terbaru GLM, akurasi lebih tinggi pada tool use dan structured output. Premium murah untuk workflow produksi.",
     input: 0.50,
@@ -121,7 +121,7 @@ function ModelCard({ model }: { model: ModelHighlight }) {
   const pct = savings(model.input, model.output);
   return (
     <div
-      className="group relative overflow-hidden rounded-xl border border-border/80 bg-gradient-to-br from-card/95 to-card/60 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50"
+      className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
       style={
         {
           boxShadow: `0 0 0 1px rgba(255,255,255,0.04), 0 18px 40px -22px ${model.glow}`,
@@ -147,8 +147,8 @@ function ModelCard({ model }: { model: ModelHighlight }) {
               </p>
             </div>
           </div>
-          <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-300">
-            <ArrowDown className="mr-0.5 size-3" />
+          <span className="inline-flex shrink-0 items-center rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-success">
+            <ArrowDown weight="bold" className="mr-0.5 size-3" />
             {pct}%
           </span>
         </div>
@@ -162,7 +162,7 @@ function ModelCard({ model }: { model: ModelHighlight }) {
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               In
             </p>
-            <p className="font-display text-sm font-bold text-foreground tabular-nums">
+            <p className="font-heading text-sm font-semibold text-foreground tabular-nums">
               {formatRate(model.input)}
             </p>
           </div>
@@ -170,12 +170,12 @@ function ModelCard({ model }: { model: ModelHighlight }) {
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
               Out
             </p>
-            <p className="font-display text-sm font-bold text-foreground tabular-nums">
+            <p className="font-heading text-sm font-semibold text-foreground tabular-nums">
               {formatRate(model.output)}
             </p>
           </div>
           <p className="ml-auto hidden items-center gap-1 rounded-full border border-border/80 bg-background/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-flex">
-            <Check className="size-3 text-primary" />
+            <Check weight="bold" className="size-3 text-primary" />
             {model.bestFor}
           </p>
         </div>
@@ -186,7 +186,7 @@ function ModelCard({ model }: { model: ModelHighlight }) {
 
 function CompareRow() {
   return (
-    <div className="rounded-xl border border-border/80 bg-background/60 p-3">
+    <div className="rounded-xl border border-border bg-muted/40 p-3">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
         Perbandingan {PRICING_NOTE}
       </p>
@@ -195,7 +195,7 @@ function CompareRow() {
           <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
             Claude Opus 5
           </p>
-          <p className="font-display text-sm font-bold text-foreground/70 tabular-nums line-through decoration-1">
+          <p className="font-heading text-sm font-semibold text-foreground/70 tabular-nums line-through decoration-1">
             {formatRate(REFERENCE.opus.input)}/{formatRate(REFERENCE.opus.output)}
           </p>
         </div>
@@ -203,7 +203,7 @@ function CompareRow() {
           <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
             Sonnet 4.5
           </p>
-          <p className="font-display text-sm font-bold text-foreground/70 tabular-nums line-through decoration-1">
+          <p className="font-heading text-sm font-semibold text-foreground/70 tabular-nums line-through decoration-1">
             {formatRate(REFERENCE.sonnet.input)}/{formatRate(REFERENCE.sonnet.output)}
           </p>
         </div>
@@ -211,7 +211,7 @@ function CompareRow() {
           <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-primary">
             Model Baru
           </p>
-          <p className="font-display text-sm font-bold text-foreground tabular-nums">
+          <p className="font-heading text-sm font-semibold text-foreground tabular-nums">
             mulai $0.08
           </p>
         </div>
@@ -265,29 +265,25 @@ export function AnnouncementPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-foreground/40 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="announcement-title"
     >
-      <Card className="scale-in relative w-full max-w-2xl overflow-hidden border-primary/40 bg-card shadow-2xl shadow-primary/20 max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-xl">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-sky-500/10" />
-        <div className="pointer-events-none absolute -left-20 -top-20 size-56 rounded-full bg-primary/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 -bottom-24 size-64 rounded-full bg-sky-500/20 blur-3xl" />
-
+      <Card className="scale-in relative w-full max-w-2xl overflow-hidden max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl">
         <button
           type="button"
           onClick={dismiss}
-          className="absolute right-3 top-3 z-10 rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           aria-label="Tutup"
         >
-          <X className="size-4" />
+          <X weight="bold" className="size-4" />
         </button>
 
         <CardContent className="relative p-5 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-              <Sparkles className="size-3.5" />
+              <Sparkle weight="duotone" className="size-3.5" />
               4 Model Baru
             </div>
             <span className="hidden text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:inline">
@@ -297,10 +293,10 @@ export function AnnouncementPopup() {
 
           <h2
             id="announcement-title"
-            className="mt-4 font-display text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
+            className="mt-4 font-heading text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
           >
             Lebih murah dari Claude &amp; Sonnet.
-            <span className="block font-display text-xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
+            <span className="block font-heading text-xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
               Mulai $0.08 / 1M token.
             </span>
           </h2>
@@ -322,12 +318,12 @@ export function AnnouncementPopup() {
                 >
                   {copiedId === model.id ? (
                     <>
-                      <Check className="size-3 text-emerald-400" />
+                      <Check weight="bold" className="size-3 text-primary" />
                       Copied
                     </>
                   ) : (
                     <>
-                      <Copy className="size-3" />
+                      <Copy weight="bold" className="size-3" />
                       <span className="hidden sm:inline">{model.id}</span>
                       <span className="sm:hidden">Copy</span>
                     </>
@@ -354,7 +350,7 @@ export function AnnouncementPopup() {
               <Button asChild onClick={dismiss} className="flex-1 sm:flex-none">
                 <Link to="/models" className="inline-flex items-center">
                   Lihat di Models
-                  <ChevronRight className="size-4" />
+                  <CaretRight weight="bold" className="size-4" />
                 </Link>
               </Button>
             </div>

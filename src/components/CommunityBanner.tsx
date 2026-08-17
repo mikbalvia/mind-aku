@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Megaphone, MessageCircle, Sparkles } from "lucide-react";
+import { Megaphone, ChatCircleDots, Sparkle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -40,8 +40,7 @@ export function CommunityBanner({ className }: { className?: string }) {
     return (
       <Card
         className={cn(
-          "border-border/80 bg-card/90 shadow-sm backdrop-blur-sm",
-          campaign && "border-[var(--signal)]/35",
+          campaign && "border-accent/30",
           className
         )}
       >
@@ -64,7 +63,7 @@ export function CommunityBanner({ className }: { className?: string }) {
             </Button>
             <Button asChild size="sm" variant={campaign ? "default" : "outline"}>
               <a href={adminHref} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="size-3.5" />
+                <ChatCircleDots weight="bold" className="size-3.5" />
                 Chat admin
               </a>
             </Button>
@@ -77,27 +76,26 @@ export function CommunityBanner({ className }: { className?: string }) {
   return (
     <Card
       className={cn(
-        "overflow-hidden border-primary/35 bg-card/90 shadow-sm backdrop-blur-sm",
-        campaign && "border-[var(--signal)]/45",
+        "overflow-hidden border-primary/30",
+        campaign && "border-accent/40",
         className
       )}
     >
       <CardContent className="relative p-5 sm:p-6">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-sky-500/5" />
         <div className="relative">
           {campaign ? (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-[var(--signal)]/50 bg-[var(--signal-soft)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--signal)]">
-              <Sparkles className="size-3" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+              <Sparkle weight="fill" className="size-3" />
               Promo aktif
             </div>
           ) : (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
-              <Megaphone className="size-3" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+              <Megaphone weight="duotone" className="size-3" />
               Channel resmi
             </div>
           )}
 
-          <h3 className="mt-3 font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+          <h3 className="mt-3 font-heading text-lg font-bold tracking-tight text-foreground sm:text-xl">
             Ikuti channel pengumuman Mind Aku
           </h3>
           <p className="mt-1.5 text-sm text-muted-foreground">
@@ -120,7 +118,7 @@ export function CommunityBanner({ className }: { className?: string }) {
             </Button>
             <Button asChild variant="ghost">
               <a href={adminHref} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="size-3.5" />
+                <ChatCircleDots weight="bold" className="size-3.5" />
                 Chat admin
               </a>
             </Button>
@@ -139,7 +137,7 @@ export function CommunityJoinSoftCta({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-border/80 bg-card/60 px-4 py-3 text-left text-sm text-muted-foreground",
+        "rounded-xl border border-border bg-muted/40 px-4 py-3 text-left text-sm text-muted-foreground",
         className
       )}
     >

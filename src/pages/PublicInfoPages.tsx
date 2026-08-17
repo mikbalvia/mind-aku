@@ -1,6 +1,7 @@
-import { ArrowLeft, ExternalLink, Mail, MessageCircle } from "lucide-react";
+import { ArrowLeft, ArrowSquareOut, Envelope, ChatCircleDots } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { Atmosphere } from "../components/Atmosphere";
+import { BrandLockup } from "../components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "../lib/company";
 import { AI_BASE_URL, OMNIROUTE_BASE_URL, PUBLIC_WEB_URL, WHATSAPP_GROUP_URL, WHATSAPP_NUMBER, buildAdminWhatsAppHref, buildWhatsAppGroupHref } from "../config";
@@ -35,10 +36,10 @@ function ContactLinks() {
   const adminHref = buildAdminWhatsAppHref();
   return (
     <div className="mt-5 flex flex-wrap gap-3">
-      <Button asChild size="sm"><a href={`mailto:${COMPANY.adminEmail}`}><Mail /> Email support</a></Button>
-      <Button asChild size="sm" variant="outline"><a href={adminHref} target="_blank" rel="noopener noreferrer"><MessageCircle /> Chat admin</a></Button>
+      <Button asChild size="sm"><a href={`mailto:${COMPANY.adminEmail}`}><Envelope /> Email support</a></Button>
+      <Button asChild size="sm" variant="outline"><a href={adminHref} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Chat admin</a></Button>
       {groupHref ? (
-        <Button asChild size="sm" variant="outline"><a href={groupHref} target="_blank" rel="noopener noreferrer"><MessageCircle /> Channel pengumuman</a></Button>
+        <Button asChild size="sm" variant="outline"><a href={groupHref} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Channel pengumuman</a></Button>
       ) : null}
     </div>
   );
@@ -88,13 +89,13 @@ function Content({ page }: { page: PublicPage }) {
     <div className="my-6 rounded-xl border border-border bg-muted/50 p-5 sm:p-6"><h2 className="!mt-0">Mikbalvia Digital</h2><dl className="space-y-4"><div><dt>Email</dt><dd><a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a></dd></div><div><dt>Chat admin (WhatsApp)</dt><dd><a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a> — tanya jawab, order, bukti transfer, klaim promo</dd></div>{WHATSAPP_GROUP_URL ? <div><dt>Channel pengumuman</dt><dd><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">Join grup WhatsApp</a> — hanya admin yang kirim pesan (update &amp; promo)</dd></div> : null}<div><dt>Alamat usaha</dt><dd>Jl. Haji Kocen No. 19, RT/RW 001/006, Kel. Kalimulya, Kec. Cilodong, Depok, Jawa Barat, Indonesia</dd></div><div><dt>Website layanan</dt><dd><a href={PUBLIC_WEB_URL}>{PUBLIC_WEB_URL}</a></dd></div></dl></div>
     <h2>Jam respons</h2><p>Pesan melalui WhatsApp dan email biasanya dibalas dalam 1–24 jam pada hari kerja.</p><h2>Sebelum menghubungi</h2><p>Siapkan API Key (boleh disamarkan), ID transaksi jika terkait pembayaran, dan screenshot error agar kami dapat membantu lebih cepat.</p>
     <div className="mt-3 flex flex-wrap gap-3">
-      <Button asChild><a href={buildAdminWhatsAppHref()} target="_blank" rel="noopener noreferrer"><MessageCircle /> Chat via WhatsApp</a></Button>
-      {WHATSAPP_GROUP_URL ? <Button asChild variant="outline"><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><MessageCircle /> Join channel pengumuman</a></Button> : null}
+      <Button asChild><a href={buildAdminWhatsAppHref()} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Chat via WhatsApp</a></Button>
+      {WHATSAPP_GROUP_URL ? <Button asChild variant="outline"><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Join channel pengumuman</a></Button> : null}
     </div>
   </>;
 }
 
 export function PublicInfoPage({ page }: { page: PublicPage }) {
   const copy = pageCopy[page];
-  return <div className="relative min-h-screen overflow-hidden text-foreground"><Atmosphere /><header className="relative z-10 border-b border-border bg-background/60 backdrop-blur-md"><div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-5 sm:px-6"><Link to="/" className="font-display text-xl font-extrabold">{COMPANY.name}<span className="text-primary">.</span></Link><Button asChild variant="outline" size="sm"><Link to="/"><ArrowLeft /> Back home</Link></Button></div></header><main className="relative z-10 mx-auto max-w-3xl px-5 pb-16 sm:px-6"><header className="py-12 sm:py-16"><p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">{copy.eyebrow}</p><h1 className="mt-4 max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{copy.title}</h1><p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">{copy.lead}</p></header><article className="public-content rounded-xl border border-border bg-card/90 p-5 shadow-xl backdrop-blur-sm sm:p-8"><Content page={page} /></article><footer className="flex flex-wrap items-center justify-between gap-3 py-8 text-xs text-muted-foreground"><span>© 2026 Mikbalvia Digital.</span><a href={`mailto:${COMPANY.adminEmail}`} className="inline-flex items-center gap-1">Need help? <ExternalLink className="size-3" /></a></footer></main></div>;
+  return <div className="relative min-h-screen overflow-hidden text-foreground"><Atmosphere /><header className="relative z-10 border-b border-border bg-muted/40 backdrop-blur-md"><div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-5 sm:px-6"><Link to="/"><BrandLockup showTagline={false} markClassName="size-8" /></Link><Button asChild variant="outline" size="sm"><Link to="/"><ArrowLeft weight="bold" /> Back home</Link></Button></div></header><main className="relative z-10 mx-auto max-w-3xl px-5 pb-16 sm:px-6"><header className="py-12 sm:py-16"><p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">{copy.eyebrow}</p><h1 className="mt-4 max-w-2xl font-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{copy.title}</h1><p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">{copy.lead}</p></header><article className="public-content rounded-xl border border-border bg-card p-5 shadow-md backdrop-blur-sm sm:p-8"><Content page={page} /></article><footer className="flex flex-wrap items-center justify-between gap-3 py-8 text-xs text-muted-foreground"><span>© 2026 Mikbalvia Digital.</span><a href={`mailto:${COMPANY.adminEmail}`} className="inline-flex items-center gap-1">Need help? <ArrowSquareOut className="size-3" /></a></footer></main></div>;
 }

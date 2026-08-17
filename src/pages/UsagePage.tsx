@@ -78,10 +78,10 @@ export function UsagePage() {
             topUpAllowed={config?.topUpAllowed ?? false}
           />
 
-          <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+          <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-end justify-between gap-3">
-                <h3 className="font-display text-2xl font-medium text-foreground">Tokens</h3>
+                <h3 className="font-heading text-2xl font-medium text-foreground">Tokens</h3>
                 <p className="max-w-[10rem] truncate text-right text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   Since {formatDate(tokens?.periodStartAt)}
                 </p>

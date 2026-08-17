@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Copy, ExternalLink } from "lucide-react";
+import { Check, Copy, ArrowSquareOut } from "@phosphor-icons/react";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
@@ -222,7 +222,7 @@ function InstallCommand({
           className="shrink-0"
           onClick={() => onCopy(copyId, command)}
         >
-          {copied === copyId ? <Check /> : <Copy />}
+          {copied === copyId ? <Check weight="bold" /> : <Copy weight="bold" />}
           {copied === copyId ? "Copied" : "Copy"}
         </Button>
       </div>
@@ -273,15 +273,15 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
 
   return (
     <div className="space-y-5">
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
+            <div className="space-y-2">
               <StepLabel n={2}>Siapkan Visual Studio Code</StepLabel>
-              <h3 className="font-display text-xl font-medium text-foreground">
+              <h3 className="font-heading text-xl font-medium text-foreground">
                 Chat + Language Models
               </h3>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              <p className="max-w-2xl text-sm text-muted-foreground">
                 Pakai Chat di VS Code (atau Cursor) dengan model Mind Aku lewat{" "}
                 <strong className="text-foreground">Custom Endpoint</strong>. Auto-config akan
                 menulis <code>chatLanguageModels.json</code> dan force env key di shell kamu.
@@ -290,18 +290,18 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm">
                 <a href={VSCODE_DOWNLOAD} target="_blank" rel="noopener noreferrer">
-                  Download VS Code <ExternalLink />
+                  Download VS Code <ArrowSquareOut />
                 </a>
               </Button>
               <Button asChild variant="outline" size="sm">
                 <a href={VSCODE_LM_DOCS} target="_blank" rel="noopener noreferrer">
-                  Docs <ExternalLink />
+                  Docs <ArrowSquareOut />
                 </a>
               </Button>
             </div>
           </div>
 
-          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>Install Visual Studio Code terbaru (stabil atau Insiders).</li>
             <li>
               Pastikan fitur <strong>Chat</strong> tersedia (panel Chat di sidebar).
@@ -312,7 +312,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             </li>
           </ol>
 
-          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+          <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
             Model Mind Aku muncul di grup <strong>mindaku</strong> di model picker Chat. Thinking
             effort default: <strong>high</strong> untuk semua model dari API models. URL endpoint
             model memakai base gateway <strong>tanpa</strong> <code>/v1</code> — VS Code yang
@@ -331,7 +331,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             modelsNote="Perintah ini mengisi chatLanguageModels.json (semua model dari API, URL tanpa /v1), force OPENAI_API_KEY + ANTHROPIC_API_KEY ke shell profile, lalu siap dipakai di Chat."
           />
         ) : (
-          <Card className="border-border/80 bg-card/90">
+          <Card className="border-border bg-card">
             <CardContent className="p-6 text-sm text-muted-foreground">
               Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
             </CardContent>
@@ -339,13 +339,15 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
         )}
       </div>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={4}>Reload & pilih model</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Aktifkan model mindaku di Chat
-          </h3>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-5 p-6">
+          <div className="space-y-2">
+            <StepLabel n={4}>Reload & pilih model</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Aktifkan model mindaku di Chat
+            </h3>
+          </div>
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
               Setelah auto-config selesai, di VS Code jalankan{" "}
               <strong>Developer: Reload Window</strong> (Command Palette).
@@ -399,20 +401,22 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
         </CardContent>
       </Card>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={5}>Manual (opsional)</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Tambah Custom Endpoint sendiri
-          </h3>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Hanya jika auto-config gagal. Di VS Code: model picker →{" "}
-            <strong className="text-foreground">Manage Language Models</strong> →{" "}
-            <strong className="text-foreground">Add Models</strong> →{" "}
-            <strong className="text-foreground">Custom Endpoint</strong>.
-          </p>
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-5 p-6">
+          <div className="space-y-2">
+            <StepLabel n={5}>Manual (opsional)</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Tambah Custom Endpoint sendiri
+            </h3>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Hanya jika auto-config gagal. Di VS Code: model picker →{" "}
+              <strong className="text-foreground">Manage Language Models</strong> →{" "}
+              <strong className="text-foreground">Add Models</strong> →{" "}
+              <strong className="text-foreground">Custom Endpoint</strong>.
+            </p>
+          </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="space-y-3">
             <WizardField label="Vendor / group name" value="mindaku" mono={false} />
             <WizardField
               label="API type"
@@ -445,7 +449,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
                     size="sm"
                     onClick={() => void onCopy("vscode-key", apiKey)}
                   >
-                    {copied === "vscode-key" ? <Check /> : <Copy />}
+                    {copied === "vscode-key" ? <Check weight="bold" /> : <Copy weight="bold" />}
                     {copied === "vscode-key" ? "Copied" : "Copy"}
                   </Button>
                 </div>
@@ -453,12 +457,12 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+          <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
             Jangan isi <code>/v1</code> di URL model. Dengan <code>apiType: chat-completions</code>,
             VS Code akan memanggil <code>{baseUrl}/v1/chat/completions</code> sendiri.
           </div>
 
-          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
               Di <code>chatLanguageModels.json</code>, set per model:{" "}
               <code>thinking: true</code>,{" "}
@@ -473,7 +477,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             <li>Save file → Reload Window → pilih model mindaku di Chat.</li>
           </ol>
 
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Referensi resmi:{" "}
             <a
               href={VSCODE_LM_DOCS}
@@ -504,27 +508,27 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
 
   return (
     <div className="space-y-5">
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <StepLabel n={2}>Download Claude Desktop</StepLabel>
-              <h3 className="font-display text-xl font-medium text-foreground">
-                Pasang aplikasi resmi Anthropic
-              </h3>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Unduh Claude Desktop untuk macOS atau Windows, lalu instal. Kamu{" "}
-                <strong className="text-foreground">tidak perlu login Claude.ai</strong> jika
-                memakai gateway Mind Aku.
-              </p>
-            </div>
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-4 p-6">
+          <div className="space-y-2">
+            <StepLabel n={2}>Download Claude Desktop</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Pasang aplikasi resmi Anthropic
+            </h3>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Unduh Claude Desktop untuk macOS atau Windows, lalu instal. Kamu{" "}
+              <strong className="text-foreground">tidak perlu login Claude.ai</strong> jika
+              memakai gateway Mind Aku.
+            </p>
+          </div>
+          <div className="flex justify-end">
             <Button asChild size="sm">
               <a href={CLAUDE_DESKTOP_DOWNLOAD} target="_blank" rel="noopener noreferrer">
-                Download <ExternalLink />
+                Download <ArrowSquareOut />
               </a>
             </Button>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Sumber:{" "}
             <a
               href={CLAUDE_DESKTOP_DOWNLOAD}
@@ -539,18 +543,20 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
         </CardContent>
       </Card>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={3}>Aktifkan Developer Mode</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Buka menu Developer
-          </h3>
-          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-4 p-6">
+          <div className="space-y-2">
+            <StepLabel n={3}>Aktifkan Developer Mode</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Buka menu Developer
+            </h3>
+          </div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
             <strong>Penting:</strong> jika kamu sudah login ke akun Claude.ai di aplikasi ini,
             <strong> logout dulu</strong> sebelum lanjut. Gateway Mind Aku dipakai tanpa
             sign-in Claude.ai.
           </div>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>Buka aplikasi Claude Desktop (pastikan sudah logout jika sebelumnya login).</li>
             <li>
               Di menu bar: <strong>Help → Troubleshooting → Enable Developer Mode</strong>.
@@ -567,13 +573,15 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
         </CardContent>
       </Card>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={4}>Buka pengaturan gateway</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Configure Third-Party Inference
-          </h3>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-4 p-6">
+          <div className="space-y-2">
+            <StepLabel n={4}>Buka pengaturan gateway</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Configure Third-Party Inference
+            </h3>
+          </div>
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
               Klik <strong>Developer → Configure Third-Party Inference…</strong>
             </li>
@@ -589,17 +597,19 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
         </CardContent>
       </Card>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={5}>Isi kredensial Mind Aku</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Gateway credentials
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Di tab <strong>Connection</strong>, isi seperti berikut (sesuaikan dengan screenshot):
-          </p>
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-5 p-6">
+          <div className="space-y-2">
+            <StepLabel n={5}>Isi kredensial Mind Aku</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Gateway credentials
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Di tab <strong>Connection</strong>, isi seperti berikut (sesuaikan dengan screenshot):
+            </p>
+          </div>
 
-          <div className="mt-4 space-y-3 text-sm">
+          <div className="space-y-3 text-sm">
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                 Gateway base URL
@@ -612,7 +622,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                   size="sm"
                   onClick={() => void onCopy("gw-url", gatewayUrl)}
                 >
-                  {copied === "gw-url" ? <Check /> : <Copy />}
+                  {copied === "gw-url" ? <Check weight="bold" /> : <Copy weight="bold" />}
                   {copied === "gw-url" ? "Copied" : "Copy"}
                 </Button>
               </div>
@@ -634,7 +644,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                     size="sm"
                     onClick={() => void onCopy("gw-key", apiKey)}
                   >
-                    {copied === "gw-key" ? <Check /> : <Copy />}
+                    {copied === "gw-key" ? <Check weight="bold" /> : <Copy weight="bold" />}
                     {copied === "gw-key" ? "Copied" : "Copy"}
                   </Button>
                 </div>
@@ -656,7 +666,7 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
             </div>
           </div>
 
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Opsional: klik <strong>Test connection</strong> untuk memastikan gateway terjangkau.
           </p>
 
@@ -668,13 +678,15 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
         </CardContent>
       </Card>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
-          <StepLabel n={6}>Atur model</StepLabel>
-          <h3 className="font-display text-xl font-medium text-foreground">
-            Model discovery & tambah 3 model
-          </h3>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-4 p-6">
+          <div className="space-y-2">
+            <StepLabel n={6}>Atur model</StepLabel>
+            <h3 className="font-heading text-xl font-medium text-foreground">
+              Model discovery & tambah 3 model
+            </h3>
+          </div>
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
               Nyalakan <strong>Model discovery</strong> agar model diambil dari{" "}
               <code>{gatewayUrl}/v1/models</code>.
@@ -777,7 +789,7 @@ function WizardField({
             className="shrink-0"
             onClick={() => onCopy(copyId, value)}
           >
-            {copied === copyId ? <Check /> : <Copy />}
+            {copied === copyId ? <Check weight="bold" /> : <Copy weight="bold" />}
             {copied === copyId ? "Copied" : "Copy"}
           </Button>
         ) : null}
@@ -805,7 +817,7 @@ function CurlClientGuide({
             modelsNote={tool.modelsNote}
           />
         ) : (
-          <Card className="border-border/80 bg-card/90">
+          <Card className="border-border bg-card">
             <CardContent className="p-6 text-sm text-muted-foreground">
               Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
             </CardContent>
@@ -813,32 +825,32 @@ function CurlClientGuide({
         )}
       </div>
 
-      <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-6">
+      <Card className="scale-in border-border bg-card shadow-sm">
+        <CardContent className="space-y-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
+            <div className="space-y-2">
               <StepLabel n={3}>{tool.afterTitle}</StepLabel>
-              <h3 className="font-display text-xl font-medium text-foreground">
+              <h3 className="font-heading text-xl font-medium text-foreground">
                 Setelah curl selesai
               </h3>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              <p className="max-w-2xl text-sm text-muted-foreground">
                 Tidak perlu isi Custom Provider manual. Katalog model sudah ditulis script.
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href={tool.docs} target="_blank" rel="noopener noreferrer">
-                Docs <ExternalLink />
+                Docs <ArrowSquareOut />
               </a>
             </Button>
           </div>
 
-          <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             {tool.afterSteps.map((step) => (
               <li key={step}>{step}</li>
             ))}
           </ol>
 
-          <div className="mt-5">
+          <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               Jalankan
             </p>
@@ -847,7 +859,7 @@ function CurlClientGuide({
             </pre>
           </div>
 
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Panduan resmi:{" "}
             <a
               href={tool.docs}
@@ -897,19 +909,21 @@ export function SetupPage() {
       <div className="space-y-5">
         <GatewayEndpointCard className="scale-in-delay-1" />
 
-        <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-6">
-            <StepLabel n={1}>Pilih tool</StepLabel>
-            <h3 className="font-display text-xl font-medium text-foreground">
-              Cukup pilih salah satu
-            </h3>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Mulai dari <strong className="text-foreground">VS Code Chat</strong>, atau pilih
-              Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Langkah berikutnya
-              menyesuaikan pilihanmu.
-            </p>
+        <Card className="scale-in scale-in-delay-1 border-border bg-card shadow-sm">
+          <CardContent className="space-y-5 p-6">
+            <div className="space-y-2">
+              <StepLabel n={1}>Pilih tool</StepLabel>
+              <h3 className="font-heading text-xl font-medium text-foreground">
+                Cukup pilih salah satu
+              </h3>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                Mulai dari <strong className="text-foreground">VS Code Chat</strong>, atau pilih
+                Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Langkah berikutnya
+                menyesuaikan pilihanmu.
+              </p>
+            </div>
 
-            <div className="mt-5 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
               {TOOL_ORDER.map((id) => {
                 const item = tools[id];
                 const active = tool === id;
@@ -921,12 +935,12 @@ export function SetupPage() {
                     className={cn(
                       "rounded-xl border px-4 py-3 text-left transition-all duration-200",
                       active
-                        ? "border-primary/50 bg-accent shadow-sm"
-                        : "border-border hover:border-border/80 hover:bg-card/80"
+                        ? "border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_var(--primary),0_8px_24px_-12px_rgba(249,115,22,0.5)]"
+                        : "border-border text-foreground hover:border-primary/40 hover:bg-primary/5"
                     )}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-display text-lg text-foreground">{item.label}</p>
+                      <p className="font-heading text-lg text-foreground">{item.label}</p>
                       {active ? (
                         <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
                           Dipilih
@@ -942,7 +956,7 @@ export function SetupPage() {
         </Card>
 
         {!selected ? (
-          <Card className="border-dashed border-border/80 bg-card/50">
+          <Card className="border-dashed border-border bg-muted/40">
             <CardContent className="p-6 text-sm text-muted-foreground">
               Pilih <strong className="text-foreground">VS Code Chat</strong>,{" "}
               <strong className="text-foreground">Claude Desktop</strong>,{" "}
@@ -961,12 +975,12 @@ export function SetupPage() {
           <CurlClientGuide apiKey={apiKey} tool={selected} />
         ) : (
           <>
-            <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+            <Card className="scale-in border-border bg-card shadow-sm">
               <CardContent className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <StepLabel n={2}>Install {selected.label}</StepLabel>
-                    <h3 className="font-display text-xl font-medium text-foreground">
+                    <h3 className="font-heading text-xl font-medium text-foreground">
                       Pasang CLI di komputer kamu
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -976,7 +990,7 @@ export function SetupPage() {
                   </div>
                   <Button asChild variant="outline" size="sm">
                     <a href={selected.docs} target="_blank" rel="noopener noreferrer">
-                      Docs <ExternalLink />
+                      Docs <ArrowSquareOut />
                     </a>
                   </Button>
                 </div>
@@ -1018,7 +1032,7 @@ export function SetupPage() {
                   modelsNote={selected.modelsNote}
                 />
               ) : (
-                <Card className="border-border/80 bg-card/90">
+                <Card className="border-border bg-card">
                   <CardContent className="p-6 text-sm text-muted-foreground">
                     Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key
                     kamu.
@@ -1027,12 +1041,12 @@ export function SetupPage() {
               )}
             </div>
 
-            <Card className="scale-in border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+            <Card className="scale-in border-border bg-card shadow-sm">
               <CardContent className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <StepLabel n={4}>Editor (opsional)</StepLabel>
-                    <h3 className="font-display text-xl font-medium text-foreground">
+                    <h3 className="font-heading text-xl font-medium text-foreground">
                       VS Code, Cursor, Antigravity
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -1042,7 +1056,7 @@ export function SetupPage() {
                   </div>
                   <Button asChild variant="outline" size="sm">
                     <a href={selected.ide.docsHref} target="_blank" rel="noopener noreferrer">
-                      Docs <ExternalLink />
+                      Docs <ArrowSquareOut />
                     </a>
                   </Button>
                 </div>

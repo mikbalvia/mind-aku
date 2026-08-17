@@ -54,10 +54,10 @@ function WindowRows({
 }) {
   const pct = usedPercent(window.spentUsd, window.limitUsd);
   return (
-    <>
+    <div className="space-y-3">
       <ProgressBar percent={pct} />
       {detailed ? (
-        <dl className="mt-3">
+        <dl className="space-y-0.5">
           <MetricRow label="Limit" value={formatUsd(window.limitUsd)} />
           <MetricRow label="Spent" value={formatUsd(window.spentUsd)} />
           <MetricRow label="Sisa" value={formatUsd(window.remainingUsd)} />
@@ -68,12 +68,12 @@ function WindowRows({
           />
         </dl>
       ) : (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Spent {formatUsd(window.spentUsd)} · {pct != null ? `${pct.toFixed(1)}%` : "—"}
           {window.resetAt ? ` · reset ${formatResetIn(window.resetAt)}` : ""}
         </p>
       )}
-    </>
+    </div>
   );
 }
 
@@ -100,8 +100,8 @@ function PaygCard({
 
   if (compact) {
     return (
-      <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 p-6 shadow-sm backdrop-blur-sm">
-        <CardContent className="p-0">
+      <Card className="scale-in scale-in-delay-1">
+        <CardContent className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Saldo top up
@@ -117,7 +117,7 @@ function PaygCard({
           </div>
           <p
             className={cn(
-              "mt-3 font-display text-3xl font-medium tracking-tight md:text-4xl",
+              "font-heading text-3xl font-semibold tracking-tight md:text-4xl",
               exhausted ? "text-destructive" : "text-foreground"
             )}
           >
@@ -126,7 +126,7 @@ function PaygCard({
               <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
             ) : null}
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {unlimited
               ? "Pay as you go tanpa batas."
               : hasPayg
@@ -134,7 +134,7 @@ function PaygCard({
                 : "Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa."}
           </p>
           {exhausted ? (
-            <p className="mt-3 text-sm text-destructive">
+            <p className="text-sm text-destructive">
               Saldo top up habis — top up untuk lanjut (tidak ada reset window).
             </p>
           ) : null}
@@ -144,12 +144,12 @@ function PaygCard({
   }
 
   return (
-    <Card className="scale-in scale-in-delay-1 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-      <CardContent className="p-6">
+    <Card className="scale-in scale-in-delay-1">
+      <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h3 className="font-display text-2xl font-medium text-foreground">Saldo top up</h3>
-            <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
+          <div className="space-y-1">
+            <h3 className="font-heading text-2xl font-semibold text-foreground">Saldo top up</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
               {hasPayg ? "Pay as you go · tidak reset" : "Dikelola admin"}
             </p>
           </div>
@@ -161,12 +161,12 @@ function PaygCard({
         </div>
 
         {unlimited ? (
-          <p className="mt-6 font-display text-4xl font-medium text-foreground">Unlimited</p>
+          <p className="font-heading text-4xl font-semibold text-foreground">Unlimited</p>
         ) : hasPayg ? (
           <>
             <p
               className={cn(
-                "mt-6 font-display text-4xl font-medium",
+                "font-heading text-4xl font-semibold",
                 remaining != null && remaining <= 0
                   ? "text-destructive"
                   : "text-foreground"
@@ -175,18 +175,18 @@ function PaygCard({
               {formatUsd(remaining)}
               <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
             </p>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Spent {formatUsd(spent)} sepanjang masa · top-up akan menambah saldo di
               sini.
             </p>
             {remaining != null && remaining <= 0 ? (
-              <p className="mt-3 text-sm text-destructive">
+              <p className="text-sm text-destructive">
                 Saldo top up habis — top up untuk lanjut (tidak ada reset window).
               </p>
             ) : null}
           </>
         ) : (
-          <p className="mt-6 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa, atau buka
             halaman Top up untuk menambah.
           </p>
@@ -195,7 +195,6 @@ function PaygCard({
     </Card>
   );
 }
-
 export function UsageLimitsPanel({
   paygBalance,
   usageLimits,
@@ -223,9 +222,9 @@ export function UsageLimitsPanel({
   // absent (older backend) we still render a hint card so users know saldo
   // is admin-managed.
   const showPayg = paygBalance == null ? true : !paygBalance.unlimited;
-  const gridCols = compact ? "md:grid-cols-2" : "gap-5";
+  const gridCols = compact ? "md:grid-cols-2" : "";
   return (
-    <div className={cn("grid gap-4", gridCols, className)}>
+    <div className={cn("grid gap-6", gridCols, className)}>
       {usageLimits && !usageLimits.enabled && hasSubs ? (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 md:col-span-2">
           Limit terkonfigurasi tetapi belum diaktifkan admin (`usage limit` off). Belum di-enforce.
@@ -258,11 +257,11 @@ export function UsageLimitsPanel({
           }
         >
           {hasSubs ? (
-            <ul className="mt-4 space-y-4">
+            <ul className="space-y-4">
               {subs.map(({ key, label, window }) => {
                 const pct = usedPercent(window.spentUsd, window.limitUsd);
                 return (
-                  <li key={key} className="text-sm">
+                  <li key={key} className="space-y-1.5 text-sm">
                     <div className="flex items-center justify-between gap-2">
                       <span
                         className={cn(
@@ -285,13 +284,12 @@ export function UsageLimitsPanel({
                       <ProgressBar
                         percent={pct}
                         className={cn(
-                          "mt-2",
                           window.exceeded && "[&_[data-slot=progress-indicator]]:bg-destructive"
                         )}
                       />
                     ) : null}
                     {window.resetAt ? (
-                      <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      <p className="text-[11px] text-muted-foreground">
                         Reset {formatResetIn(window.resetAt)}
                       </p>
                     ) : null}
@@ -300,20 +298,20 @@ export function UsageLimitsPanel({
               })}
             </ul>
           ) : SUBSCRIPTION_PAGE_ENABLED ? (
-            <Link to="/subscription" className="mt-4 inline-block text-sm text-primary hover:underline">
+            <Link to="/subscription" className="inline-block text-sm text-primary hover:underline">
               Lihat paket Subscription →
             </Link>
           ) : null}
         </SummaryCard>
       ) : (
-        <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-6">
+        <Card className="scale-in scale-in-delay-2">
+          <CardContent className="space-y-5">
             <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h3 className="font-display text-2xl font-medium text-foreground">
+              <div className="space-y-1">
+                <h3 className="font-heading text-2xl font-semibold text-foreground">
                   Limit subscription
                 </h3>
-                <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
                   5 jam / harian / mingguan · terpisah dari top up
                 </p>
               </div>
@@ -325,26 +323,26 @@ export function UsageLimitsPanel({
             </div>
 
             {!hasSubs ? (
-              <div className="mt-6 rounded-lg border border-dashed border-border px-4 py-8 text-center">
+              <div className="space-y-3 rounded-lg border border-dashed border-border px-4 py-8 text-center">
                 <p className="text-sm text-muted-foreground">
                   Belum ada limit subscription (5 jam / harian / mingguan) pada key ini.
                 </p>
                 {SUBSCRIPTION_PAGE_ENABLED ? (
                   <Link
                     to="/subscription"
-                    className="mt-3 inline-block text-sm text-primary hover:underline"
+                    className="inline-block text-sm text-primary hover:underline"
                   >
                     Lihat paket Subscription →
                   </Link>
                 ) : null}
               </div>
             ) : (
-              <div className="mt-6 space-y-6">
+              <div className="space-y-4">
                 {subs.map(({ key, label, window }) => (
                   <div
                     key={key}
                     className={cn(
-                      "rounded-lg border border-border p-4",
+                      "space-y-4 rounded-lg border border-border p-5",
                       window.exceeded && enabled && "border-destructive/40 bg-destructive/5"
                     )}
                   >
@@ -352,7 +350,7 @@ export function UsageLimitsPanel({
                       <h4 className="font-medium text-foreground">{label}</h4>
                       <p
                         className={cn(
-                          "font-display text-2xl tabular-nums",
+                          "font-heading text-2xl tabular-nums font-semibold",
                           window.exceeded && enabled ? "text-destructive" : "text-foreground"
                         )}
                       >
@@ -363,7 +361,7 @@ export function UsageLimitsPanel({
                     {enabled ? <WindowRows window={window} detailed /> : null}
                     {window.exceeded && enabled && paygBalance?.enabled && !paygBalance.unlimited &&
                       paygBalance.remainingUsd != null && paygBalance.remainingUsd > 0 ? (
-                      <p className="mt-3 text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Saldo top up masih ada, tapi {label.toLowerCase()} habis — tunggu reset
                         window.
                       </p>

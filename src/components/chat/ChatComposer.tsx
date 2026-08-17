@@ -1,6 +1,8 @@
 import { type FormEvent, type KeyboardEvent } from "react";
-import { SendHorizontal, Square } from "lucide-react";
+import { PaperPlaneTilt, Stop } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { motion, useReducedMotion } from "motion/react";
+import { easeOut } from "../../lib/motion";
 
 export function ChatComposer({
   value,
@@ -20,6 +22,7 @@ export function ChatComposer({
   placeholder?: string;
 }) {
   const canSend = !disabled && !streaming && value.trim().length > 0;
+  const reduced = useReducedMotion();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -35,9 +38,12 @@ export function ChatComposer({
   }
 
   return (
-    <form
+    <motion.form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-border/80 bg-card/90 p-2 shadow-sm backdrop-blur-sm"
+      initial={reduced ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, ease: easeOut }}
+      className="rounded-2xl border border-border bg-card p-2 shadow-sm"
     >
       <textarea
         value={value}
@@ -51,17 +57,21 @@ export function ChatComposer({
 
       <div className="flex items-center justify-end gap-2 px-1 pb-1">
         {streaming ? (
-          <Button type="button" variant="outline" size="sm" onClick={onStop}>
-            <Square className="size-3.5 fill-current" />
-            Stop
-          </Button>
+          <motion.div whileTap={reduced ? undefined : { scale: 0.96 }}>
+            <Button type="button" variant="outline" size="sm" onClick={onStop}>
+              <Stop weight="fill" className="size-3.5" />
+              Stop
+            </Button>
+          </motion.div>
         ) : (
-          <Button type="submit" size="sm" disabled={!canSend}>
-            <SendHorizontal className="size-3.5" />
-            Send
-          </Button>
+          <motion.div whileTap={reduced ? undefined : { scale: 0.96 }}>
+            <Button type="submit" size="sm" disabled={!canSend}>
+              <PaperPlaneTilt weight="fill" className="size-3.5" />
+              Send
+            </Button>
+          </motion.div>
         )}
       </div>
-    </form>
+    </motion.form>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, X } from "lucide-react";
+import { ChatCircleDots, X } from "@phosphor-icons/react";
 import {
   buildAdminWhatsAppHref,
   getActiveCommunityCampaign,
@@ -25,7 +25,7 @@ export function WhatsAppWidget() {
             aria-label="Tutup bantuan WhatsApp"
             onClick={() => setOpen(false)}
           >
-            <X className="size-4" />
+            <X weight="bold" className="size-4" />
           </button>
           <p className="whatsapp-widget__title">
             {campaign ? "Klaim promo?" : "Butuh bantuan?"}
@@ -42,7 +42,7 @@ export function WhatsAppWidget() {
             className="whatsapp-widget__link"
             aria-label="Hubungi admin melalui WhatsApp"
           >
-            <MessageCircle className="size-9" strokeWidth={1.8} />
+            <ChatCircleDots weight="fill" className="size-9" />
           </a>
         </div>
       ) : (
@@ -53,7 +53,7 @@ export function WhatsAppWidget() {
           className="whatsapp-widget__link whatsapp-widget__link--closed"
           aria-label="Buka bantuan WhatsApp"
         >
-          <MessageCircle className="size-9" strokeWidth={1.8} />
+          <ChatCircleDots weight="fill" className="size-9" />
         </a>
       )}
     </div>

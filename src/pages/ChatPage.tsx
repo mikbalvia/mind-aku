@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { List } from "@phosphor-icons/react";
 import { fetchPaymentsConfig, fetchPortalModels } from "../api/client";
 import { streamChatCompletions } from "../api/chat";
 import { ApiError } from "../api/types";
@@ -288,8 +288,8 @@ export function ChatPage() {
 
   return (
     <div className="chat-page flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/60 bg-card/20">
-        <aside className="hidden w-60 shrink-0 flex-col border-r border-border/70 bg-card/40 md:flex">
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card">
+        <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-muted/30 md:flex">
           <ChatConversationList
             conversations={store.conversations}
             activeId={store.activeId}
@@ -320,7 +320,7 @@ export function ChatPage() {
         ) : null}
 
         <section className="flex min-w-0 flex-1 flex-col">
-          <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border/70 bg-card/50 px-3 py-2.5 backdrop-blur-md sm:px-4">
+          <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-3 py-2.5 sm:px-4">
             <Button
               type="button"
               variant="ghost"
@@ -329,7 +329,7 @@ export function ChatPage() {
               aria-label="Open conversations"
               onClick={() => setSidebarOpen(true)}
             >
-              <Menu className="size-4" />
+              <List weight="bold" className="size-4" />
             </Button>
 
             <div className="min-w-0 flex-1">
@@ -383,7 +383,7 @@ export function ChatPage() {
             <ChatMessageList messages={active?.messages ?? []} streaming={streaming} />
           </div>
 
-          <div className="shrink-0 border-t border-border/70 bg-card/40 px-3 py-3 sm:px-5">
+          <div className="shrink-0 border-t border-border bg-muted/20 px-3 py-3 sm:px-5">
             <div className="mx-auto max-w-3xl">
               <ChatComposer
                 value={draft}

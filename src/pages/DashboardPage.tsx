@@ -84,14 +84,14 @@ export function DashboardPage() {
           <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
 
           <UsageLimitsPanel
-            className="mb-4"
+            className="mb-6"
             variant="compact"
             paygBalance={config?.paygBalance}
             usageLimits={config?.usageLimits}
             topUpAllowed={config?.topUpAllowed ?? false}
           />
 
-          <div className="grid gap-4 md:grid-cols-1">
+          <div className="grid gap-6 md:grid-cols-1">
             <SummaryCard
               className="scale-in scale-in-delay-2"
               label="Tokens this period"
@@ -100,21 +100,21 @@ export function DashboardPage() {
             />
           </div>
 
-          <div className="mt-6 grid gap-5 lg:grid-cols-2">
-            <Card className="scale-in scale-in-delay-2 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-              <CardContent className="p-6">
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
+              <CardContent className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-display text-xl font-medium text-foreground">Recent top-ups</h3>
+                  <h3 className="font-heading text-xl font-medium text-foreground">Recent top-ups</h3>
                   <Link to="/payments" className="text-xs text-primary hover:underline">
                     All
                   </Link>
                 </div>
                 {payments.length === 0 ? (
-                  <p className="mt-6 text-sm text-muted-foreground">No top-ups yet.</p>
+                  <p className="text-sm text-muted-foreground">No top-ups yet.</p>
                 ) : (
-                  <ul className="mt-4 divide-y divide-border">
+                  <ul className="divide-y divide-border">
                     {payments.map((p) => (
-                      <li key={p.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                      <li key={p.id} className="flex items-center justify-between gap-3 py-3.5 text-sm">
                         <div>
                           <p className="text-foreground">{formatUsd(p.usdCredit)}</p>
                           <p className="text-xs text-muted-foreground">{formatDate(p.createdAt)}</p>
@@ -129,20 +129,20 @@ export function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="scale-in scale-in-delay-3 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-              <CardContent className="p-6">
+            <Card className="scale-in scale-in-delay-3 border-border bg-card shadow-sm">
+              <CardContent className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-display text-xl font-medium text-foreground">Recent requests</h3>
+                  <h3 className="font-heading text-xl font-medium text-foreground">Recent requests</h3>
                   <Link to="/logs" className="text-xs text-primary hover:underline">
                     All
                   </Link>
                 </div>
                 {logs.length === 0 ? (
-                  <p className="mt-6 text-sm text-muted-foreground">No requests yet.</p>
+                  <p className="text-sm text-muted-foreground">No requests yet.</p>
                 ) : (
-                  <ul className="mt-4 divide-y divide-border">
+                  <ul className="divide-y divide-border">
                     {logs.map((log) => (
-                      <li key={log.id} className="flex items-center justify-between gap-3 py-3 text-sm">
+                      <li key={log.id} className="flex items-center justify-between gap-3 py-3.5 text-sm">
                         <div className="min-w-0">
                           <p className="truncate text-foreground">
                             {log.comboName || log.requestedModel || log.model || "—"}

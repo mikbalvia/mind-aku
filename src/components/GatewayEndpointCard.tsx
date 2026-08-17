@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy } from "@phosphor-icons/react";
 import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,31 +33,28 @@ export function GatewayEndpointCard({ className, compact = false }: Props) {
   }
 
   return (
-    <Card
-      className={cn(
-        "scale-in border-primary/30 bg-primary/5 shadow-sm backdrop-blur-sm",
-        className
-      )}
-    >
-      <CardContent className={cn("p-5", compact ? "sm:p-5" : "sm:p-6")}>
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-          API Gateway
-        </p>
-        <h3 className="mt-1 font-display text-lg font-medium text-foreground sm:text-xl">
-          Base URL Mind Aku
-        </h3>
-        {!compact ? (
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Pakai URL ini di Claude Desktop, Claude Code, Codex, atau client OpenAI-compatible.
-            Semua request model lewat gateway ini — bukan langsung ke OpenAI/Anthropic.
+    <Card className={cn("border-primary/20", className)}>
+      <CardContent className="space-y-4">
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+            API Gateway
           </p>
-        ) : (
-          <p className="mt-1 text-sm text-muted-foreground">
-            Arahkan client ke gateway ini + API key dari portal.
-          </p>
-        )}
+          <h3 className="font-heading text-lg font-semibold text-foreground sm:text-xl">
+            Base URL Mind Aku
+          </h3>
+          {!compact ? (
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Pakai URL ini di Claude Desktop, Claude Code, Codex, atau client OpenAI-compatible.
+              Semua request model lewat gateway ini — bukan langsung ke OpenAI/Anthropic.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Arahkan client ke gateway ini + API key dari portal.
+            </p>
+          )}
+        </div>
 
-        <div className={cn("mt-4 grid gap-3", compact ? "" : "sm:grid-cols-2")}>
+        <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "sm:grid-cols-2")}>
           <EndpointRow
             label="Gateway base URL"
             value={baseUrl}
@@ -92,16 +89,16 @@ function EndpointRow({
   onCopy: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-border/80 bg-card/80 p-3">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-        <code className="min-w-0 flex-1 break-all text-[13px] text-foreground">{value}</code>
+    <div className="space-y-1.5 rounded-lg border border-border bg-muted/40 p-3">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 break-all font-mono text-[13px] text-foreground">{value}</code>
         <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={onCopy}>
-          {copied ? <Check /> : <Copy />}
+          {copied ? <Check weight="bold" /> : <Copy weight="bold" />}
           {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      <p className="mt-1.5 text-[11px] text-muted-foreground">{hint}</p>
+      <p className="text-[11px] text-muted-foreground">{hint}</p>
     </div>
   );
 }

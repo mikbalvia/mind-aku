@@ -152,8 +152,8 @@ export function LogsPage() {
         description="Jejak request dari API key kamu — biar eksperimen tetap terkontrol."
       />
 
-      <Card className="scale-in scale-in-delay-1 mb-5 border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
-        <CardContent className="grid gap-3 p-4 md:grid-cols-[140px_1fr_1.4fr_auto] md:items-end">
+      <Card className="scale-in scale-in-delay-1 mb-5 border-border bg-card shadow-sm">
+        <CardContent className="grid gap-4 p-4 sm:p-5 md:grid-cols-[140px_1fr_1.4fr_auto] md:items-end">
           <div className="space-y-2">
             <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Status</Label>
             <Select
@@ -210,7 +210,7 @@ export function LogsPage() {
 
       {!loading && logs.length > 0 ? (
         <>
-          <Card className="scale-in scale-in-delay-2 overflow-hidden border-border/80 bg-card/90 shadow-sm backdrop-blur-sm">
+          <Card className="scale-in scale-in-delay-2 overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -286,7 +286,7 @@ export function LogsPage() {
         <SheetContent side="right" className="w-full max-w-md overflow-y-auto sm:max-w-md">
           <SheetHeader className="border-b border-border pb-4">
             <div className="accent-line mb-3" />
-            <SheetTitle className="font-display text-2xl">Request</SheetTitle>
+            <SheetTitle className="font-heading text-2xl">Request</SheetTitle>
             <SheetDescription className="text-[10px] uppercase tracking-[0.18em]">
               Builder summary
             </SheetDescription>

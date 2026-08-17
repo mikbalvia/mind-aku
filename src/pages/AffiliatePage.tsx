@@ -150,68 +150,70 @@ export function AffiliatePage() {
       />
       {error ? <ErrorBanner message={error} /> : null}
       {message ? (
-        <p className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-foreground">{message}</p>
+        <p className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground">{message}</p>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="space-y-1.5 p-6">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Saldo komisi</p>
-            <p className="mt-2 font-display text-3xl font-extrabold">{formatUsd(summary.balanceUsd)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Held {formatUsd(summary.heldUsd)}</p>
+            <p className="font-heading text-3xl font-extrabold">{formatUsd(summary.balanceUsd)}</p>
+            <p className="text-xs text-muted-foreground">Held {formatUsd(summary.heldUsd)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="space-y-1.5 p-6">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lifetime</p>
-            <p className="mt-2 font-display text-3xl font-extrabold">{formatUsd(summary.lifetimeUsd)}</p>
+            <p className="font-heading text-3xl font-extrabold">{formatUsd(summary.lifetimeUsd)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="space-y-1.5 p-6">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Referral</p>
-            <p className="mt-2 font-display text-3xl font-extrabold">{summary.referredCount}</p>
+            <p className="font-heading text-3xl font-extrabold">{summary.referredCount}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-5 p-6">
           {!summary.affEnabled ? (
-            <>
+            <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Aktifkan program affiliate untuk mendapatkan kode & link referral unik.
               </p>
               <Button type="button" disabled={busy || !summary.enabled} onClick={() => void onEnable()}>
                 Aktifkan affiliate
               </Button>
-            </>
+            </div>
           ) : (
-            <>
-              <div>
+            <div className="space-y-4">
+              <div className="space-y-1">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Kode</p>
-                <p className="mt-1 font-mono text-xl font-bold tracking-widest">{summary.affCode}</p>
+                <p className="font-mono text-xl font-bold tracking-widest">{summary.affCode}</p>
               </div>
-              <div>
+              <div className="space-y-1">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Link</p>
-                <p className="mt-1 break-all text-sm text-foreground">{shareUrl}</p>
+                <p className="break-all text-sm text-foreground">{shareUrl}</p>
               </div>
               <Button type="button" variant="outline" onClick={() => void onCopyLink()}>
                 Salin link
               </Button>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
 
       {summary.affEnabled ? (
         <Card>
-          <CardContent className="pt-6">
-            <h2 className="font-display text-xl font-bold">Ajukan pencairan</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Minimum {formatUsd(summary.minWithdrawUsd)}. Transfer bank diproses manual oleh admin.
-            </p>
-            <form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={(e) => void onWithdraw(e)}>
+          <CardContent className="space-y-5 p-6">
+            <div className="space-y-1">
+              <h2 className="font-heading text-xl font-bold">Ajukan pencairan</h2>
+              <p className="text-sm text-muted-foreground">
+                Minimum {formatUsd(summary.minWithdrawUsd)}. Transfer bank diproses manual oleh admin.
+              </p>
+            </div>
+            <form className="grid gap-4 md:grid-cols-2" onSubmit={(e) => void onWithdraw(e)}>
               <div className="space-y-2">
                 <Label htmlFor="wd-usd">Jumlah (USD)</Label>
                 <Input
@@ -250,7 +252,7 @@ export function AffiliatePage() {
                 <Label htmlFor="wd-note">Catatan (opsional)</Label>
                 <Input id="wd-note" value={note} onChange={(e) => setNote(e.target.value)} />
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 pt-2">
                 <Button type="submit" disabled={busy}>
                   Kirim permintaan
                 </Button>
@@ -261,8 +263,8 @@ export function AffiliatePage() {
       ) : null}
 
       <Card>
-        <CardContent className="pt-6">
-          <h2 className="mb-3 font-display text-xl font-bold">Riwayat pencairan</h2>
+        <CardContent className="space-y-4 p-6">
+          <h2 className="font-heading text-xl font-bold">Riwayat pencairan</h2>
           {withdrawals.length === 0 ? (
             <p className="text-sm text-muted-foreground">Belum ada permintaan pencairan.</p>
           ) : (
@@ -293,8 +295,8 @@ export function AffiliatePage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
-          <h2 className="mb-3 font-display text-xl font-bold">Ledger komisi</h2>
+        <CardContent className="space-y-4 p-6">
+          <h2 className="font-heading text-xl font-bold">Ledger komisi</h2>
           {ledger.length === 0 ? (
             <p className="text-sm text-muted-foreground">Belum ada komisi.</p>
           ) : (
