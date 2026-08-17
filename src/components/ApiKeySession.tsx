@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { Copy, Check, Eye, EyeSlash } from "@phosphor-icons/react";
 import { maskApiKey } from "../lib/apiKeyDisplay";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ApiKeySessionProps = {
   apiKey: string;
   memberName?: string | null;
+  className?: string;
 };
 
 /**
  * Persistent sidebar session chip: masked key by default, reveal + copy.
  * Lives in the shell so the key is available on every page without repeating it.
  */
-export function ApiKeySession({ apiKey, memberName }: ApiKeySessionProps) {
+export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionProps) {
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -49,7 +51,12 @@ export function ApiKeySession({ apiKey, memberName }: ApiKeySessionProps) {
   const display = revealed ? apiKey : maskApiKey(apiKey);
 
   return (
-    <div className="rise-in rise-in-delay-2 mt-5 space-y-3 border-t border-border pt-4">
+    <div
+      className={cn(
+        "rise-in rise-in-delay-2 mt-5 space-y-3 border-t border-border pt-4",
+        className
+      )}
+    >
       {memberName ? (
         <p className="truncate text-xs text-muted-foreground" title={memberName}>
           Builder · {memberName}

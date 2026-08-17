@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   House,
@@ -60,17 +60,28 @@ function navClass({ isActive }: { isActive: boolean }) {
 function BrandBlock({
   apiKey,
   memberName,
+  showLockup = true,
 }: {
   apiKey?: string | null;
   memberName?: string | null;
+  showLockup?: boolean;
 }) {
   return (
     <div className="px-2">
-      <BrandLockup />
-      {apiKey ? <ApiKeySession apiKey={apiKey} memberName={memberName} /> : null}
+      {showLockup ? <BrandLockup /> : null}
+      {apiKey ? (
+        <ApiKeySession
+          apiKey={apiKey}
+          memberName={memberName}
+          className={showLockup ? undefined : "mt-0 border-t-0 pt-0"}
+        />
+      ) : null}
       {!apiKey && memberName ? (
         <p
-          className="mt-5 truncate border-t border-border pt-4 text-xs text-muted-foreground"
+          className={cn(
+            "truncate text-xs text-muted-foreground",
+            showLockup && "mt-5 border-t border-border pt-4"
+          )}
           title={memberName}
         >
           Builder · {memberName}
@@ -153,9 +164,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <Backdrop />
 
-      {/* Mobile top bar — compact, only brand mark + toggle */}
+      {/* Mobile top bar — brand name + menu toggle */}
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-[rgba(7,8,13,0.85)] px-4 backdrop-blur-xl md:hidden">
-        <BrandLockup compact />
+        <Link to="/console" className="min-w-0">
+          <BrandLockup
+            showTagline={false}
+            markClassName="size-8"
+            nameClassName="text-base"
+          />
+        </Link>
         <Button
           type="button"
           variant="outline"
@@ -189,7 +206,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-6 pt-5">
             <div className="mb-6">
-              <BrandBlock apiKey={apiKey} memberName={status?.apiKey?.name} />
+              <BrandBlock
+                apiKey={apiKey}
+                memberName={status?.apiKey?.name}
+                showLockup={false}
+              />
             </div>
             <NavList onNavigate={() => setMenuOpen(false)} />
             <div className="mt-6 border-t border-border/60 pt-5">
