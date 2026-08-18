@@ -21,6 +21,14 @@ function readStored(): StoredRef | null {
   }
 }
 
+function stripRefFromUrl() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("ref")) return;
+  url.searchParams.delete("ref");
+  const search = url.searchParams.toString();
+  window.history.replaceState(window.history.state, "", `${url.pathname}${search ? `?${search}` : ""}${url.hash}`);
+}
+
 /** Capture ?ref= on first touch; keep for cookieDays (default 30). */
 export function captureReferralFromUrl(cookieDays = 30): string | null {
   if (typeof window === "undefined") return null;
@@ -30,13 +38,15 @@ export function captureReferralFromUrl(cookieDays = 30): string | null {
   const days = cookieDays > 0 ? cookieDays : 30;
   const existing = readStored();
   // First-touch: do not overwrite an existing valid code.
-  if (existing) return existing.code;
-  const payload: StoredRef = {
-    code,
-    expiresAt: Date.now() + days * 24 * 60 * 60 * 1000,
-  };
-  localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(payload));
-  return code;
+  if (!existing) {
+    const payload: StoredRef = {
+      code,
+      expiresAt: Date.now() + days * 24 * 60 * 60 * 1000,
+    };
+    localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(payload));
+  }
+  stripRefFromUrl();
+  return existing?.code ?? code;
 }
 
 export function getStoredReferralCode(): string | null {

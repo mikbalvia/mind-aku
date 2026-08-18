@@ -57,6 +57,7 @@ export function BuyPage() {
   }, []);
 
   useEffect(() => {
+    setRefCode(captureReferralFromUrl() ?? getStoredReferralCode());
     void load();
   }, [load]);
 
@@ -158,13 +159,6 @@ export function BuyPage() {
                   Kredit ≈ {formatUsd(config.usdCredit)} · aktif {config.activePeriodDays ?? 30} hari · RPM{" "}
                   {config.requestsPerMinute} · {config.rateLabel}
                 </p>
-                {config.affiliateEnabled && refCode ? (
-                  <p className="rounded-md bg-primary/10 px-3 py-2 text-sm text-foreground">
-                    Referral aktif ({refCode}): Anda dapat ≈{" "}
-                    {formatUsd(config.usdCredit * (1 + (config.buyerBonusRate ?? 0.05)))} credit
-                    (bonus {((config.buyerBonusRate ?? 0.05) * 100).toFixed(0)}%).
-                  </p>
-                ) : null}
               </div>
             ) : null}
 
