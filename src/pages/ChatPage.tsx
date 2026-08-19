@@ -24,7 +24,7 @@ import {
   type ChatConversation,
   type ChatStoreSnapshot,
 } from "../lib/chatStore";
-import { formatUsd } from "../lib/format";
+import { formatTokenCount, formatUsd } from "../lib/format";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -37,6 +37,8 @@ import {
 type RemainingQuota = {
   remainingUsd: number | null;
   enabled: boolean;
+  tokenRemaining: number | null;
+  tokenModels: string[];
 };
 
 export function ChatPage() {
@@ -100,12 +102,12 @@ export function ChatPage() {
           if (current && list.some((m) => m.id === current)) return current;
           return list[0]?.id ?? "";
         });
-        if (payCfg?.paygBalance) {
-          setRemaining({
-            enabled: payCfg.paygBalance.enabled,
-            remainingUsd: payCfg.paygBalance.unlimited ? null : payCfg.paygBalance.remainingUsd,
-          });
-        }
+        setRemaining({
+          enabled: payCfg?.paygBalance?.enabled ?? false,
+          remainingUsd: payCfg?.paygBalance?.unlimited ? null : payCfg?.paygBalance?.remainingUsd ?? null,
+          tokenRemaining: payCfg?.tokenPackage?.enabled ? payCfg.tokenPackage.remainingTokens : null,
+          tokenModels: payCfg?.tokenPackage?.models ?? [],
+        });
       } catch (err) {
         if (cancelled) return;
         setModelsError(err instanceof ApiError ? err.message : "Failed to load models.");
@@ -134,12 +136,12 @@ export function ChatPage() {
     try {
       await refreshStatus();
       const payCfg = await fetchPaymentsConfig(apiKey);
-      if (payCfg.paygBalance) {
-        setRemaining({
-          enabled: payCfg.paygBalance.enabled,
-          remainingUsd: payCfg.paygBalance.unlimited ? null : payCfg.paygBalance.remainingUsd,
-        });
-      }
+      setRemaining({
+        enabled: payCfg.paygBalance?.enabled ?? false,
+        remainingUsd: payCfg.paygBalance?.unlimited ? null : payCfg.paygBalance?.remainingUsd ?? null,
+        tokenRemaining: payCfg.tokenPackage?.enabled ? payCfg.tokenPackage.remainingTokens : null,
+        tokenModels: payCfg.tokenPackage?.models ?? [],
+      });
     } catch {
       // non-fatal
     }
@@ -356,12 +358,25 @@ export function ChatPage() {
               </Select>
             </div>
 
-            {remaining?.enabled ? (
-              <p className="shrink-0 text-xs text-muted-foreground">
-                Saldo pay as you go{" "}
-                <span className="font-semibold text-foreground">
-                  {remaining.remainingUsd == null ? "Unlimited" : formatUsd(remaining.remainingUsd)}
-                </span>
+            {remaining?.tokenRemaining != null || remaining?.enabled ? (
+              <p className="shrink-0 text-right text-xs text-muted-foreground">
+                {remaining.tokenRemaining != null ? (
+                  <>
+                    Paket token{" "}
+                    <span className="font-semibold text-foreground">
+                      {formatTokenCount(remaining.tokenRemaining)}
+                    </span>
+                  </>
+                ) : null}
+                {remaining.tokenRemaining != null && remaining.enabled ? " · " : null}
+                {remaining.enabled ? (
+                  <>
+                    USD{" "}
+                    <span className="font-semibold text-foreground">
+                      {remaining.remainingUsd == null ? "Unlimited" : formatUsd(remaining.remainingUsd)}
+                    </span>
+                  </>
+                ) : null}
               </p>
             ) : null}
           </header>

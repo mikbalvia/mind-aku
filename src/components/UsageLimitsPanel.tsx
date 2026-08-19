@@ -2,13 +2,22 @@ import { Link } from "react-router-dom";
 import type {
   CustomerUsageLimits,
   PaygBalance,
+  TokenPackage,
   UsageLimitWindow,
 } from "../api/types";
 import { MetricRow, ProgressBar, SummaryCard } from "./metrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatIdr, formatPercent, formatPaygActiveUntil, formatResetIn, formatUsd, usedPercent } from "../lib/format";
+import {
+  formatIdr,
+  formatPercent,
+  formatPaygActiveUntil,
+  formatResetIn,
+  formatTokenCount,
+  formatUsd,
+  usedPercent,
+} from "../lib/format";
 import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
 type Variant = "compact" | "detailed";
@@ -211,8 +220,85 @@ function PaygCard({
     </Card>
   );
 }
+
+function TokenPackageCard({
+  pack,
+  compact,
+}: {
+  pack: TokenPackage;
+  compact: boolean;
+}) {
+  const remaining = pack.remainingTokens;
+  const total = pack.totalTokens;
+  const used = pack.usedTokens;
+  const exhausted = remaining <= 0;
+  const pct = usedPercent(used, total);
+  const modelLabel = pack.modelsRestricted
+    ? pack.models.join(", ")
+    : "Semua model di grup";
+
+  if (compact) {
+    return (
+      <Card className="scale-in scale-in-delay-1">
+        <CardContent className="space-y-3">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+            Paket token
+          </p>
+          <p
+            className={cn(
+              "font-heading text-3xl font-semibold tracking-tight md:text-4xl",
+              exhausted ? "text-destructive" : "text-foreground"
+            )}
+          >
+            {formatTokenCount(remaining)}
+            <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+          </p>
+          <ProgressBar percent={pct} />
+          <p className="text-sm text-muted-foreground">
+            Terpakai {formatTokenCount(used)} dari {formatTokenCount(total)} · {modelLabel}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="scale-in scale-in-delay-1">
+      <CardContent className="space-y-4">
+        <div className="space-y-1">
+          <h3 className="font-heading text-2xl font-semibold text-foreground">Paket token</h3>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+            Input + output + cache = 1
+          </p>
+        </div>
+        <p
+          className={cn(
+            "font-heading text-4xl font-semibold",
+            exhausted ? "text-destructive" : "text-foreground"
+          )}
+        >
+          {formatTokenCount(remaining)}
+          <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+        </p>
+        <ProgressBar percent={pct} />
+        <dl>
+          <MetricRow label="Terpakai" value={formatTokenCount(used)} />
+          <MetricRow label="Total paket" value={formatTokenCount(total)} />
+          <MetricRow label="Model" value={modelLabel} emphasize />
+        </dl>
+        {exhausted ? (
+          <p className="text-sm text-destructive">
+            Paket token habis. Model di daftar ini akan memakai saldo USD jika masih ada.
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function UsageLimitsPanel({
   paygBalance,
+  tokenPackage,
   usageLimits,
   topUpAllowed = true,
   variant = "detailed",
@@ -224,6 +310,8 @@ export function UsageLimitsPanel({
 }: {
   /** Per-key payg pool, the source of the "Saldo top up" card. */
   paygBalance?: PaygBalance | null;
+  /** Prepaid token package remaining on this key, if billed by tokens. */
+  tokenPackage?: TokenPackage | null;
   /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
   /** Top-up eligibility (subscription keys receive false). */
@@ -282,6 +370,10 @@ export function UsageLimitsPanel({
           activeUntil={activeUntil}
           activeUnitIdr={activeUnitIdr}
         />
+      ) : null}
+
+      {tokenPackage?.enabled ? (
+        <TokenPackageCard pack={tokenPackage} compact={compact} />
       ) : null}
 
       {hasSubs && compact ? (

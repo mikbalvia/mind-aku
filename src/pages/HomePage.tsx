@@ -26,9 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { fetchShopConfig } from "../api/client";
+import { fetchPublicPortalModels, fetchShopConfig } from "../api/client";
 import { ApiError } from "../api/types";
-import type { ShopConfig, ShopModelItem } from "../api/types";
+import type { ModelItem, ShopConfig, ShopModelItem } from "../api/types";
 import { COMPANY } from "../lib/company";
 import { Atmosphere } from "../components/Atmosphere";
 import { BrandLockup } from "../components/BrandLogo";
@@ -82,6 +82,7 @@ function formatUsdCredit(value: number): string {
 
 export function HomePage() {
   const [shop, setShop] = useState<ShopConfig | null>(null);
+  const [catalog, setCatalog] = useState<ModelItem[]>([]);
   const [shopLoading, setShopLoading] = useState(true);
   const [shopError, setShopError] = useState<string | null>(null);
 
@@ -91,8 +92,13 @@ export function HomePage() {
       setShopLoading(true);
       setShopError(null);
       try {
-        const config = await fetchShopConfig();
-        if (!cancelled) setShop(config);
+        const [config, publicModels] = await Promise.all([
+          fetchShopConfig(),
+          fetchPublicPortalModels().catch(() => null),
+        ]);
+        if (cancelled) return;
+        setShop(config);
+        setCatalog(publicModels?.data ?? []);
       } catch (err) {
         if (!cancelled) {
           setShopError(err instanceof ApiError ? err.message : "Gagal memuat katalog model.");
@@ -111,7 +117,9 @@ export function HomePage() {
   const usdCredit = shop?.usdCredit ?? STARTER_CREDIT.usdCredit;
   const idrPerUsd = shop?.idrPerUsd ?? STARTER_CREDIT.idrPerUsd;
   const rpm = shop?.requestsPerMinute ?? STARTER_CREDIT.requestsPerMinute;
-  const models: ShopModelItem[] = [...(shop?.models ?? [])].sort((a, b) => {
+  const models: Array<ShopModelItem | ModelItem> = [
+    ...(catalog.length > 0 ? catalog : (shop?.models ?? [])),
+  ].sort((a, b) => {
     const byOutput =
       (b.pricing?.output ?? Number.NEGATIVE_INFINITY) -
       (a.pricing?.output ?? Number.NEGATIVE_INFINITY);

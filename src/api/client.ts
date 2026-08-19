@@ -116,6 +116,10 @@ export function fetchPortalModels(apiKey: string): Promise<ModelsResponse> {
   return request<ModelsResponse>("/api/v1/me/models", apiKey);
 }
 
+export function fetchPublicPortalModels(): Promise<ModelsResponse> {
+  return requestPublic<ModelsResponse>("/api/v1/me/models");
+}
+
 export function fetchLogs(apiKey: string, query: LogsQuery = {}): Promise<LogsResponse> {
   const params = new URLSearchParams();
   if (query.limit != null) params.set("limit", String(query.limit));

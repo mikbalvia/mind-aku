@@ -33,6 +33,20 @@ export function formatNumber(value: number | null | undefined): string {
   return value.toLocaleString();
 }
 
+/** Compact token counts for customer dashboards, e.g. 87 juta. */
+export function formatTokenCount(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return "—";
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) {
+    const millions = value / 1_000_000;
+    return `${millions.toLocaleString("id-ID", { maximumFractionDigits: millions >= 10 ? 0 : 1 })} juta`;
+  }
+  if (abs >= 1_000) {
+    return `${(value / 1_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} rb`;
+  }
+  return value.toLocaleString("id-ID");
+}
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);

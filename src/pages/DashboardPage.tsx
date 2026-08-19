@@ -87,6 +87,7 @@ export function DashboardPage() {
             className="mb-6"
             variant="compact"
             paygBalance={config?.paygBalance}
+            tokenPackage={config?.tokenPackage ?? status?.usage.tokenPackage}
             usageLimits={config?.usageLimits}
             topUpAllowed={config?.topUpAllowed ?? false}
             active={config?.active}

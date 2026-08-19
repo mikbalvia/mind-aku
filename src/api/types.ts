@@ -62,7 +62,17 @@ export type MeStatus = {
       reasoningTokens: number;
       totalTokens: number;
     };
+    tokenPackage?: TokenPackage | null;
   };
+};
+
+export type TokenPackage = {
+  enabled: boolean;
+  remainingTokens: number;
+  usedTokens: number;
+  totalTokens: number;
+  models: string[];
+  modelsRestricted: boolean;
 };
 
 export type ModelPricing = {
@@ -216,6 +226,8 @@ export type PaymentsConfig = {
   activePeriodDays?: number;
   /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
+  /** Remaining prepaid token package on this API key, if billed by tokens. */
+  tokenPackage?: TokenPackage | null;
   affiliate?: {
     enabled: boolean;
     buyerBonusRate: number;

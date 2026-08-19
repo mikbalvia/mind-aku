@@ -74,6 +74,7 @@ export function UsagePage() {
           <UsageLimitsPanel
             variant="detailed"
             paygBalance={config?.paygBalance}
+            tokenPackage={config?.tokenPackage ?? status?.usage.tokenPackage}
             usageLimits={config?.usageLimits}
             topUpAllowed={config?.topUpAllowed ?? false}
             active={config?.active}
