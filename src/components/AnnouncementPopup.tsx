@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
   ArrowDown,
@@ -29,7 +30,7 @@ type ModelHighlight = {
   bestFor: string;
 };
 
-const PRICING_NOTE = "USD per 1M tokens";
+const PRICING_NOTE_KEY = "USD per 1M tokens";
 
 const NEW_MODELS: ModelHighlight[] = [
   {
@@ -40,8 +41,7 @@ const NEW_MODELS: ModelHighlight[] = [
     accent: "from-primary/30 via-primary/15 to-transparent",
     glow: "rgba(249, 115, 22, 0.45)",
     icon: <Gauge weight="duotone" className="size-4" />,
-    description:
-      "Reasoning dalam untuk agent, code review, dan analisis panjang. Kualitas setingkat flagship, harga inference.",
+    description: "DeepSeek Pro description",
     input: 0.35,
     output: 1.30,
     context: "128K",
@@ -55,8 +55,7 @@ const NEW_MODELS: ModelHighlight[] = [
     accent: "from-primary/25 via-primary/10 to-transparent",
     glow: "rgba(251, 146, 60, 0.45)",
     icon: <Lightning weight="duotone" className="size-4" />,
-    description:
-      "Latency rendah, throughput tinggi. Ideal untuk chat harian, autocomplete, dan pipeline RAG volume besar.",
+    description: "DeepSeek Flash description",
     input: 0.08,
     output: 0.30,
     context: "128K",
@@ -70,8 +69,7 @@ const NEW_MODELS: ModelHighlight[] = [
     accent: "from-primary/30 via-primary/15 to-transparent",
     glow: "rgba(249, 115, 22, 0.45)",
     icon: <Sparkle weight="duotone" className="size-4" />,
-    description:
-      "Model multimodal yang ringan. Multibahasa kuat, cocok untuk customer support dan ringkasan dokumen.",
+    description: "MiniMax M3 description",
     input: 0.20,
     output: 0.80,
     context: "256K",
@@ -85,8 +83,7 @@ const NEW_MODELS: ModelHighlight[] = [
     accent: "from-primary/30 via-primary/15 to-transparent",
     glow: "rgba(249, 115, 22, 0.45)",
     icon: <Flame weight="duotone" className="size-4" />,
-    description:
-      "Generasi terbaru GLM, akurasi lebih tinggi pada tool use dan structured output. Premium murah untuk workflow produksi.",
+    description: "GLM 5.2 description",
     input: 0.50,
     output: 2.00,
     context: "128K",
@@ -118,6 +115,7 @@ function savings(input: number, output: number): number {
 }
 
 function ModelCard({ model }: { model: ModelHighlight }) {
+  const { t } = useTranslation();
   const pct = savings(model.input, model.output);
   return (
     <div
@@ -154,7 +152,7 @@ function ModelCard({ model }: { model: ModelHighlight }) {
         </div>
 
         <p className="mt-3 hidden text-[12px] leading-snug text-muted-foreground sm:block">
-          {model.description}
+          {t(model.description)}
         </p>
 
         <div className="mt-3 flex items-baseline gap-4">
@@ -185,10 +183,11 @@ function ModelCard({ model }: { model: ModelHighlight }) {
 }
 
 function CompareRow() {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-border bg-muted/40 p-3">
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-        Perbandingan {PRICING_NOTE}
+        {t("Price comparison")} · {t(PRICING_NOTE_KEY)}
       </p>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center">
         <div>
@@ -227,6 +226,7 @@ function storageKey(id: string) {
 }
 
 export function AnnouncementPopup() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -275,7 +275,7 @@ export function AnnouncementPopup() {
           type="button"
           onClick={dismiss}
           className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          aria-label="Tutup"
+          aria-label={t("Close")}
         >
           <X weight="bold" className="size-4" />
         </button>
@@ -284,10 +284,10 @@ export function AnnouncementPopup() {
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
               <Sparkle weight="duotone" className="size-3.5" />
-              4 Model Baru
+              {t("4 new models")}
             </div>
             <span className="hidden text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground sm:inline">
-              {PRICING_NOTE}
+              {t(PRICING_NOTE_KEY)}
             </span>
           </div>
 
@@ -295,14 +295,13 @@ export function AnnouncementPopup() {
             id="announcement-title"
             className="mt-4 font-heading text-xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl"
           >
-            Lebih murah dari Claude &amp; Sonnet.
+            {t("Cheaper than Claude & Sonnet.")}
             <span className="block font-heading text-xl font-bold leading-tight tracking-tight text-primary sm:text-3xl">
-              Mulai $0.08 / 1M token.
+              {t("From $0.08 / 1M tokens.")}
             </span>
           </h2>
           <p className="mt-2 hidden text-sm leading-relaxed text-muted-foreground sm:block">
-            Tambahan 4 model inference cepat untuk workflow kamu. Pilih sesuai kasus —
-            dari chat harian sampai agent &amp; code review — tanpa kompromi harga.
+            {t("Four fast inference models for your workflow. Pick by use case — from daily chat to agents & code review — without compromising on price.")}
           </p>
 
           <div className="mt-4 grid grid-cols-1 gap-2.5 sm:mt-5 sm:gap-3 sm:grid-cols-2">
@@ -319,13 +318,13 @@ export function AnnouncementPopup() {
                   {copiedId === model.id ? (
                     <>
                       <Check weight="bold" className="size-3 text-primary" />
-                      Copied
+                      {t("Copied")}
                     </>
                   ) : (
                     <>
                       <Copy weight="bold" className="size-3" />
                       <span className="hidden sm:inline">{model.id}</span>
-                      <span className="sm:hidden">Copy</span>
+                      <span className="sm:hidden">{t("Copy")}</span>
                     </>
                   )}
                 </button>
@@ -339,17 +338,15 @@ export function AnnouncementPopup() {
 
           <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="hidden text-[11px] leading-snug text-muted-foreground sm:block">
-              Sudah tersedia di API key-mu. Tinggal pilih di menu{" "}
-              <strong className="text-foreground">Models</strong> atau langsung dari{" "}
-              <strong className="text-foreground">Chat</strong>.
+              {t("Already on your API key. Pick them in Models or directly from Chat.")}
             </p>
             <div className="flex shrink-0 gap-2">
               <Button type="button" variant="outline" onClick={dismiss} className="flex-1 sm:flex-none">
-                Nanti saja
+                {t("Not now")}
               </Button>
               <Button asChild onClick={dismiss} className="flex-1 sm:flex-none">
                 <Link to="/models" className="inline-flex items-center">
-                  Lihat di Models
+                  {t("See on Models")}
                   <CaretRight weight="bold" className="size-4" />
                 </Link>
               </Button>

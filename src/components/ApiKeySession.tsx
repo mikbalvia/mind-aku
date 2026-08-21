@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Copy, Check, Eye, EyeSlash } from "@phosphor-icons/react";
 import { maskApiKey } from "../lib/apiKeyDisplay";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ type ApiKeySessionProps = {
  * Lives in the shell so the key is available on every page without repeating it.
  */
 export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionProps) {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -59,7 +61,7 @@ export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionPr
     >
       {memberName ? (
         <p className="truncate text-xs text-muted-foreground" title={memberName}>
-          Builder · {memberName}
+          {t("Builder · {{name}}", { name: memberName })}
         </p>
       ) : null}
 
@@ -69,7 +71,7 @@ export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionPr
         </p>
         <p
           className="mt-1.5 break-all font-mono text-[11px] leading-relaxed text-foreground"
-          title={revealed ? apiKey : "Hidden — reveal to view full key"}
+          title={revealed ? apiKey : t("Hidden — reveal to view full key")}
         >
           {display}
         </p>
@@ -81,7 +83,7 @@ export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionPr
             onClick={() => setRevealed((v) => !v)}
           >
             {revealed ? <EyeSlash weight="bold" /> : <Eye weight="bold" />}
-            {revealed ? "Hide" : "Reveal"}
+            {revealed ? t("Hide") : t("Reveal")}
           </Button>
           <Button
             type="button"
@@ -91,7 +93,7 @@ export function ApiKeySession({ apiKey, memberName, className }: ApiKeySessionPr
             onClick={() => void onCopy()}
           >
             {copied ? <Check weight="bold" /> : <Copy weight="bold" />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? t("Copied") : t("Copy")}
           </Button>
         </div>
       </div>

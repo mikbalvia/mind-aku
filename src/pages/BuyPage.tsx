@@ -1,37 +1,25 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { createShopCheckout, fetchShopConfig, simulateShopOrder } from "../api/client";
 import { ApiError } from "../api/types";
 import type { ShopConfig } from "../api/types";
 import { Atmosphere } from "../components/Atmosphere";
 import { BrandLogo } from "../components/BrandLogo";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Turnstile } from "../components/Turnstile";
 import { ErrorBanner, LoadingBlock } from "../components/page-chrome";
 import { clearGuestClaimSecret, storeGuestClaimSecret } from "../lib/guestClaim";
 import { captureReferralFromUrl, getStoredReferralCode } from "../lib/referral";
 import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
 import { COMPANY } from "../lib/company";
+import { formatIdr, formatUsd } from "../lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function formatIdr(value: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
 export function BuyPage() {
+  const { t } = useTranslation();
   const [config, setConfig] = useState<ShopConfig | null>(null);
   const [name, setName] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -50,11 +38,11 @@ export function BuyPage() {
       const days = cfg.affiliateCookieDays ?? 30;
       setRefCode(captureReferralFromUrl(days) ?? getStoredReferralCode());
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Gagal memuat produk.");
+      setError(err instanceof ApiError ? err.message : t("Failed to load product."));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     setRefCode(captureReferralFromUrl() ?? getStoredReferralCode());
@@ -67,15 +55,15 @@ export function BuyPage() {
     event.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      setError("Nama wajib diisi.");
+      setError(t("Name is required."));
       return;
     }
     if (!config?.configured && !config?.mockEnabled) {
-      setError("Pembayaran belum dikonfigurasi. Hubungi admin.");
+      setError(t("Payments are not configured yet. Contact admin."));
       return;
     }
     if (turnstileRequired && !turnstileToken) {
-      setError("Selesaikan verifikasi keamanan dulu.");
+      setError(t("Complete the security check first."));
       return;
     }
 
@@ -103,22 +91,28 @@ export function BuyPage() {
 
       if (!isAllowedPaymentCheckoutUrl(checkout.paymentLinkUrl)) {
         clearGuestClaimSecret(checkout.orderId);
-        setError("Checkout URL tidak diizinkan.");
+        setError(t("Checkout URL is not allowed."));
         return;
       }
       window.location.replace(checkout.paymentLinkUrl);
     } catch (err) {
       setTurnstileToken(null);
       setTurnstileKey((k) => k + 1);
-      setError(err instanceof ApiError ? err.message : "Checkout gagal. Coba lagi.");
+      setError(err instanceof ApiError ? err.message : t("Checkout failed. Try again."));
     } finally {
       setSubmitting(false);
     }
   }
 
+  const amountLabel = config ? formatIdr(config.amountIdr) : formatIdr(100_000);
+  const days = config?.activePeriodDays ?? 30;
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12 sm:px-6 sm:py-16">
       <Atmosphere />
+      <div className="absolute right-5 top-5 z-20 sm:right-6 sm:top-6">
+        <LanguageSwitcher />
+      </div>
       <div className="relative z-10 w-full max-w-lg">
         <div className="text-center">
           <Link to="/" className="inline-flex flex-col items-center">
@@ -128,20 +122,24 @@ export function BuyPage() {
               <span className="text-primary">.</span>
             </span>
           </Link>
-          <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.28em] text-primary">Beli akses baru</p>
+          <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.28em] text-primary">
+            {t("Buy new access")}
+          </p>
         </div>
 
         <h1 className="mt-8 text-center font-heading text-3xl font-bold tracking-tight text-foreground">
-          Mulai tanpa API key
+          {t("Start without an API key")}
         </h1>
         <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
-          Isi nama, bayar via QRIS, lalu dapatkan API key. Minimal {config ? formatIdr(config.amountIdr) : formatIdr(100_000)} ·
-          aktif {config?.activePeriodDays ?? 30} hari · sisa saldo tidak hangus.
+          {t(
+            "Enter your name, pay via QRIS, then get an API key. From {{amount}} · active {{days}} days · unused balance never expires.",
+            { amount: amountLabel, days: String(days) }
+          )}
         </p>
 
         {loading ? (
           <div className="mt-10">
-            <LoadingBlock label="Memuat produk…" />
+            <LoadingBlock label={t("Loading product…")} />
           </div>
         ) : (
           <form onSubmit={onSubmit} className="mt-10 space-y-6 rounded-xl border border-border bg-card/85 p-6 backdrop-blur-md">
@@ -156,19 +154,23 @@ export function BuyPage() {
                   {formatIdr(config.amountIdr)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Kredit ≈ {formatUsd(config.usdCredit)} · aktif {config.activePeriodDays ?? 30} hari · RPM{" "}
-                  {config.requestsPerMinute} · {config.rateLabel}
+                  {t("Credit ≈ {{credit}} · active {{days}} days · RPM {{rpm}} · {{rate}}", {
+                    credit: formatUsd(config.usdCredit),
+                    days: String(config.activePeriodDays ?? 30),
+                    rpm: String(config.requestsPerMinute),
+                    rate: config.rateLabel,
+                  })}
                 </p>
               </div>
             ) : null}
 
             <div className="space-y-2">
-              <Label htmlFor="buyer-name">Nama</Label>
+              <Label htmlFor="buyer-name">{t("Name")}</Label>
               <Input
                 id="buyer-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nama untuk API key"
+                placeholder={t("Name for API key")}
                 autoComplete="name"
                 maxLength={50}
                 required
@@ -193,16 +195,16 @@ export function BuyPage() {
               disabled={submitting || !config || (turnstileRequired && !turnstileToken)}
             >
               {submitting
-                ? "Memproses…"
+                ? t("Processing…")
                 : config?.mockEnabled
-                  ? "Simulate purchase"
-                  : "Bayar dengan QRIS"}
+                  ? t("Simulate purchase")
+                  : t("Pay with QRIS")}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-              Sudah punya key?{" "}
+              {t("Already have a key?")}{" "}
               <Link to="/login" className="text-primary hover:underline">
-                Sign in
+                {t("Sign in")}
               </Link>
             </p>
           </form>

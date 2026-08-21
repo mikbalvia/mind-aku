@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CaretRight, Code, Sparkle, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 const ANNOUNCEMENT_ID = "vscode-chat-2026-08-10";
 
@@ -11,6 +12,7 @@ function storageKey(id: string) {
 }
 
 export function VsCodeChatAnnouncementPopup() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function VsCodeChatAnnouncementPopup() {
           type="button"
           onClick={dismiss}
           className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          aria-label="Tutup"
+          aria-label={t("Close")}
         >
           <X weight="bold" className="size-4" />
         </button>
@@ -54,7 +56,7 @@ export function VsCodeChatAnnouncementPopup() {
         <CardContent className="relative p-5 sm:p-7">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
             <Sparkle weight="duotone" className="size-3.5" />
-            Fitur Baru
+            {t("New feature")}
           </div>
 
           <div className="mt-4 flex items-start gap-3">
@@ -66,22 +68,21 @@ export function VsCodeChatAnnouncementPopup() {
                 id="vscode-chat-announcement-title"
                 className="font-heading text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl"
               >
-                Sudah support VS Code Chat
+                {t("VS Code Chat is supported")}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Pakai model Mind Aku langsung dari Chat di VS Code. Silakan buka menu{" "}
-                <strong className="text-foreground">Setup</strong> untuk langkah-langkahnya.
+                {t("Use Mind Aku models directly from Chat in VS Code. Open Setup for the steps.")}
               </p>
             </div>
           </div>
 
           <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:items-center sm:justify-end">
             <Button type="button" variant="outline" onClick={dismiss} className="flex-1 sm:flex-none">
-              Nanti saja
+              {t("Not now")}
             </Button>
             <Button asChild onClick={dismiss} className="flex-1 sm:flex-none">
               <Link to="/setup?tool=vscode" className="inline-flex items-center">
-                Buka Setup
+                {t("Open Setup")}
                 <CaretRight weight="bold" className="size-4" />
               </Link>
             </Button>

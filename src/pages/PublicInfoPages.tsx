@@ -1,101 +1,425 @@
 import { ArrowLeft, ArrowSquareOut, Envelope, ChatCircleDots } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Atmosphere } from "../components/Atmosphere";
 import { BrandLockup } from "../components/BrandLogo";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "../lib/company";
-import { AI_BASE_URL, OMNIROUTE_BASE_URL, PUBLIC_WEB_URL, WHATSAPP_GROUP_URL, WHATSAPP_NUMBER, buildAdminWhatsAppHref, buildWhatsAppGroupHref } from "../config";
+import {
+  AI_BASE_URL,
+  OMNIROUTE_BASE_URL,
+  PUBLIC_WEB_URL,
+  WHATSAPP_GROUP_URL,
+  WHATSAPP_NUMBER,
+  buildAdminWhatsAppHref,
+  buildWhatsAppGroupHref,
+} from "../config";
 
 type PublicPage = "faq" | "refund" | "terms" | "contact";
 
-const pageCopy = {
-  faq: {
-    eyebrow: "Mikbalvia Digital",
-    title: "Pertanyaan yang sering diajukan",
-    lead: "Jawaban singkat seputar layanan API Mind Aku dari Mikbalvia Digital.",
-  },
-  refund: {
-    eyebrow: "Policy / 01",
-    title: "Kebijakan pengembalian dana",
-    lead: "Ketentuan pengembalian dana untuk pembelian layanan Mind Aku.",
-  },
-  terms: {
-    eyebrow: "Policy / 02",
-    title: "Syarat dan ketentuan layanan",
-    lead: "Ketentuan penggunaan layanan API Mind Aku.",
-  },
-  contact: {
-    eyebrow: "Support channel",
-    title: "Hubungi kami",
-    lead: "Informasi kontak resmi Mikbalvia Digital untuk layanan Mind Aku.",
-  },
-} as const;
-
 function ContactLinks() {
+  const { t } = useTranslation();
   const groupHref = buildWhatsAppGroupHref();
   const adminHref = buildAdminWhatsAppHref();
   return (
     <div className="mt-5 flex flex-wrap gap-3">
-      <Button asChild size="sm"><a href={`mailto:${COMPANY.adminEmail}`}><Envelope /> Email support</a></Button>
-      <Button asChild size="sm" variant="outline"><a href={adminHref} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Chat admin</a></Button>
+      <Button asChild size="sm">
+        <a href={`mailto:${COMPANY.adminEmail}`}>
+          <Envelope /> {t("Email support")}
+        </a>
+      </Button>
+      <Button asChild size="sm" variant="outline">
+        <a href={adminHref} target="_blank" rel="noopener noreferrer">
+          <ChatCircleDots /> {t("Chat admin")}
+        </a>
+      </Button>
       {groupHref ? (
-        <Button asChild size="sm" variant="outline"><a href={groupHref} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Channel pengumuman</a></Button>
+        <Button asChild size="sm" variant="outline">
+          <a href={groupHref} target="_blank" rel="noopener noreferrer">
+            <ChatCircleDots /> {t("Announcement channel")}
+          </a>
+        </Button>
       ) : null}
     </div>
   );
 }
 
 function Content({ page }: { page: PublicPage }) {
-  if (page === "faq") return <>
-    <h2>Tentang layanan</h2>
-    <h3>Apa itu Mind Aku?</h3><p>Mind Aku adalah layanan API yang memungkinkan Anda menghubungkan berbagai tool AI seperti Claude Code, Codex, OpenClaw, KiloCode, dan lainnya ke satu endpoint API dengan API Key pribadi.</p>
-    <h3>Bagaimana cara mendapatkan API Key?</h3><p>API Key diberikan setelah Anda memesan atau mengaktifkan layanan melalui admin Mikbalvia Digital. Hubungi kami jika Anda belum memiliki API Key.</p>
-    <h3>Di mana saya bisa mengecek sisa kuota?</h3><p>Masuk ke <Link to="/login">portal Mind Aku</Link>, masukkan API Key, lalu buka dashboard untuk melihat saldo, usage, dan request.</p>
-    <h2>Penggunaan API</h2>
-    <h3>Apa Base URL yang digunakan?</h3><p><code>{AI_BASE_URL}</code></p>
-    <h3>Bagaimana auto-setup Claude Code / Codex / OpenClaw / Hermes / Claude Desktop?</h3>
-    <p>Login ke portal, buka menu <Link to="/setup">Setup</Link>. Pilih <strong>salah satu</strong> tool. OpenClaw dan Hermes cukup satu perintah curl (script memasang CLI jika belum ada, lalu menulis katalog model tanpa mengubah nama agen). Claude Desktop: download app, aktifkan Developer Mode, isi gateway Mind Aku. CLI Claude/Codex: install → auto-config → (opsional) extension di VS Code / Cursor / Antigravity. Atau jalankan (script akan meminta API key):</p>
-    <p><code>curl -fsSL &quot;{OMNIROUTE_BASE_URL}/setup&quot; | bash</code></p>
-    <p>Windows PowerShell: <code>irm &quot;{OMNIROUTE_BASE_URL}/setup&quot; | iex</code></p>
-    <p>Script mengarahkan Claude Code, Codex, OpenClaw, dan Hermes ke gateway Mind Aku. Daftar model diambil dari API gateway.</p>
-    <h3>Apakah API Key boleh dibagikan?</h3><p>Tidak. API Key bersifat pribadi dan menjadi tanggung jawab pemilik. Jangan membagikannya ke pihak lain.</p>
-    <h3>Bagaimana jika kuota habis?</h3><p>Anda dapat membeli tambahan limit melalui menu Top up pada console atau menghubungi admin untuk perpanjangan paket.</p>
-    <h2>Pembayaran dan dukungan</h2>
-    <h3>Metode pembayaran apa yang tersedia?</h3><p>Pembayaran dilakukan melalui QRIS atau metode digital lain yang tersedia di halaman pembelian pada saat transaksi.</p>
-    <h3>Berapa lama limit ditambahkan setelah bayar?</h3><p>Umumnya dalam beberapa menit setelah pembayaran terkonfirmasi. Jika lebih dari 30 menit belum masuk, hubungi support dengan ID transaksi Anda.</p>
-    <h3>Bagaimana cara menghubungi admin?</h3><p>Email: <a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a>, WhatsApp admin: <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a>. Untuk tanya jawab, order, bukti transfer, atau klaim promo — gunakan chat admin (bukan grup).</p>
-    <h3>Apa itu channel pengumuman WhatsApp?</h3><p>Channel resmi Mind Aku untuk update model, status layanan, dan promo. Hanya admin yang bisa mengirim pesan. Anggota tidak bisa balas di grup.</p>
-    <h3>Kenapa saya tidak bisa chat di grup?</h3><p>Grup dikunci announcement-only agar tetap bersih dari spam. Untuk bantuan atau klaim promo, hubungi admin via WhatsApp pribadi.</p>
-    {WHATSAPP_GROUP_URL ? <p>Join channel: <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">{WHATSAPP_GROUP_URL}</a></p> : null}
-  </>;
+  const { t } = useTranslation();
 
-  if (page === "refund") return <>
-    <p>Terakhir diperbarui: 23 Juni 2026</p><h2>1. Ruang lingkup</h2><p>Kebijakan ini berlaku untuk pembelian tambahan limit request, perpanjangan paket, dan transaksi berbayar lain yang dilakukan melalui layanan Mind Aku yang dioperasikan oleh Mikbalvia Digital.</p>
-    <h2>2. Produk digital</h2><p>Layanan Mind Aku berupa akses API dan kuota request digital. Setelah kuota ditambahkan ke API Key Anda, layanan dianggap telah dikirimkan.</p>
-    <h2>3. Kondisi refund</h2><p>Pengembalian dana dapat diajukan apabila:</p><ul><li>Pembayaran berhasil tetapi kuota tidak ditambahkan dalam 24 jam setelah konfirmasi, dan masalah belum terselesaikan oleh tim support.</li><li>Terjadi kesalahan penagihan ganda untuk transaksi yang sama.</li><li>Layanan tidak dapat digunakan karena gangguan sistem di pihak kami yang berlangsung lebih dari 48 jam berturut-turut.</li></ul>
-    <h2>4. Kondisi yang tidak dapat direfund</h2><ul><li>Kuota sudah ditambahkan dan/atau sudah digunakan sebagian atau seluruhnya.</li><li>Kesalahan penggunaan API Key, konfigurasi tool, atau kelalaian pengguna.</li><li>Permintaan refund setelah 7 hari sejak tanggal transaksi tanpa bukti masalah teknis.</li></ul>
-    <h2>5. Cara mengajukan refund</h2><p>Kirim ID transaksi atau bukti pembayaran, API Key yang boleh disamarkan sebagian, dan alasan pengajuan refund melalui saluran support. Tim kami akan meninjau dalam 1–3 hari kerja.</p><ContactLinks />
-    <h2>6. Metode pengembalian</h2><p>Refund dilakukan ke rekening atau metode pembayaran yang sama sesuai kebijakan penyedia pembayaran, atau melalui transfer bank jika diperlukan.</p>
-  </>;
+  if (page === "faq")
+    return (
+      <>
+        <h2>{t("About the service")}</h2>
+        <h3>{t("What is Mind Aku?")}</h3>
+        <p>
+          {t(
+            "Mind Aku is an API service that lets you connect AI tools such as Claude Code, Codex, OpenClaw, KiloCode, and others to a single API endpoint with your personal API key."
+          )}
+        </p>
+        <h3>{t("How do I get an API key?")}</h3>
+        <p>
+          {t(
+            "An API key is issued after you order or activate the service through Mikbalvia Digital admin. Contact us if you do not have an API key yet."
+          )}
+        </p>
+        <h3>{t("Where can I check remaining quota?")}</h3>
+        <p>
+          {t(
+            "Sign in to the Mind Aku portal, enter your API key, then open the dashboard to see balance, usage, and requests."
+          )}
+        </p>
+        <h2>{t("API usage")}</h2>
+        <h3>{t("What Base URL should I use?")}</h3>
+        <p>
+          <code>{AI_BASE_URL}</code>
+        </p>
+        <h3>{t("How do I auto-setup Claude Code / Codex / OpenClaw / Hermes / Claude Desktop?")}</h3>
+        <p>
+          {t(
+            "Log in to the portal and open Setup. Pick one tool. OpenClaw and Hermes need a single curl command (the script installs the CLI if needed, then writes the model catalog without renaming agents). Claude Desktop: download the app, enable Developer Mode, and fill in the Mind Aku gateway. Claude/Codex CLI: install → auto-config → (optional) extension in VS Code / Cursor / Antigravity. Or run (the script will ask for your API key):"
+          )}
+        </p>
+        <p>
+          <code>{`curl -fsSL "${OMNIROUTE_BASE_URL}/setup" | bash`}</code>
+        </p>
+        <p>
+          {t("Windows PowerShell:")}{" "}
+          <code>{`irm "${OMNIROUTE_BASE_URL}/setup" | iex`}</code>
+        </p>
+        <p>
+          {t(
+            "The script points Claude Code, Codex, OpenClaw, and Hermes at the Mind Aku gateway. Model lists come from the gateway API."
+          )}
+        </p>
+        <h3>{t("May I share my API key?")}</h3>
+        <p>
+          {t(
+            "No. Your API key is personal and your responsibility. Do not share it with others."
+          )}
+        </p>
+        <h3>{t("What if my quota runs out?")}</h3>
+        <p>
+          {t(
+            "You can buy more limit via Top up in the console or contact admin to renew your package."
+          )}
+        </p>
+        <h2>{t("Payments and support")}</h2>
+        <h3>{t("What payment methods are available?")}</h3>
+        <p>
+          {t(
+            "Payment is via QRIS or other digital methods shown on the purchase page at checkout."
+          )}
+        </p>
+        <h3>{t("How long until limits are added after payment?")}</h3>
+        <p>
+          {t(
+            "Usually within a few minutes after payment is confirmed. If it has not arrived after 30 minutes, contact support with your transaction ID."
+          )}
+        </p>
+        <h3>{t("How do I contact admin?")}</h3>
+        <p>
+          {t(
+            "Email: {{email}}, WhatsApp admin: +{{phone}}. For questions, orders, transfer proof, or promo claims — use admin chat (not the group).",
+            { email: COMPANY.adminEmail, phone: WHATSAPP_NUMBER }
+          )}
+        </p>
+        <h3>{t("What is the WhatsApp announcement channel?")}</h3>
+        <p>
+          {t(
+            "The official Mind Aku channel for model updates, service status, and promos. Only admins can post. Members cannot reply in the group."
+          )}
+        </p>
+        <h3>{t("Why can't I chat in the group?")}</h3>
+        <p>
+          {t(
+            "The group is announcement-only to stay free of spam. For help or promo claims, contact admin on private WhatsApp."
+          )}
+        </p>
+        {WHATSAPP_GROUP_URL ? (
+          <p>
+            {t("Join channel:")}{" "}
+            <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+              {WHATSAPP_GROUP_URL}
+            </a>
+          </p>
+        ) : null}
+      </>
+    );
 
-  if (page === "terms") return <>
-    <p>Dengan menggunakan layanan Mind Aku, Anda menyetujui syarat dan ketentuan berikut.</p><h2>1. Definisi</h2><ul><li><strong>Layanan</strong> — API Mind Aku beserta portal, dokumentasi, dan fitur terkait.</li><li><strong>Pengguna</strong> — individu atau badan usaha yang memiliki API Key aktif.</li><li><strong>API Key</strong> — kredensial akses pribadi yang dikeluarkan oleh Mikbalvia Digital.</li></ul>
-    <h2>2. Penggunaan layanan</h2><ul><li>API Key hanya untuk penggunaan pribadi atau internal tim yang berwenang.</li><li>Dilarang menyalahgunakan layanan untuk aktivitas ilegal, spam, atau konten berbahaya.</li><li>Dilarang mencoba mengakses, mengubah, atau mengganggu infrastruktur server tanpa izin.</li><li>Kuota request mengikuti paket yang dibeli; penggunaan melebihi kuota dapat diblokir sementara.</li></ul>
-    <h2>3. Akun dan keamanan</h2><p>Pengguna bertanggung jawab menjaga kerahasiaan API Key. Mikbalvia Digital tidak bertanggung jawab atas penyalahgunaan akibat kelalaian pengguna.</p><h2>4. Pembayaran</h2><p>Harga, paket, dan metode pembayaran ditampilkan pada halaman pembelian. Pembayaran dianggap sah setelah terkonfirmasi oleh sistem pembayaran.</p><h2>5. Ketersediaan layanan</h2><p>Kami berupaya menjaga layanan tetap tersedia, namun tidak menjamin uptime 100%. Pemeliharaan terjadwal dapat dilakukan dengan pemberitahuan seperlunya.</p><h2>6. Pembatasan tanggung jawab</h2><p>Layanan diberikan “apa adanya”. Mikbalvia Digital tidak bertanggung jawab atas kerugian tidak langsung akibat gangguan layanan, kehilangan data, atau hasil output AI dari tool pihak ketiga.</p><h2>7. Perubahan ketentuan</h2><p>Syarat ini dapat diperbarui sewaktu-waktu. Versi terbaru selalu tersedia di halaman ini.</p><h2>8. Hukum yang berlaku</h2><p>Syarat ini tunduk pada hukum Republik Indonesia.</p><h2>9. Kontak</h2><p>Pertanyaan terkait syarat ini dapat dikirim ke <a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a>.</p>
-  </>;
+  if (page === "refund")
+    return (
+      <>
+        <p>{t("Last updated: 23 June 2026")}</p>
+        <h2>{t("1. Scope")}</h2>
+        <p>
+          {t(
+            "This policy applies to purchases of additional request limits, package renewals, and other paid transactions made through Mind Aku operated by Mikbalvia Digital."
+          )}
+        </p>
+        <h2>{t("2. Digital product")}</h2>
+        <p>
+          {t(
+            "Mind Aku provides API access and digital request quota. Once quota is added to your API key, the service is considered delivered."
+          )}
+        </p>
+        <h2>{t("3. Refund conditions")}</h2>
+        <p>{t("A refund may be requested when:")}</p>
+        <ul>
+          <li>
+            {t(
+              "Payment succeeded but quota was not added within 24 hours after confirmation, and support has not resolved the issue."
+            )}
+          </li>
+          <li>{t("A duplicate charge occurred for the same transaction.")}</li>
+          <li>
+            {t(
+              "The service is unusable due to a system outage on our side lasting more than 48 consecutive hours."
+            )}
+          </li>
+        </ul>
+        <h2>{t("4. Non-refundable cases")}</h2>
+        <ul>
+          <li>{t("Quota has already been added and/or partially or fully used.")}</li>
+          <li>{t("Misuse of the API key, tool misconfiguration, or user error.")}</li>
+          <li>
+            {t(
+              "Refund requests more than 7 days after the transaction date without evidence of a technical issue."
+            )}
+          </li>
+        </ul>
+        <h2>{t("5. How to request a refund")}</h2>
+        <p>
+          {t(
+            "Send the transaction ID or payment proof, an API key that may be partially masked, and the reason via support channels. Our team reviews within 1–3 business days."
+          )}
+        </p>
+        <ContactLinks />
+        <h2>{t("6. Refund method")}</h2>
+        <p>
+          {t(
+            "Refunds go back to the same account or payment method per the payment provider's policy, or via bank transfer when required."
+          )}
+        </p>
+      </>
+    );
 
-  return <>
-    <p>Untuk pertanyaan, bantuan teknis, pemesanan API Key, perpanjangan paket, atau pengajuan refund, hubungi kami melalui saluran berikut.</p>
-    <div className="my-6 rounded-xl border border-border bg-muted/50 p-5 sm:p-6"><h2 className="!mt-0">Mikbalvia Digital</h2><dl className="space-y-4"><div><dt>Email</dt><dd><a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a></dd></div><div><dt>Chat admin (WhatsApp)</dt><dd><a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a> — tanya jawab, order, bukti transfer, klaim promo</dd></div>{WHATSAPP_GROUP_URL ? <div><dt>Channel pengumuman</dt><dd><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">Join grup WhatsApp</a> — hanya admin yang kirim pesan (update &amp; promo)</dd></div> : null}<div><dt>Alamat usaha</dt><dd>Jl. Haji Kocen No. 19, RT/RW 001/006, Kel. Kalimulya, Kec. Cilodong, Depok, Jawa Barat, Indonesia</dd></div><div><dt>Website layanan</dt><dd><a href={PUBLIC_WEB_URL}>{PUBLIC_WEB_URL}</a></dd></div></dl></div>
-    <h2>Jam respons</h2><p>Pesan melalui WhatsApp dan email biasanya dibalas dalam 1–24 jam pada hari kerja.</p><h2>Sebelum menghubungi</h2><p>Siapkan API Key (boleh disamarkan), ID transaksi jika terkait pembayaran, dan screenshot error agar kami dapat membantu lebih cepat.</p>
-    <div className="mt-3 flex flex-wrap gap-3">
-      <Button asChild><a href={buildAdminWhatsAppHref()} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Chat via WhatsApp</a></Button>
-      {WHATSAPP_GROUP_URL ? <Button asChild variant="outline"><a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer"><ChatCircleDots /> Join channel pengumuman</a></Button> : null}
-    </div>
-  </>;
+  if (page === "terms")
+    return (
+      <>
+        <p>{t("By using Mind Aku, you agree to the following terms and conditions.")}</p>
+        <h2>{t("1. Definitions")}</h2>
+        <ul>
+          <li>
+            <strong>{t("Service — the Mind Aku API plus portal, documentation, and related features.")}</strong>
+          </li>
+          <li>
+            <strong>{t("User — an individual or business with an active API key.")}</strong>
+          </li>
+          <li>
+            <strong>{t("API Key — personal access credentials issued by Mikbalvia Digital.")}</strong>
+          </li>
+        </ul>
+        <h2>{t("2. Service use")}</h2>
+        <ul>
+          <li>{t("API keys are only for personal use or authorized internal team use.")}</li>
+          <li>
+            {t("Misusing the service for illegal activity, spam, or harmful content is prohibited.")}
+          </li>
+          <li>
+            {t(
+              "Attempting to access, modify, or disrupt server infrastructure without permission is prohibited."
+            )}
+          </li>
+          <li>
+            {t(
+              "Request quota follows the purchased package; exceeding quota may temporarily block usage."
+            )}
+          </li>
+        </ul>
+        <h2>{t("3. Account and security")}</h2>
+        <p>
+          {t(
+            "Users must keep API keys confidential. Mikbalvia Digital is not liable for misuse caused by user negligence."
+          )}
+        </p>
+        <h2>{t("4. Payments")}</h2>
+        <p>
+          {t(
+            "Prices, packages, and payment methods are shown on the purchase page. Payment is valid once confirmed by the payment system."
+          )}
+        </p>
+        <h2>{t("5. Availability")}</h2>
+        <p>
+          {t(
+            "We strive to keep the service available but do not guarantee 100% uptime. Scheduled maintenance may occur with notice as needed."
+          )}
+        </p>
+        <h2>{t("6. Limitation of liability")}</h2>
+        <p>
+          {t(
+            "The service is provided “as is”. Mikbalvia Digital is not liable for indirect losses from outages, data loss, or third-party AI tool outputs."
+          )}
+        </p>
+        <h2>{t("7. Changes to terms")}</h2>
+        <p>
+          {t("These terms may be updated at any time. The latest version is always on this page.")}
+        </p>
+        <h2>{t("8. Governing law")}</h2>
+        <p>{t("These terms are governed by the laws of the Republic of Indonesia.")}</p>
+        <h2>{t("9. Contact")}</h2>
+        <p>
+          {t("Questions about these terms can be sent to {{email}}.", {
+            email: COMPANY.adminEmail,
+          })}
+        </p>
+      </>
+    );
+
+  return (
+    <>
+      <p>
+        {t(
+          "For questions, technical help, API key orders, renewals, or refunds, contact us through the channels below."
+        )}
+      </p>
+      <div className="my-6 rounded-xl border border-border bg-muted/50 p-5 sm:p-6">
+        <h2 className="!mt-0">Mikbalvia Digital</h2>
+        <dl className="space-y-4">
+          <div>
+            <dt>{t("Email")}</dt>
+            <dd>
+              <a href={`mailto:${COMPANY.adminEmail}`}>{COMPANY.adminEmail}</a>
+            </dd>
+          </div>
+          <div>
+            <dt>{t("Chat admin (WhatsApp)")}</dt>
+            <dd>
+              <a href={`https://wa.me/${WHATSAPP_NUMBER}`}>+{WHATSAPP_NUMBER}</a> —{" "}
+              {t("questions, orders, transfer proof, promo claims")}
+            </dd>
+          </div>
+          {WHATSAPP_GROUP_URL ? (
+            <div>
+              <dt>{t("Announcement channel")}</dt>
+              <dd>
+                <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+                  {t("Join WhatsApp group")}
+                </a>{" "}
+                — {t("admins only post (updates & promos)")}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>{t("Business address")}</dt>
+            <dd>
+              {t(
+                "Jl. Haji Kocen No. 19, RT/RW 001/006, Kel. Kalimulya, Kec. Cilodong, Depok, Jawa Barat, Indonesia"
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>{t("Service website")}</dt>
+            <dd>
+              <a href={PUBLIC_WEB_URL}>{PUBLIC_WEB_URL}</a>
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <h2>{t("Response hours")}</h2>
+      <p>
+        {t(
+          "WhatsApp and email messages are usually answered within 1–24 hours on business days."
+        )}
+      </p>
+      <h2>{t("Before contacting us")}</h2>
+      <p>
+        {t(
+          "Have your API key ready (may be masked), transaction ID if payment-related, and an error screenshot so we can help faster."
+        )}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-3">
+        <Button asChild>
+          <a href={buildAdminWhatsAppHref()} target="_blank" rel="noopener noreferrer">
+            <ChatCircleDots /> {t("Chat via WhatsApp")}
+          </a>
+        </Button>
+        {WHATSAPP_GROUP_URL ? (
+          <Button asChild variant="outline">
+            <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer">
+              <ChatCircleDots /> {t("Join announcement channel")}
+            </a>
+          </Button>
+        ) : null}
+      </div>
+    </>
+  );
 }
 
 export function PublicInfoPage({ page }: { page: PublicPage }) {
-  const copy = pageCopy[page];
-  return <div className="relative min-h-screen overflow-hidden text-foreground"><Atmosphere /><header className="relative z-10 border-b border-border bg-muted/40 backdrop-blur-md"><div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-5 sm:px-6"><Link to="/"><BrandLockup showTagline={false} markClassName="size-8" /></Link><Button asChild variant="outline" size="sm"><Link to="/"><ArrowLeft weight="bold" /> Back home</Link></Button></div></header><main className="relative z-10 mx-auto max-w-3xl px-5 pb-16 sm:px-6"><header className="py-12 sm:py-16"><p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">{copy.eyebrow}</p><h1 className="mt-4 max-w-2xl font-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{copy.title}</h1><p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">{copy.lead}</p></header><article className="public-content rounded-xl border border-border bg-card p-5 shadow-md backdrop-blur-sm sm:p-8"><Content page={page} /></article><footer className="flex flex-wrap items-center justify-between gap-3 py-8 text-xs text-muted-foreground"><span>© 2026 Mikbalvia Digital.</span><a href={`mailto:${COMPANY.adminEmail}`} className="inline-flex items-center gap-1">Need help? <ArrowSquareOut className="size-3" /></a></footer></main></div>;
+  const { t } = useTranslation();
+  const copy = {
+    faq: {
+      eyebrow: "Mikbalvia Digital",
+      title: t("Frequently asked questions"),
+      lead: t("Short answers about the Mind Aku API service from Mikbalvia Digital."),
+    },
+    refund: {
+      eyebrow: t("Policy / 01"),
+      title: t("Refund policy title"),
+      lead: t("Terms for refunds on Mind Aku service purchases."),
+    },
+    terms: {
+      eyebrow: t("Policy / 02"),
+      title: t("Terms and conditions"),
+      lead: t("Terms of use for the Mind Aku API service."),
+    },
+    contact: {
+      eyebrow: t("Support channel"),
+      title: t("Contact us"),
+      lead: t("Official Mikbalvia Digital contact details for Mind Aku."),
+    },
+  }[page];
+
+  return (
+    <div className="relative min-h-screen overflow-hidden text-foreground">
+      <Atmosphere />
+      <header className="relative z-10 border-b border-border bg-muted/40 backdrop-blur-md">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-5 py-5 sm:px-6">
+          <Link to="/">
+            <BrandLockup showTagline={false} markClassName="size-8" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">
+                <ArrowLeft weight="bold" /> {t("Back home")}
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+      <main className="relative z-10 mx-auto max-w-3xl px-5 pb-16 sm:px-6">
+        <header className="py-12 sm:py-16">
+          <p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">
+            {copy.eyebrow}
+          </p>
+          <h1 className="mt-4 max-w-2xl font-heading text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            {copy.title}
+          </h1>
+          <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">{copy.lead}</p>
+        </header>
+        <article className="public-content rounded-xl border border-border bg-card p-5 shadow-md backdrop-blur-sm sm:p-8">
+          <Content page={page} />
+        </article>
+        <footer className="flex flex-wrap items-center justify-between gap-3 py-8 text-xs text-muted-foreground">
+          <span>{t("© 2026 Mikbalvia Digital.")}</span>
+          <a href={`mailto:${COMPANY.adminEmail}`} className="inline-flex items-center gap-1">
+            {t("Need help?")} <ArrowSquareOut className="size-3" />
+          </a>
+        </footer>
+      </main>
+    </div>
+  );
 }

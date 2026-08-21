@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
 
 function formatUsd(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "—";
@@ -39,6 +40,7 @@ function formatUsd(value: number | null | undefined): string {
 }
 
 export function AffiliatePage() {
+  const { t } = useTranslation();
   const { apiKey } = useAuth();
   const [summary, setSummary] = useState<AffiliateSummary | null>(null);
   const [ledger, setLedger] = useState<AffiliateLedgerItem[]>([]);
@@ -71,11 +73,11 @@ export function AffiliatePage() {
       setReferrals(refs.data ?? []);
       setWithdrawals(wd.data ?? []);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Gagal memuat affiliate.");
+      setError(err instanceof ApiError ? err.message : t("Failed to load affiliate."));
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [apiKey, t]);
 
   useEffect(() => {
     void load();
@@ -89,9 +91,9 @@ export function AffiliatePage() {
     try {
       const aff = await enableAffiliate(apiKey);
       setSummary(aff);
-      setMessage("Kode referral siap dibagikan.");
+      setMessage(t("Referral code ready to share."));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Gagal mengaktifkan affiliate.");
+      setError(err instanceof ApiError ? err.message : t("Failed to enable affiliate."));
     } finally {
       setBusy(false);
     }
@@ -102,7 +104,7 @@ export function AffiliatePage() {
     const url = `${window.location.origin}${summary.referralLinkPath}`;
     try {
       await navigator.clipboard.writeText(url);
-      setMessage("Link referral disalin.");
+      setMessage(t("Referral link copied."));
     } catch {
       setMessage(url);
     }
@@ -113,7 +115,7 @@ export function AffiliatePage() {
     if (!apiKey || !summary) return;
     const amount = Number(usdAmount);
     if (!Number.isFinite(amount) || amount < summary.minWithdrawUsd) {
-      setError(`Minimum pencairan ${formatUsd(summary.minWithdrawUsd)}.`);
+      setError(t("Minimum withdrawal is {{amount}}.", { amount: formatUsd(summary.minWithdrawUsd) }));
       return;
     }
     setBusy(true);
@@ -129,18 +131,18 @@ export function AffiliatePage() {
       });
       setUsdAmount("");
       setNote("");
-      setMessage("Permintaan pencairan dikirim. Menunggu review admin.");
+      setMessage(t("Withdrawal request submitted. Waiting for admin review."));
       await load();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Gagal mengajukan pencairan.");
+      setError(err instanceof ApiError ? err.message : t("Failed to submit withdrawal."));
     } finally {
       setBusy(false);
     }
   }
 
-  if (loading) return <LoadingBlock label="Memuat affiliate…" />;
+  if (loading) return <LoadingBlock label={t("Loading affiliate…")} />;
   if (!summary) {
-    return error ? <ErrorBanner message={error} /> : <EmptyState title="Affiliate tidak tersedia" />;
+    return error ? <ErrorBanner message={error} /> : <EmptyState title={t("Affiliate unavailable")} />;
   }
 
   const shareUrl = summary.referralLinkPath
@@ -150,8 +152,8 @@ export function AffiliatePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Affiliate"
-        description={`Komisi ${(summary.commissionRate * 100).toFixed(0)}% per pembelian referred. Bonus ${(summary.buyerBonusRate * 100).toFixed(0)}% credit hanya di pembelian shop; top-up hanya memberi komisi affiliate.`}
+        title={t("Affiliate")}
+        description={t("Commission {{commission}}% per referred purchase. Buyer bonus {{bonus}}% credit on shop purchases only; top-ups only pay affiliate commission.", { commission: (summary.commissionRate * 100).toFixed(0), bonus: (summary.buyerBonusRate * 100).toFixed(0) })}
       />
       {error ? <ErrorBanner message={error} /> : null}
       {message ? (
@@ -161,20 +163,20 @@ export function AffiliatePage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="space-y-1.5 p-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Saldo komisi</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("Commission balance")}</p>
             <p className="font-heading text-3xl font-extrabold">{formatUsd(summary.balanceUsd)}</p>
-            <p className="text-xs text-muted-foreground">Held {formatUsd(summary.heldUsd)}</p>
+            <p className="text-xs text-muted-foreground">{t("Held {{amount}}", { amount: formatUsd(summary.heldUsd) })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="space-y-1.5 p-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lifetime</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("Lifetime")}</p>
             <p className="font-heading text-3xl font-extrabold">{formatUsd(summary.lifetimeUsd)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="space-y-1.5 p-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Referral</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("Referral")}</p>
             <p className="font-heading text-3xl font-extrabold">{summary.referredCount}</p>
           </CardContent>
         </Card>
@@ -185,24 +187,24 @@ export function AffiliatePage() {
           {!summary.affEnabled ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Aktifkan program affiliate untuk mendapatkan kode & link referral unik.
+                {t("Enable the affiliate program to get a unique referral code & link.")}
               </p>
               <Button type="button" disabled={busy || !summary.enabled} onClick={() => void onEnable()}>
-                Aktifkan affiliate
+                {t("Enable affiliate")}
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Kode</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("Code")}</p>
                 <p className="font-mono text-xl font-bold tracking-widest">{summary.affCode}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Link</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("Link")}</p>
                 <p className="break-all text-sm text-foreground">{shareUrl}</p>
               </div>
               <Button type="button" variant="outline" onClick={() => void onCopyLink()}>
-                Salin link
+                {t("Copy link")}
               </Button>
             </div>
           )}
@@ -211,15 +213,15 @@ export function AffiliatePage() {
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-heading text-xl font-bold">Yang join</h2>
+          <h2 className="font-heading text-xl font-bold">{t("Referrals")}</h2>
           {referrals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Belum ada yang join lewat link kamu.</p>
+            <p className="text-sm text-muted-foreground">{t("No one has joined via your link yet.")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Tanggal</TableHead>
+                  <TableHead>{t("Name")}</TableHead>
+                  <TableHead>{t("Date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -239,14 +241,14 @@ export function AffiliatePage() {
         <Card>
           <CardContent className="space-y-5 p-6">
             <div className="space-y-1">
-              <h2 className="font-heading text-xl font-bold">Ajukan pencairan</h2>
+              <h2 className="font-heading text-xl font-bold">{t("Request withdrawal")}</h2>
               <p className="text-sm text-muted-foreground">
-                Minimum {formatUsd(summary.minWithdrawUsd)}. Transfer bank diproses manual oleh admin.
+                {t("Minimum {{amount}}. Bank transfers are processed manually by admin.", { amount: formatUsd(summary.minWithdrawUsd) })}
               </p>
             </div>
             <form className="grid gap-4 md:grid-cols-2" onSubmit={(e) => void onWithdraw(e)}>
               <div className="space-y-2">
-                <Label htmlFor="wd-usd">Jumlah (USD)</Label>
+                <Label htmlFor="wd-usd">{t("Amount (USD)")}</Label>
                 <Input
                   id="wd-usd"
                   type="number"
@@ -258,11 +260,11 @@ export function AffiliatePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wd-bank">Bank</Label>
+                <Label htmlFor="wd-bank">{t("Bank")}</Label>
                 <Input id="wd-bank" value={bankName} onChange={(e) => setBankName(e.target.value)} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wd-account">No. rekening</Label>
+                <Label htmlFor="wd-account">{t("Account number")}</Label>
                 <Input
                   id="wd-account"
                   value={bankAccount}
@@ -271,7 +273,7 @@ export function AffiliatePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="wd-name">Nama rekening</Label>
+                <Label htmlFor="wd-name">{t("Account name")}</Label>
                 <Input
                   id="wd-name"
                   value={accountName}
@@ -280,12 +282,12 @@ export function AffiliatePage() {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="wd-note">Catatan (opsional)</Label>
+                <Label htmlFor="wd-note">{t("Note (optional)")}</Label>
                 <Input id="wd-note" value={note} onChange={(e) => setNote(e.target.value)} />
               </div>
               <div className="md:col-span-2 pt-2">
                 <Button type="submit" disabled={busy}>
-                  Kirim permintaan
+                  {t("Submit request")}
                 </Button>
               </div>
             </form>
@@ -295,17 +297,17 @@ export function AffiliatePage() {
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-heading text-xl font-bold">Riwayat pencairan</h2>
+          <h2 className="font-heading text-xl font-bold">{t("Withdrawal history")}</h2>
           {withdrawals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Belum ada permintaan pencairan.</p>
+            <p className="text-sm text-muted-foreground">{t("No withdrawal requests yet.")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tanggal</TableHead>
-                  <TableHead>Jumlah</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Bank</TableHead>
+                  <TableHead>{t("Date")}</TableHead>
+                  <TableHead>{t("Amount")}</TableHead>
+                  <TableHead>{t("Status")}</TableHead>
+                  <TableHead>{t("Bank")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -327,17 +329,17 @@ export function AffiliatePage() {
 
       <Card>
         <CardContent className="space-y-4 p-6">
-          <h2 className="font-heading text-xl font-bold">Ledger komisi</h2>
+          <h2 className="font-heading text-xl font-bold">{t("Commission ledger")}</h2>
           {ledger.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Belum ada komisi.</p>
+            <p className="text-sm text-muted-foreground">{t("No commissions yet.")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tanggal</TableHead>
-                  <TableHead>Jenis</TableHead>
-                  <TableHead>USD</TableHead>
-                  <TableHead>Order</TableHead>
+                  <TableHead>{t("Date")}</TableHead>
+                  <TableHead>{t("Type")}</TableHead>
+                  <TableHead>{t("USD")}</TableHead>
+                  <TableHead>{t("Order")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

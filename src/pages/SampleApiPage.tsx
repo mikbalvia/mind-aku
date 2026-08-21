@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_PROMPT = "Hello! Reply in one sentence.";
 
@@ -169,6 +170,7 @@ function buildSnippets(opts: {
 }
 
 export function SampleApiPage() {
+  const { t } = useTranslation();
   const { apiKey } = useAuth();
   const v1Url = AI_BASE_URL.replace(/\/$/, "");
 
@@ -229,7 +231,7 @@ export function SampleApiPage() {
         setSendError(response.error?.message ?? `Request failed (${response.status})`);
       }
     } catch (err) {
-      setSendError(err instanceof ApiError ? err.message : "Request failed.");
+      setSendError(err instanceof ApiError ? err.message : t("Request failed."));
     } finally {
       setSending(false);
     }
@@ -238,9 +240,9 @@ export function SampleApiPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Developer"
-        title="Sample API"
-        description="Contoh request OpenAI-compatible untuk DeepSeek Pro dan Claude Opus, plus form untuk coba POST /v1/chat/completions dengan API key sesi ini."
+        eyebrow={t("Developer")}
+        title={t("Sample API")}
+        description={t("Copy-paste snippets for your client.")}
       />
 
       <div className="space-y-6">
@@ -250,20 +252,18 @@ export function SampleApiPage() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                Snippets
+                {t("Snippets")}
               </p>
               <h3 className="font-heading text-lg font-semibold text-foreground">
-                Copy-paste ke client kamu
+                {t("Copy-paste into your client")}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Contoh memakai DeepSeek Pro (<code className="text-foreground">deepseek-v4-pro</code>)
-                dan Claude Opus (<code className="text-foreground">claude-opus-5</code>), plus API key
-                dari sesi login.
+                {t("Examples use DeepSeek Pro and Claude Opus, plus the API key from this login session.")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="snippet-model">Model</Label>
+              <Label htmlFor="snippet-model">{t("Model")}</Label>
               <ModelPicker
                 id="snippet-model"
                 value={selectedModel}
@@ -309,13 +309,13 @@ export function SampleApiPage() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                Try request
+                {t("Try request")}
               </p>
               <h3 className="font-heading text-lg font-semibold text-foreground">
-                Kirim sample chat completion
+                {t("Send a sample chat completion")}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Request ini memakai kuota seperti Chat. Response bisa dilihat sebagai kalimat atau JSON.
+                {t("This request uses quota like Chat. View the response as text or JSON.")}
               </p>
             </div>
 
@@ -323,7 +323,7 @@ export function SampleApiPage() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="sample-model">Model</Label>
+                <Label htmlFor="sample-model">{t("Model")}</Label>
                 <ModelPicker
                   id="sample-model"
                   value={selectedModel}
@@ -332,7 +332,7 @@ export function SampleApiPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sample-prompt">Prompt</Label>
+                <Label htmlFor="sample-prompt">{t("Prompt")}</Label>
                 <textarea
                   id="sample-prompt"
                   value={prompt}
@@ -351,7 +351,7 @@ export function SampleApiPage() {
                 onClick={() => void onSend()}
                 disabled={sending || !prompt.trim()}
               >
-                {sending ? "Sending…" : "Kirim request"}
+                {sending ? t("Sending…") : t("Send request")}
               </Button>
               {result ? (
                 <p className="text-sm text-muted-foreground">
@@ -364,12 +364,12 @@ export function SampleApiPage() {
             {result ? (
               <Tabs defaultValue="text" key={`${result.status}-${result.latencyMs}`}>
                 <TabsList>
-                  <TabsTrigger value="text">Kalimat</TabsTrigger>
+                  <TabsTrigger value="text">{t("Text")}</TabsTrigger>
                   <TabsTrigger value="json">JSON</TabsTrigger>
                 </TabsList>
                 <TabsContent value="text">
                   <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6 text-foreground">
-                    {assistantText(result.body) ?? "Tidak ada teks di response."}
+                    {assistantText(result.body) ?? t("No text in the response.")}
                   </div>
                 </TabsContent>
                 <TabsContent value="json">
@@ -397,6 +397,7 @@ function SnippetBlock({
   copied: string | null;
   onCopy: (id: string, value: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
       <pre className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-foreground">
@@ -410,7 +411,7 @@ function SnippetBlock({
         onClick={() => onCopy(copyId, code)}
       >
         {copied === copyId ? <Check weight="bold" /> : <Copy weight="bold" />}
-        {copied === copyId ? "Copied" : "Copy"}
+        {copied === copyId ? t("Copied") : t("Copy")}
       </Button>
     </div>
   );

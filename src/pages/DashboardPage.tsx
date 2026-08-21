@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { fetchLogs, fetchMeStatus, fetchPayments, fetchPaymentsConfig } from "../api/client";
 import { ApiError } from "../api/types";
 import type { CallLog, MeStatus, PaymentHistoryItem, PaymentsConfig } from "../api/types";
@@ -14,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber, formatUsd } from "../lib/format";
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const { apiKey } = useAuth();
   const [status, setStatus] = useState<MeStatus | null>(null);
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
@@ -43,7 +45,7 @@ export function DashboardPage() {
         setLogs(logRes.data ?? []);
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof ApiError ? err.message : "Failed to load dashboard.");
+        setError(err instanceof ApiError ? err.message : t("Failed to load dashboard."));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -53,29 +55,30 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey]);
+  }, [apiKey, t]);
 
   const tokens = status?.usage.tokens;
+  const greetName = status?.apiKey?.name ? `, ${status.apiKey.name}` : "";
 
   return (
     <div>
       <PageHeader
-        title="Dashboard"
-        description={`Halo${status?.apiKey?.name ? `, ${status.apiKey.name}` : ""} — ini cockpit AI kamu.`}
+        title={t("Dashboard")}
+        description={t("Hi{{name}} — this is your AI cockpit.", { name: greetName })}
         actions={
           <div className="flex w-full gap-2 sm:w-auto">
             <Button asChild className="flex-1 sm:flex-none">
-              <Link to="/payments">Top up</Link>
+              <Link to="/payments">{t("Top up")}</Link>
             </Button>
             <Button variant="outline" asChild className="flex-1 sm:flex-none">
-              <Link to="/logs">Lihat logs</Link>
+              <Link to="/logs">{t("View logs")}</Link>
             </Button>
           </div>
         }
       />
 
       {error ? <ErrorBanner message={error} /> : null}
-      {loading ? <LoadingBlock label="Loading your summary…" /> : null}
+      {loading ? <LoadingBlock label={t("Loading your summary…")} /> : null}
 
       {!loading && !error ? (
         <>
@@ -99,9 +102,9 @@ export function DashboardPage() {
           <div className="grid gap-6 md:grid-cols-1">
             <SummaryCard
               className="scale-in scale-in-delay-2"
-              label="Tokens this period"
+              label={t("Tokens this period")}
               value={formatNumber(tokens?.totalTokens)}
-              hint={`In ${formatNumber(tokens?.inputTokens)} · Out ${formatNumber(tokens?.outputTokens)}`}
+              hint={`${t("In")} ${formatNumber(tokens?.inputTokens)} · ${t("Out")} ${formatNumber(tokens?.outputTokens)}`}
             />
           </div>
 
@@ -109,13 +112,15 @@ export function DashboardPage() {
             <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
               <CardContent className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-heading text-xl font-medium text-foreground">Recent top-ups</h3>
+                  <h3 className="font-heading text-xl font-medium text-foreground">
+                    {t("Recent top-ups")}
+                  </h3>
                   <Link to="/payments" className="text-xs text-primary hover:underline">
-                    All
+                    {t("View all")}
                   </Link>
                 </div>
                 {payments.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No top-ups yet.</p>
+                  <p className="text-sm text-muted-foreground">{t("No top-ups yet.")}</p>
                 ) : (
                   <ul className="divide-y divide-border">
                     {payments.map((p) => (
@@ -125,7 +130,7 @@ export function DashboardPage() {
                           <p className="text-xs text-muted-foreground">{formatDate(p.createdAt)}</p>
                         </div>
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                          {p.credited ? "Credited" : p.status}
+                          {p.credited ? t("Credited") : p.status}
                         </span>
                       </li>
                     ))}
@@ -137,13 +142,15 @@ export function DashboardPage() {
             <Card className="scale-in scale-in-delay-3 border-border bg-card shadow-sm">
               <CardContent className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-heading text-xl font-medium text-foreground">Recent requests</h3>
+                  <h3 className="font-heading text-xl font-medium text-foreground">
+                    {t("Recent requests")}
+                  </h3>
                   <Link to="/logs" className="text-xs text-primary hover:underline">
-                    All
+                    {t("View all")}
                   </Link>
                 </div>
                 {logs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No requests yet.</p>
+                  <p className="text-sm text-muted-foreground">{t("No requests yet.")}</p>
                 ) : (
                   <ul className="divide-y divide-border">
                     {logs.map((log) => (

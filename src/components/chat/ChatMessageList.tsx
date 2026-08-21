@@ -3,6 +3,7 @@ import type { StoredChatMessage } from "../../lib/chatStore";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { easeOut } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 function renderPlainContent(content: string) {
   // Lightweight: split fenced code blocks, escape nothing needed with text nodes via React.
@@ -48,6 +49,7 @@ export function ChatMessageList({
   messages: StoredChatMessage[];
   streaming: boolean;
 }) {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
@@ -59,10 +61,10 @@ export function ChatMessageList({
     return (
       <div className="flex h-full min-h-[14rem] flex-col items-center justify-center px-6 text-center">
         <p className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          Chat Mind Aku
+          {t("Chat Mind Aku")}
         </p>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          Tanya apa saja. Setiap pesan memakai saldo PAYG kamu.
+          {t("Ask anything…")}
         </p>
       </div>
     );
@@ -93,7 +95,7 @@ export function ChatMessageList({
               >
                 {!isUser ? (
                   <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    Assistant
+                    {t("Assistant")}
                   </p>
                 ) : null}
                 <div>{renderPlainContent(message.content)}</div>
@@ -109,7 +111,7 @@ export function ChatMessageList({
           className="px-1 text-xs text-muted-foreground"
         >
           <span className="loading-dot" aria-hidden="true" />
-          Generating…
+          {t("Generating…")}
         </motion.p>
       ) : null}
       <div ref={bottomRef} />

@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { PageHeader } from "../components/page-chrome";
 
 export function ForbiddenPage() {
+  const { t } = useTranslation();
   return (
     <div>
-      <PageHeader title="403" description="Forbidden" />
+      <PageHeader title={t("403")} description={t("Forbidden")} />
     </div>
   );
 }

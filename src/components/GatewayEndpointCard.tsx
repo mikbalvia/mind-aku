@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Copy } from "@phosphor-icons/react";
 import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function GatewayEndpointCard({ className, compact = false }: Props) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState<"base" | "v1" | null>(null);
   const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
   const v1Url = AI_BASE_URL.replace(/\/$/, "");
@@ -37,33 +39,32 @@ export function GatewayEndpointCard({ className, compact = false }: Props) {
       <CardContent className="space-y-4">
         <div className="space-y-1.5">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-            API Gateway
+            {t("API Gateway")}
           </p>
           <h3 className="font-heading text-lg font-semibold text-foreground sm:text-xl">
-            Base URL Mind Aku
+            {t("Mind Aku base URL")}
           </h3>
           {!compact ? (
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Pakai URL ini di Claude Desktop, Claude Code, Codex, atau client OpenAI-compatible.
-              Semua request model lewat gateway ini — bukan langsung ke OpenAI/Anthropic.
+              {t("Use this OpenAI-compatible endpoint with your API key.")}
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Arahkan client ke gateway ini + API key dari portal.
+              {t("Use this OpenAI-compatible endpoint with your API key.")}
             </p>
           )}
         </div>
 
         <div className={cn("grid gap-3", compact ? "sm:grid-cols-2" : "sm:grid-cols-2")}>
           <EndpointRow
-            label="Gateway base URL"
+            label={t("Gateway base URL")}
             value={baseUrl}
             hint="Claude Desktop · auto-config · OmniRoute"
             copied={copied === "base"}
             onCopy={() => void onCopy("base", baseUrl)}
           />
           <EndpointRow
-            label="OpenAI-compatible endpoint"
+            label={t("OpenAI-compatible endpoint")}
             value={v1Url}
             hint="Chat Completions · /v1/models · SDK OpenAI"
             copied={copied === "v1"}

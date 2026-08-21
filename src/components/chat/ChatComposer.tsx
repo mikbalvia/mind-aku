@@ -1,4 +1,5 @@
 import { type FormEvent, type KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { PaperPlaneTilt, Stop } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { motion, useReducedMotion } from "motion/react";
@@ -11,7 +12,7 @@ export function ChatComposer({
   onStop,
   disabled,
   streaming,
-  placeholder = "Message Mind Aku…",
+  placeholder,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -21,6 +22,8 @@ export function ChatComposer({
   streaming: boolean;
   placeholder?: string;
 }) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("Message Mind Aku…");
   const canSend = !disabled && !streaming && value.trim().length > 0;
   const reduced = useReducedMotion();
 
@@ -51,7 +54,7 @@ export function ChatComposer({
         onKeyDown={handleKeyDown}
         rows={1}
         disabled={disabled || streaming}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         className="max-h-40 min-h-[44px] w-full resize-none bg-transparent px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
       />
 
@@ -60,14 +63,14 @@ export function ChatComposer({
           <motion.div whileTap={reduced ? undefined : { scale: 0.96 }}>
             <Button type="button" variant="outline" size="sm" onClick={onStop}>
               <Stop weight="fill" className="size-3.5" />
-              Stop
+              {t("Stop")}
             </Button>
           </motion.div>
         ) : (
           <motion.div whileTap={reduced ? undefined : { scale: 0.96 }}>
             <Button type="submit" size="sm" disabled={!canSend}>
               <PaperPlaneTilt weight="fill" className="size-3.5" />
-              Send
+              {t("Send")}
             </Button>
           </motion.div>
         )}

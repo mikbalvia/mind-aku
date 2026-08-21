@@ -1,11 +1,20 @@
+import i18n from "i18next";
+import { toIntlLocale } from "@/i18n/languages";
+
+function activeLocale(): string {
+  return toIntlLocale(i18n.resolvedLanguage || i18n.language);
+}
+
 /** Label for payment FX from live `idrPerUsd` (API `/api/v1/me/payments/config`). */
 export function formatIdrPerUsdRate(idrPerUsd: number): string {
-  return `1 USD = ${idrPerUsd.toLocaleString("id-ID")} IDR`;
+  return i18n.t("1 USD = {{rate}} IDR", {
+    rate: idrPerUsd.toLocaleString(activeLocale()),
+  });
 }
 
 export function formatIdr(value: number | null | undefined, fractionDigits = 0): string {
   if (value == null || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("id-ID", {
+  return new Intl.NumberFormat(activeLocale(), {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: fractionDigits,
@@ -30,41 +39,46 @@ export function formatUsd(value: number | null | undefined, fractionDigits = 2):
 
 export function formatNumber(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "—";
-  return value.toLocaleString();
+  return value.toLocaleString(activeLocale());
 }
 
-/** Compact token counts for customer dashboards, e.g. 87 juta. */
+/** Compact token counts for customer dashboards, e.g. 87 juta / 87M. */
 export function formatTokenCount(value: number | null | undefined): string {
   if (value == null || Number.isNaN(value)) return "—";
   const abs = Math.abs(value);
+  const locale = activeLocale();
   if (abs >= 1_000_000) {
     const millions = value / 1_000_000;
-    return `${millions.toLocaleString("id-ID", { maximumFractionDigits: millions >= 10 ? 0 : 1 })} juta`;
+    const n = millions.toLocaleString(locale, {
+      maximumFractionDigits: millions >= 10 ? 0 : 1,
+    });
+    return i18n.t("{{n}}M", { n });
   }
   if (abs >= 1_000) {
-    return `${(value / 1_000).toLocaleString("id-ID", { maximumFractionDigits: 1 })} rb`;
+    const n = (value / 1_000).toLocaleString(locale, { maximumFractionDigits: 1 });
+    return i18n.t("{{n}}K", { n });
   }
-  return value.toLocaleString("id-ID");
+  return value.toLocaleString(locale);
 }
 
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  return date.toLocaleString(activeLocale());
 }
 
-/** Masa aktif label: date, "Tidak kadaluarsa", or "Habis". */
+/** Active-period label: date, "No expiry", or "Expired". */
 export function formatPaygActiveUntil(
   active: boolean | undefined,
   activeUntil: string | null | undefined
 ): string {
   if (activeUntil) {
     const label = formatDate(activeUntil);
-    return active === false ? `Habis (${label})` : label;
+    return active === false ? i18n.t("Expired ({{label}})", { label }) : label;
   }
-  if (active === false) return "Habis";
-  return "Tidak kadaluarsa";
+  if (active === false) return i18n.t("Expired");
+  return i18n.t("No expiry");
 }
 
 export function formatPercent(value: number | null | undefined, digits = 1): string {
@@ -95,7 +109,7 @@ export function formatResetIn(resetAt: string | null | undefined, now = Date.now
   if (!Number.isFinite(resetMs)) return null;
 
   const deltaMs = resetMs - now;
-  if (deltaMs <= 0) return "sekarang";
+  if (deltaMs <= 0) return i18n.t("now");
 
   const minuteMs = 60_000;
   const totalMinutes = Math.max(1, Math.ceil(deltaMs / minuteMs));

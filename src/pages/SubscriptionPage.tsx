@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 function formatUsd(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -29,6 +30,7 @@ function formatIdr(value: number): string {
 }
 
 export function SubscriptionPage() {
+  const { t } = useTranslation();
   const [selectedSubId, setSelectedSubId] = useState<string>(SUBSCRIPTION_PACKAGES[0]?.id ?? "");
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,15 +45,15 @@ export function SubscriptionPage() {
       setCopiedField(label);
       window.setTimeout(() => setCopiedField(null), 1600);
     } catch {
-      setError("Gagal menyalin. Salin manual saja.");
+      setError(t("Failed to copy. Please copy manually."));
     }
   }
 
   return (
     <div>
       <PageHeader
-        title="Subscription"
-        description="Paket berlangganan via transfer BCA. Setelah bayar, WA admin + bukti transfer — limit diaktifkan manual."
+        title={t("Subscription")}
+        description={t("Subscription plans via BCA transfer.")}
       />
 
       {error ? <ErrorBanner message={error} /> : null}
@@ -61,13 +63,13 @@ export function SubscriptionPage() {
           <CardContent className="space-y-5 p-4 sm:p-6">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                New plan
+                {t("New plan")}
               </p>
               <h3 className="mt-1 font-heading text-2xl font-medium text-foreground">
-                Pilih paket
+                {t("Choose a package")}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Transfer BCA manual — tidak lewat SumoPod, limit tidak auto-add.
+                {t("Manual BCA transfer — not via SumoPod; limits are not auto-added.")}
               </p>
             </div>
 
@@ -98,15 +100,15 @@ export function SubscriptionPage() {
 
             <div className="rounded-lg border border-border bg-muted/40 p-4">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-                Transfer ke
+                {t("Transfer to")}
               </p>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2 py-1.5">
-                  <span className="text-muted-foreground">Bank</span>
+                  <span className="text-muted-foreground">{t("Bank")}</span>
                   <span className="font-medium text-foreground">{BCA_TRANSFER.bank}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 py-1.5">
-                  <span className="text-muted-foreground">No. rekening</span>
+                  <span className="text-muted-foreground">{t("Account number")}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-base font-semibold tabular-nums text-foreground">
                       {BCA_TRANSFER.accountNumber}
@@ -118,16 +120,16 @@ export function SubscriptionPage() {
                       className="h-7 px-2 text-[11px]"
                       onClick={() => void copyText("account", BCA_TRANSFER.accountNumber)}
                     >
-                      {copiedField === "account" ? "Copied" : "Copy"}
+                      {copiedField === "account" ? t("Copied") : t("Copy")}
                     </Button>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 py-1.5">
-                  <span className="text-muted-foreground">a.n</span>
+                  <span className="text-muted-foreground">{t("Account holder")}</span>
                   <span className="font-medium text-foreground">{BCA_TRANSFER.accountName}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 mt-1">
-                  <span className="text-muted-foreground">Nominal</span>
+                  <span className="text-muted-foreground">{t("Amount due")}</span>
                   <span className="font-heading text-lg text-foreground">
                     {selectedSub ? formatIdr(selectedSub.amountIdr) : "—"}
                   </span>
@@ -137,8 +139,7 @@ export function SubscriptionPage() {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs leading-relaxed text-muted-foreground">
-                Setelah transfer, kirim bukti ke WhatsApp admin. Limit subscription diaktifkan
-                manual — tidak otomatis.
+                {t("After transfer, send proof to admin WhatsApp. Subscription limits are activated manually — not automatic.")}
               </p>
               <Button asChild className="min-w-[12rem] shrink-0">
                 <a
@@ -147,7 +148,7 @@ export function SubscriptionPage() {
                   rel="noopener noreferrer"
                 >
                   <ChatCircleDots weight="bold" className="size-4" />
-                  WA setelah bayar
+                  {t("WA after payment")}
                 </a>
               </Button>
             </div>
@@ -156,36 +157,35 @@ export function SubscriptionPage() {
 
         <Card className="scale-in scale-in-delay-1 border-border bg-card shadow-sm">
           <CardContent className="space-y-5 p-6">
-            <h3 className="font-heading text-2xl font-medium text-foreground">Benefit paket</h3>
+            <h3 className="font-heading text-2xl font-medium text-foreground">{t("Package benefits")}</h3>
             <dl className="space-y-4 text-sm">
               <div className="flex justify-between gap-3 border-b border-border pb-3.5">
-                <dt className="text-muted-foreground">Limit 5 jam</dt>
+                <dt className="text-muted-foreground">{t("5-hour limit")}</dt>
                 <dd className="tabular-nums text-foreground">
                   {formatUsd(SUBSCRIPTION_PLAN_META.fiveHourLimitUsd)}
                 </dd>
               </div>
               <div className="flex justify-between gap-3 border-b border-border pb-3.5">
-                <dt className="text-muted-foreground">Limit harian</dt>
+                <dt className="text-muted-foreground">{t("Daily limit")}</dt>
                 <dd className="tabular-nums text-foreground">
                   {formatUsd(SUBSCRIPTION_PLAN_META.dailyLimitUsd)}
                 </dd>
               </div>
               <div className="flex justify-between gap-3 border-b border-border pb-3.5">
-                <dt className="text-muted-foreground">Limit mingguan</dt>
+                <dt className="text-muted-foreground">{t("Weekly limit")}</dt>
                 <dd className="tabular-nums text-foreground">
                   {formatUsd(SUBSCRIPTION_PLAN_META.weeklyLimitUsd)}
                 </dd>
               </div>
               <div className="flex justify-between gap-3 pt-1">
-                <dt className="text-muted-foreground">Request per menit</dt>
+                <dt className="text-muted-foreground">{t("Requests per minute")}</dt>
                 <dd className="tabular-nums font-medium text-primary">
                   {SUBSCRIPTION_PLAN_META.requestsPerMinute} RPM
                 </dd>
               </div>
             </dl>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Aktivasi dilakukan admin setelah konfirmasi transfer. Siapkan screenshot bukti
-              transfer saat chat WhatsApp.
+              {t("Activation is done by admin after transfer confirmation. Have a screenshot of the transfer proof ready when chatting on WhatsApp.")}
             </p>
           </CardContent>
         </Card>

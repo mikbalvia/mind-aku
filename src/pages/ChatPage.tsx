@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { List } from "@phosphor-icons/react";
 import { fetchPaymentsConfig, fetchPortalModels } from "../api/client";
@@ -42,6 +43,7 @@ type RemainingQuota = {
 };
 
 export function ChatPage() {
+  const { t } = useTranslation();
   const { apiKey, status, refreshStatus } = useAuth();
   const apiKeyId = status?.apiKey?.id ?? null;
 
@@ -110,7 +112,7 @@ export function ChatPage() {
         });
       } catch (err) {
         if (cancelled) return;
-        setModelsError(err instanceof ApiError ? err.message : "Failed to load models.");
+        setModelsError(err instanceof ApiError ? err.message : t("Failed to load models."));
       }
     }
 
@@ -193,7 +195,7 @@ export function ChatPage() {
     const prompt = draft.trim();
     if (!prompt) return;
     if (!selectedModel) {
-      setError("Pilih model dulu.");
+      setError(t("Select a model first."));
       return;
     }
 
@@ -270,7 +272,7 @@ export function ChatPage() {
           persist(upsertConversation(storeRef.current, cleaned));
         }
       } else {
-        setError("Chat gagal. Coba lagi.");
+        setError(t("Chat failed. Try again."));
       }
     } finally {
       abortRef.current = null;
@@ -311,7 +313,7 @@ export function ChatPage() {
             <button
               type="button"
               className="absolute inset-0 bg-black/55"
-              aria-label="Close conversations"
+              aria-label={t("Close conversations")}
               onClick={() => setSidebarOpen(false)}
             />
             <div className="absolute inset-y-0 left-0 flex w-[min(18rem,88vw)] flex-col border-r border-border bg-card shadow-xl">
@@ -333,7 +335,7 @@ export function ChatPage() {
               variant="ghost"
               size="icon-sm"
               className="md:hidden"
-              aria-label="Open conversations"
+              aria-label={t("Open conversations")}
               onClick={() => setSidebarOpen(true)}
             >
               <List weight="bold" className="size-4" />
@@ -346,7 +348,7 @@ export function ChatPage() {
                 disabled={streaming || models.length === 0}
               >
                 <SelectTrigger className="h-8 max-w-full min-w-[10rem] sm:min-w-[14rem]">
-                  <SelectValue placeholder="Select model" />
+                  <SelectValue placeholder={t("Select model")} />
                 </SelectTrigger>
                 <SelectContent position="popper" align="start">
                   {models.map((model) => (
@@ -373,7 +375,7 @@ export function ChatPage() {
                   <>
                     USD{" "}
                     <span className="font-semibold text-foreground">
-                      {remaining.remainingUsd == null ? "Unlimited" : formatUsd(remaining.remainingUsd)}
+                      {remaining.remainingUsd == null ? t("Unlimited") : formatUsd(remaining.remainingUsd)}
                     </span>
                   </>
                 ) : null}
@@ -388,24 +390,25 @@ export function ChatPage() {
                 <ErrorBanner message={error} />
                 {quotaError ? (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Saldo habis.{" "}
+                    {t("Balance exhausted.")}{" "}
                     <Link
                       to="/payments"
                       className="font-semibold text-primary underline-offset-2 hover:underline"
                     >
-                      Top up di sini
+                      {t("Top up here")}
                     </Link>
                     .
                   </p>
                 ) : expiredError ? (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Masa aktif habis. Top up minimal Rp 100.000 untuk perpanjang 30 hari. Sisa saldo
-                    tidak hangus.{" "}
+                    {t(
+                      "Active period expired. Top up at least Rp 100,000 to extend 30 days. Unused balance never expires."
+                    )}{" "}
                     <Link
                       to="/payments"
                       className="font-semibold text-primary underline-offset-2 hover:underline"
                     >
-                      Top up di sini
+                      {t("Top up here")}
                     </Link>
                     .
                   </p>
@@ -426,7 +429,7 @@ export function ChatPage() {
                 streaming={streaming}
               />
               <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                Chat memakai API key kamu lewat OmniRoute — usage mengurangi saldo PAYG.
+                {t("Chat uses your API key via OmniRoute — usage reduces PAYG balance.")}
               </p>
             </div>
           </div>

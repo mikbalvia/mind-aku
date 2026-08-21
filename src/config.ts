@@ -16,7 +16,7 @@ export const WHATSAPP_NUMBER =
 
 export const WHATSAPP_MESSAGE =
   (import.meta.env.VITE_WHATSAPP_MESSAGE as string | undefined) ||
-  "Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.";
+  "Hi Mikbalvia Digital admin, I have a question about Mind Aku.";
 
 /** Announcement-only WhatsApp group invite (`https://chat.whatsapp.com/...`). Empty = hide join UI. */
 export const WHATSAPP_GROUP_URL = (() => {
@@ -73,12 +73,13 @@ export function buildWhatsAppGroupHref(): string | null {
 }
 
 export function buildAdminWhatsAppHref(message?: string): string {
+  // Prefer caller-translated message; fall back to English env/default (UI uses t() at call sites).
   const text = message?.trim() || WHATSAPP_MESSAGE;
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 }
 
 export const COMMUNITY_CLAIM_WHATSAPP_MESSAGE =
-  "Hai admin Mikbalvia Digital, saya ingin klaim promo dari channel pengumuman Mind Aku.";
+  "Hi Mikbalvia Digital admin, I want to claim a promo from the Mind Aku announcement channel.";
 
 /** Set true to show the Subscription menu, purchase page, and related CTAs. */
 export const SUBSCRIPTION_PAGE_ENABLED = false;

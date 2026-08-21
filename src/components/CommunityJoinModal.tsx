@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Megaphone,
   ChatCircleDots,
   Sparkle,
@@ -9,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   buildAdminWhatsAppHref,
   buildWhatsAppGroupHref,
-  COMMUNITY_CLAIM_WHATSAPP_MESSAGE,
   getActiveCommunityCampaign,
 } from "../config";
 import {
@@ -19,10 +19,11 @@ import {
 } from "../lib/communityWhatsApp";
 
 export function CommunityJoinModal() {
+  const { t } = useTranslation();
   const groupHref = buildWhatsAppGroupHref();
   const campaign = getActiveCommunityCampaign();
   const [open, setOpen] = useState(false);
-  const adminHref = buildAdminWhatsAppHref(COMMUNITY_CLAIM_WHATSAPP_MESSAGE);
+  const adminHref = buildAdminWhatsAppHref(t("Hi Mikbalvia Digital admin, I want to claim a promo from the Mind Aku announcement channel."));
 
   useEffect(() => {
     if (!groupHref) return;
@@ -63,7 +64,7 @@ export function CommunityJoinModal() {
           type="button"
           onClick={dismiss}
           className="absolute right-3 top-3 z-10 rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          aria-label="Tutup"
+          aria-label={t("Close")}
         >
           <X weight="bold" className="size-4" />
         </button>
@@ -72,12 +73,12 @@ export function CommunityJoinModal() {
           {campaign ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
               <Sparkle weight="fill" className="size-3.5" />
-              Promo aktif
+              {t("Active promo")}
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
               <Megaphone weight="duotone" className="size-3.5" />
-              Channel resmi
+              {t("Official channel")}
             </div>
           )}
 
@@ -90,10 +91,10 @@ export function CommunityJoinModal() {
                 id="community-join-title"
                 className="font-heading text-xl font-bold leading-tight tracking-tight text-foreground sm:text-2xl"
               >
-                Ikuti channel pengumuman Mind Aku
+                {t("Follow the Mind Aku announcement channel")}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Update model, status layanan, dan promo resmi — tanpa spam chat member.
+                {t("Model updates, service status, and official promos — no member chat spam.")}
               </p>
             </div>
           </div>
@@ -101,45 +102,44 @@ export function CommunityJoinModal() {
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
             <li className="flex gap-2">
               <span className="text-primary">·</span>
-              Update model &amp; fitur resmi lebih dulu
+              {t("Official model & feature updates first")}
             </li>
             <li className="flex gap-2">
               <span className="text-primary">·</span>
-              Promo &amp; event (diskon, free credit/key) diumumkan di sini
+              {t("Promos & events (discounts, free credit/key) announced here")}
             </li>
             <li className="flex gap-2">
               <span className="text-primary">·</span>
-              Info status layanan / maintenance
+              {t("Service status / maintenance info")}
             </li>
             <li className="flex gap-2">
               <span className="text-primary">·</span>
-              Hanya pengumuman admin — member tidak bisa kirim pesan
+              {t("Admin announcements only — members cannot post")}
             </li>
           </ul>
 
           {campaign ? (
             <p className="mt-4 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2.5 text-sm text-foreground">
-              <strong className="font-semibold">Sedang berlangsung:</strong> {campaign.teaser} — detail di
-              grup, klaim via admin.
+              <strong className="font-semibold">{t("In progress:")}</strong> {campaign.teaser} {t("— details in the group, claim via admin.")}
             </p>
           ) : null}
 
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-            Grup khusus pengumuman. Tanya jawab &amp; klaim promo lewat chat admin.
+            {t("Announcement-only group. Q&A and promo claims via admin chat.")}
           </p>
 
           <div className="mt-5 flex flex-col gap-2 sm:mt-6">
             <Button asChild className="w-full" onClick={markJoined}>
               <a href={groupHref} target="_blank" rel="noopener noreferrer">
-                Join channel WhatsApp
+                {t("Join WhatsApp channel")}
               </a>
             </Button>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button type="button" variant="outline" onClick={dismiss} className="flex-1">
-                Nanti saja
+                {t("Not now")}
               </Button>
               <Button type="button" variant="ghost" onClick={markJoined} className="flex-1">
-                Sudah join
+                {t("Already joined")}
               </Button>
             </div>
             <a
@@ -149,7 +149,7 @@ export function CommunityJoinModal() {
               className="inline-flex items-center justify-center gap-1.5 pt-1 text-xs font-medium text-muted-foreground transition hover:text-foreground"
             >
               <ChatCircleDots weight="bold" className="size-3.5" />
-              Chat admin
+              {t("Chat admin")}
             </a>
           </div>
         </CardContent>

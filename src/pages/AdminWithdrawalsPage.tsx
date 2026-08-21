@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, Navigate } from "react-router-dom";
 import {
   fetchAdminAffiliateReferrals,
@@ -32,6 +33,7 @@ function formatUsd(value: number): string {
 }
 
 export function AdminWithdrawalsPage() {
+  const { t } = useTranslation();
   const adminKey = getPortalAdminKey();
   const [statusFilter, setStatusFilter] = useState("requested");
   const [rows, setRows] = useState<AffiliateWithdrawalItem[]>([]);
@@ -66,11 +68,11 @@ export function AdminWithdrawalsPage() {
       if (err instanceof ApiError && err.status === 401) {
         clearPortalAdminKey();
       }
-      setError(err instanceof ApiError ? err.message : "Gagal memuat data admin.");
+      setError(err instanceof ApiError ? err.message : t("Failed to load admin data."));
     } finally {
       setLoading(false);
     }
-  }, [adminKey, statusFilter]);
+  }, [adminKey, statusFilter, t]);
 
   useEffect(() => {
     void load();
@@ -88,11 +90,11 @@ export function AdminWithdrawalsPage() {
       if (err instanceof ApiError && err.status === 401) {
         clearPortalAdminKey();
       }
-      setError(err instanceof ApiError ? err.message : "Gagal memuat data admin.");
+      setError(err instanceof ApiError ? err.message : t("Failed to load admin data."));
     } finally {
       setReferralsLoading(false);
     }
-  }, [adminKey, appliedAffCode]);
+  }, [adminKey, appliedAffCode, t]);
 
   useEffect(() => {
     void loadReferrals();
@@ -111,7 +113,7 @@ export function AdminWithdrawalsPage() {
       setNote("");
       await load();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Gagal mengubah status.");
+      setError(err instanceof ApiError ? err.message : t("Failed to update status."));
     } finally {
       setBusyId(null);
     }
@@ -125,12 +127,12 @@ export function AdminWithdrawalsPage() {
           <div>
             <BrandLockup />
             <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">
-              Admin · Pencairan affiliate
+              {t("Admin · Affiliate withdrawals")}
             </p>
           </div>
           <div className="flex gap-2">
             <Button type="button" variant="outline" asChild>
-              <Link to="/">Portal</Link>
+              <Link to="/">{t("Portal")}</Link>
             </Button>
             <Button
               type="button"
@@ -140,7 +142,7 @@ export function AdminWithdrawalsPage() {
                 window.location.href = "/admin/login";
               }}
             >
-              Logout admin
+              {t("Logout admin")}
             </Button>
           </div>
         </div>
@@ -150,7 +152,7 @@ export function AdminWithdrawalsPage() {
             <Card>
               <CardContent className="space-y-1.5 p-6">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Liability belum cair
+                  {t("Outstanding liability")}
                 </p>
                 <p className="font-heading text-2xl font-extrabold">
                   {formatUsd(stats.unpaidLiabilityUsd)}
@@ -160,7 +162,7 @@ export function AdminWithdrawalsPage() {
             <Card>
               <CardContent className="space-y-1.5 p-6">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Pending / approved
+                  {t("Pending / approved")}
                 </p>
                 <p className="font-heading text-2xl font-extrabold">{stats.pendingWithdrawals}</p>
               </CardContent>
@@ -171,41 +173,41 @@ export function AdminWithdrawalsPage() {
         <div className="flex flex-wrap items-center gap-2">
           {["requested", "approved", "paid", "rejected", ""].map((s) => (
             <Button
-              key={s || "all"}
+              key={s ? t(s) : t("all")}
               type="button"
               size="sm"
               variant={statusFilter === s ? "default" : "outline"}
               onClick={() => setStatusFilter(s)}
             >
-              {s || "all"}
+              {s ? t(s) : t("all")}
             </Button>
           ))}
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="admin-note">
-            Catatan admin (opsional, diterapkan pada aksi berikutnya)
+            {t("Admin note")}
           </label>
           <Input id="admin-note" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        {loading ? <p className="text-sm text-muted-foreground">Memuat…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">{t("Loading…")}</p> : null}
 
         <Card>
           <CardContent className="p-6">
             {rows.length === 0 && !loading ? (
-              <p className="text-sm text-muted-foreground">Tidak ada data.</p>
+              <p className="text-sm text-muted-foreground">{t("No data.")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>USD</TableHead>
-                    <TableHead>Bank</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("USD")}</TableHead>
+                    <TableHead>{t("Bank")}</TableHead>
+                    <TableHead>{t("Status")}</TableHead>
+                    <TableHead>{t("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -231,7 +233,7 @@ export function AdminWithdrawalsPage() {
                                 disabled={busyId === row.id}
                                 onClick={() => void updateStatus(row.id, "approved")}
                               >
-                                Approve
+                                {t("Approve")}
                               </Button>
                               <Button
                                 type="button"
@@ -240,7 +242,7 @@ export function AdminWithdrawalsPage() {
                                 disabled={busyId === row.id}
                                 onClick={() => void updateStatus(row.id, "rejected")}
                               >
-                                Reject
+                                {t("Reject")}
                               </Button>
                               <Button
                                 type="button"
@@ -249,7 +251,7 @@ export function AdminWithdrawalsPage() {
                                 disabled={busyId === row.id}
                                 onClick={() => void updateStatus(row.id, "paid")}
                               >
-                                Mark paid
+                                {t("Mark paid")}
                               </Button>
                             </>
                           ) : null}
@@ -261,7 +263,7 @@ export function AdminWithdrawalsPage() {
                                 disabled={busyId === row.id}
                                 onClick={() => void updateStatus(row.id, "paid")}
                               >
-                                Mark paid
+                                {t("Mark paid")}
                               </Button>
                               <Button
                                 type="button"
@@ -270,7 +272,7 @@ export function AdminWithdrawalsPage() {
                                 disabled={busyId === row.id}
                                 onClick={() => void updateStatus(row.id, "rejected")}
                               >
-                                Reject
+                                {t("Reject")}
                               </Button>
                             </>
                           ) : null}
@@ -287,9 +289,9 @@ export function AdminWithdrawalsPage() {
         <Card>
           <CardContent className="space-y-4 p-6">
             <div className="space-y-1">
-              <h2 className="font-heading text-xl font-bold">Yang join via affiliate</h2>
+              <h2 className="font-heading text-xl font-bold">{t("Affiliate referrals")}</h2>
               <p className="text-sm text-muted-foreground">
-                {referralTotal} orang. Filter kode affiliator untuk lihat per orang.
+                {t("{{count}} people. Filter by affiliator code to view per person.", { count: String(referralTotal) })}
               </p>
             </div>
             <form
@@ -307,11 +309,11 @@ export function AdminWithdrawalsPage() {
                   id="aff-code-filter"
                   value={affCodeInput}
                   onChange={(e) => setAffCodeInput(e.target.value)}
-                  placeholder="Semua affiliator"
+                  placeholder={t("All affiliators")}
                 />
               </div>
               <Button type="submit" variant="outline">
-                Filter
+                {t("Filter")}
               </Button>
               {appliedAffCode ? (
                 <Button
@@ -322,21 +324,21 @@ export function AdminWithdrawalsPage() {
                     setAppliedAffCode("");
                   }}
                 >
-                  Reset
+                  {t("Reset")}
                 </Button>
               ) : null}
             </form>
-            {referralsLoading ? <p className="text-sm text-muted-foreground">Memuat referral…</p> : null}
+            {referralsLoading ? <p className="text-sm text-muted-foreground">{t("Loading referrals…")}</p> : null}
             {referrals.length === 0 && !referralsLoading ? (
-              <p className="text-sm text-muted-foreground">Tidak ada yang join.</p>
+              <p className="text-sm text-muted-foreground">{t("No one has joined.")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Kode affiliator</TableHead>
-                    <TableHead>Nama affiliator</TableHead>
+                    <TableHead>{t("Name")}</TableHead>
+                    <TableHead>{t("Date")}</TableHead>
+                    <TableHead>{t("Affiliator code")}</TableHead>
+                    <TableHead>{t("Affiliator name")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

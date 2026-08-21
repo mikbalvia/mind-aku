@@ -9,8 +9,10 @@ import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber } from "../lib/format";
+import { useTranslation } from "react-i18next";
 
 export function UsagePage() {
+  const { t } = useTranslation();
   const { apiKey, status, refreshStatus, loading } = useAuth();
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function UsagePage() {
         if (!cancelled) setConfig(cfg);
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof ApiError ? err.message : "Failed to load usage.");
+        setError(err instanceof ApiError ? err.message : t("Failed to load usage."));
       } finally {
         if (!cancelled) setInitializing(false);
       }
@@ -44,8 +46,8 @@ export function UsagePage() {
   return (
     <div>
       <PageHeader
-        title="Usage"
-        description="Saldo pay as you go (top up) dan limit subscription — terpisah, tidak digabung."
+        title={t("Usage")}
+        description={t("Pay-as-you-go balance and token usage.")}
         actions={
           <Button
             type="button"
@@ -56,18 +58,18 @@ export function UsagePage() {
               void Promise.all([refreshStatus(), fetchPaymentsConfig(apiKey!)])
                 .then(([, cfg]) => setConfig(cfg))
                 .catch((err) => {
-                  setError(err instanceof ApiError ? err.message : "Failed to refresh.");
+                  setError(err instanceof ApiError ? err.message : t("Failed to refresh usage."));
                 })
                 .finally(() => setInitializing(false));
             }}
           >
-            Refresh
+            {t("Refresh")}
           </Button>
         }
       />
 
       {error ? <ErrorBanner message={error} /> : null}
-      {initializing && !status && !config ? <LoadingBlock label="Reading your ledger…" /> : null}
+      {initializing && !status && !config ? <LoadingBlock label={t("Reading your ledger…")} /> : null}
 
       {(status || config) && (
         <div className="grid gap-5">
@@ -86,18 +88,18 @@ export function UsagePage() {
           <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-end justify-between gap-3">
-                <h3 className="font-heading text-2xl font-medium text-foreground">Tokens</h3>
+                <h3 className="font-heading text-2xl font-medium text-foreground">{t("Tokens")}</h3>
                 <p className="max-w-[10rem] truncate text-right text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   Since {formatDate(tokens?.periodStartAt)}
                 </p>
               </div>
               <dl className="mt-6">
-                <MetricRow label="Input" value={formatNumber(tokens?.inputTokens)} />
-                <MetricRow label="Output" value={formatNumber(tokens?.outputTokens)} />
-                <MetricRow label="Cache read" value={formatNumber(tokens?.cacheReadTokens)} />
-                <MetricRow label="Cache write" value={formatNumber(tokens?.cacheCreationTokens)} />
-                <MetricRow label="Reasoning" value={formatNumber(tokens?.reasoningTokens)} />
-                <MetricRow label="Total" value={formatNumber(tokens?.totalTokens)} emphasize />
+                <MetricRow label={t("Input")} value={formatNumber(tokens?.inputTokens)} />
+                <MetricRow label={t("Output")} value={formatNumber(tokens?.outputTokens)} />
+                <MetricRow label={t("Cache read")} value={formatNumber(tokens?.cacheReadTokens)} />
+                <MetricRow label={t("Cache write")} value={formatNumber(tokens?.cacheCreationTokens)} />
+                <MetricRow label={t("Reasoning")} value={formatNumber(tokens?.reasoningTokens)} />
+                <MetricRow label={t("Total")} value={formatNumber(tokens?.totalTokens)} emphasize />
               </dl>
             </CardContent>
           </Card>

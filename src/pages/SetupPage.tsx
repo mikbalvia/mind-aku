@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Check, Copy, ArrowSquareOut } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
 import { ClientSetupCard } from "../components/ClientSetupCard";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
@@ -70,55 +71,55 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     kind: "vscode",
     label: "VS Code Chat",
     short: "VS Code",
-    blurb: "Integrasi Chat / Agent di Visual Studio Code via Custom Endpoint Mind Aku.",
+    blurb: "Chat / Agent integration in Visual Studio Code via a Mind Aku Custom Endpoint.",
   },
   desktop: {
     kind: "desktop",
     label: "Claude Desktop",
     short: "Desktop",
-    blurb: "Aplikasi desktop Claude dengan gateway Mind Aku (tanpa akun Claude.ai).",
+    blurb: "Claude desktop app with the Mind Aku gateway (no Claude.ai account).",
   },
   openclaw: {
     kind: "curl-client",
     label: "OpenClaw",
     short: "OpenClaw",
-    blurb: "Agent OpenClaw ke Mind Aku — cukup satu perintah curl.",
+    blurb: "OpenClaw agent to Mind Aku — one curl command.",
     docs: OPENCLAW_DOCS,
     docsLabel: "OpenClaw install docs",
     runCmd: "openclaw tui",
-    lead: "Jalankan satu perintah di bawah. Script akan memasang OpenClaw jika belum ada, lalu menulis katalog model Mind Aku. Nama agen dan setup lama tidak diubah.",
+    lead: "Run the one command below. The script installs OpenClaw if needed, then writes the Mind Aku model catalog. Existing agent names and setup are left unchanged.",
     modelsNote:
-      "Katalog model diambil live dari /v1/models. Default claude-sonnet-5 hanya jika belum ada primary. Lalu jalankan: openclaw tui",
-    afterTitle: "Buka agen OpenClaw",
+      "Model catalog is fetched live from /v1/models. Default claude-sonnet-5 only if there is no primary yet. Then run: openclaw tui",
+    afterTitle: "Open the OpenClaw agent",
     afterSteps: [
-      "Setelah curl selesai, jalankan openclaw tui (ini masuk chat agen, bukan asisten setup Crestodian).",
-      "Daftar model Mind Aku ada di /models atau openclaw models list --provider mindaku.",
-      "Pilih model mindaku/… di picker. Default baru: claude-sonnet-5.",
+      "After curl finishes, run openclaw tui (this opens the agent chat, not the Crestodian setup assistant).",
+      "Mind Aku models are listed at /models or via openclaw models list --provider mindaku.",
+      "Pick a mindaku/… model in the picker. New default: claude-sonnet-5.",
     ],
   },
   hermes: {
     kind: "curl-client",
     label: "Hermes",
     short: "Hermes",
-    blurb: "Hermes Agent ke Mind Aku — cukup satu perintah curl.",
+    blurb: "Hermes Agent to Mind Aku — one curl command.",
     docs: HERMES_DOCS,
     docsLabel: "Hermes quickstart",
     runCmd: "hermes",
-    lead: "Jalankan satu perintah di bawah. Script akan memasang Hermes jika belum ada, lalu menulis katalog model Mind Aku. Nama agen dan model/setup yang sudah ada tidak diubah.",
+    lead: "Run the one command below. The script installs Hermes if needed, then writes the Mind Aku model catalog. Existing agent names and models/setup are left unchanged.",
     modelsNote:
-      "Katalog model diambil live dari /v1/models dan providers.mindaku. Default claude-sonnet-5 hanya jika model belum dikonfigurasi. Lalu jalankan: hermes",
-    afterTitle: "Buka Hermes",
+      "Model catalog is fetched live from /v1/models and providers.mindaku. Default claude-sonnet-5 only if no model is configured yet. Then run: hermes",
+    afterTitle: "Open Hermes",
     afterSteps: [
-      "Setelah curl selesai, jalankan hermes (atau hermes --tui).",
-      "Lihat daftar model Mind Aku lewat /model atau hermes model.",
-      "Pilih model dari provider mindaku. Default baru: claude-sonnet-5.",
+      "After curl finishes, run hermes (or hermes --tui).",
+      "See Mind Aku models via /model or hermes model.",
+      "Pick a model from the mindaku provider. New default: claude-sonnet-5.",
     ],
   },
   claude: {
     kind: "cli",
     label: "Claude Code",
     short: "Claude",
-    blurb: "Agent coding di terminal & editor (VS Code / Cursor / Antigravity).",
+    blurb: "Coding agent in the terminal & editor (VS Code / Cursor / Antigravity).",
     docs: CLAUDE_DOCS,
     docsLabel: "Claude Code Quickstart",
     checkCmd: "claude --version",
@@ -135,31 +136,31 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
         id: "claude-win",
       },
       {
-        label: "macOS Homebrew (opsional)",
+        label: "macOS Homebrew (optional)",
         command: "brew install --cask claude-code",
         id: "claude-brew",
       },
     ],
     ide: {
       steps: [
-        "Buka Extensions / Marketplace di editor kamu.",
-        "Cari dan install extension “Claude Code”.",
-        "Pastikan CLI Claude Code sudah terpasang dan auto-config Mind Aku sudah dijalankan.",
-        "Pakai seperti biasa — request akan lewat Mind Aku.",
+        "Open Extensions / Marketplace in your editor.",
+        "Search for and install the “Claude Code” extension.",
+        "Make sure the Claude Code CLI is installed and Mind Aku auto-config has been run.",
+        "Use it as usual — requests go through Mind Aku.",
       ],
       docsHref: CLAUDE_VSCODE,
-      docsLabel: "Claude Code di VS Code",
+      docsLabel: "Claude Code in VS Code",
     },
   },
   codex: {
     kind: "cli",
     label: "Codex CLI",
     short: "Codex",
-    blurb: "Agent coding OpenAI / ChatGPT di terminal & editor.",
+    blurb: "OpenAI / ChatGPT coding agent in the terminal & editor.",
     docs: CODEX_DOCS,
     docsLabel: "Codex CLI getting started",
     checkCmd: "codex --version",
-    modelsNote: "Default: gpt-5.5. Combo lain: gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna.",
+    modelsNote: "Default: gpt-5.5. Other combos: gpt-5.6-sol, gpt-5.6-terra, gpt-5.6-luna.",
     install: [
       {
         label: "macOS / Linux",
@@ -175,10 +176,10 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     ],
     ide: {
       steps: [
-        "Buka Extensions / Marketplace di editor kamu.",
-        "Cari dan install extension “Codex” (OpenAI Codex).",
-        "Pastikan CLI Codex sudah terpasang dan auto-config Mind Aku sudah dijalankan.",
-        "Pakai seperti biasa — request akan lewat Mind Aku.",
+        "Open Extensions / Marketplace in your editor.",
+        "Search for and install the “Codex” extension (OpenAI Codex).",
+        "Make sure the Codex CLI is installed and Mind Aku auto-config has been run.",
+        "Use it as usual — requests go through Mind Aku.",
       ],
       docsHref: CODEX_IDE,
       docsLabel: "Codex IDE",
@@ -208,9 +209,10 @@ function InstallCommand({
   copied: string | null;
   onCopy: (id: string, value: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{t(label)}</p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
         <pre className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-foreground">
           <code>{command}</code>
@@ -223,7 +225,7 @@ function InstallCommand({
           onClick={() => onCopy(copyId, command)}
         >
           {copied === copyId ? <Check weight="bold" /> : <Copy weight="bold" />}
-          {copied === copyId ? "Copied" : "Copy"}
+          {copied === copyId ? t("Copied") : t("Copy")}
         </Button>
       </div>
     </div>
@@ -261,6 +263,7 @@ function ManualShot({
 }
 
 function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
+  const { t } = useTranslation();
   const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -277,63 +280,60 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
         <CardContent className="space-y-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <StepLabel n={2}>Siapkan Visual Studio Code</StepLabel>
+              <StepLabel n={2}>{t("Prepare Visual Studio Code")}</StepLabel>
               <h3 className="font-heading text-xl font-medium text-foreground">
                 Chat + Language Models
               </h3>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                Pakai Chat di VS Code (atau Cursor) dengan model Mind Aku lewat{" "}
-                <strong className="text-foreground">Custom Endpoint</strong>. Auto-config akan
-                menulis <code>chatLanguageModels.json</code> dan force env key di shell kamu.
+                {t(
+                  "Use Chat in VS Code (or Cursor) with Mind Aku models via a Custom Endpoint. Auto-config writes chatLanguageModels.json and force-sets env keys in your shell."
+                )}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm">
                 <a href={VSCODE_DOWNLOAD} target="_blank" rel="noopener noreferrer">
-                  Download VS Code <ArrowSquareOut />
+                  {t("Download VS Code")} <ArrowSquareOut />
                 </a>
               </Button>
               <Button asChild variant="outline" size="sm">
                 <a href={VSCODE_LM_DOCS} target="_blank" rel="noopener noreferrer">
-                  Docs <ArrowSquareOut />
+                  {t("Docs")} <ArrowSquareOut />
                 </a>
               </Button>
             </div>
           </div>
 
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
-            <li>Install Visual Studio Code terbaru (stabil atau Insiders).</li>
+            <li>{t("Install the latest Visual Studio Code (stable or Insiders).")}</li>
+            <li>{t("Make sure the Chat feature is available (Chat panel in the sidebar).")}</li>
             <li>
-              Pastikan fitur <strong>Chat</strong> tersedia (panel Chat di sidebar).
-            </li>
-            <li>
-              Opsional: Cursor juga didukung — auto-config menulis ke folder User Cursor jika
-              terpasang.
+              {t(
+                "Optional: Cursor is also supported — auto-config writes to the Cursor User folder if installed."
+              )}
             </li>
           </ol>
 
           <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            Model Mind Aku muncul di grup <strong>mindaku</strong> di model picker Chat. Thinking
-            effort default: <strong>high</strong> untuk semua model dari API models. URL endpoint
-            model memakai base gateway <strong>tanpa</strong> <code>/v1</code> — VS Code yang
-            menambahkan path API. Auto-config mengirim API key lewat{" "}
-            <code>requestHeaders.Authorization</code> (VS Code mengabaikan apiKey plaintext).
+            {t(
+              "Mind Aku models appear in the mindaku group in the Chat model picker. Default thinking effort: high for all models from the models API. Model endpoint URLs use the gateway base without /v1 — VS Code adds the API path. Auto-config sends the API key via requestHeaders.Authorization (VS Code ignores plaintext apiKey)."
+            )}
           </div>
         </CardContent>
       </Card>
 
       <div>
-        <StepLabel n={3}>Auto-config Mind Aku</StepLabel>
+        <StepLabel n={3}>{t("Auto-config Mind Aku")}</StepLabel>
         {apiKey ? (
           <ClientSetupCard
             apiKey={apiKey}
             toolLabel="VS Code"
-            modelsNote="Perintah ini mengisi chatLanguageModels.json (semua model dari API, URL tanpa /v1), force OPENAI_API_KEY + ANTHROPIC_API_KEY ke shell profile, lalu siap dipakai di Chat."
+            modelsNote="This command fills chatLanguageModels.json (all models from the API, URLs without /v1), force-sets OPENAI_API_KEY + ANTHROPIC_API_KEY in your shell profile, then Chat is ready."
           />
         ) : (
           <Card className="border-border bg-card">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
+              {t("Sign in again to show the auto-config command with your API key.")}
             </CardContent>
           </Card>
         )}
@@ -342,46 +342,46 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-5 p-6">
           <div className="space-y-2">
-            <StepLabel n={4}>Reload & pilih model</StepLabel>
+            <StepLabel n={4}>{t("Reload & pick a model")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Aktifkan model mindaku di Chat
+              {t("Enable mindaku models in Chat")}
             </h3>
           </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
-              Setelah auto-config selesai, di VS Code jalankan{" "}
-              <strong>Developer: Reload Window</strong> (Command Palette).
+              {t(
+                "After auto-config finishes, in VS Code run Developer: Reload Window (Command Palette)."
+              )}
             </li>
+            <li>{t("Open the Chat panel, then open the model picker.")}</li>
+            <li>{t("Pick a model in the mindaku group (list follows the gateway models API).")}</li>
             <li>
-              Buka panel <strong>Chat</strong>, lalu buka <strong>model picker</strong>.
-            </li>
-            <li>
-              Pilih model di grup <strong>mindaku</strong> (daftar mengikuti API models gateway).
-            </li>
-            <li>
-              Klik panah <strong>&gt;</strong> di samping nama model → set{" "}
-              <strong>Thinking Effort</strong> (disarankan <strong>High</strong>).
+              {t(
+                "Click the > arrow next to the model name → set Thinking Effort (recommended: High)."
+              )}
             </li>
           </ol>
 
           <ManualShot
             src="/setup-guides/vscode-models.png"
-            alt="Model picker VS Code Chat menampilkan model mindaku"
-            caption="Contoh model picker: pilih model dari grup mindaku (claude-opus-5, gpt-5.5, deepseek, dll.)"
+            alt={t("VS Code Chat model picker showing mindaku models")}
+            caption={t(
+              "Example model picker: choose a model from the mindaku group (claude-opus-5, gpt-5.5, deepseek, etc.)"
+            )}
           />
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             {[
               {
-                title: "macOS path",
+                title: t("macOS path"),
                 text: "~/Library/Application Support/Code/User/chatLanguageModels.json",
               },
               {
-                title: "Windows path",
+                title: t("Windows path"),
                 text: "%APPDATA%\\Code\\User\\chatLanguageModels.json",
               },
               {
-                title: "Linux path",
+                title: t("Linux path"),
                 text: "~/.config/Code/User/chatLanguageModels.json",
               },
             ].map((item) => (
@@ -396,7 +396,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
           </div>
 
           <p className="mt-4 text-xs text-muted-foreground">
-            Kalau daftar model di gateway berubah, jalankan ulang perintah auto-config.
+            {t("If the gateway model list changes, re-run the auto-config command.")}
           </p>
         </CardContent>
       </Card>
@@ -404,29 +404,28 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-5 p-6">
           <div className="space-y-2">
-            <StepLabel n={5}>Manual (opsional)</StepLabel>
+            <StepLabel n={5}>{t("Manual (optional)")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Tambah Custom Endpoint sendiri
+              {t("Add a Custom Endpoint yourself")}
             </h3>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Hanya jika auto-config gagal. Di VS Code: model picker →{" "}
-              <strong className="text-foreground">Manage Language Models</strong> →{" "}
-              <strong className="text-foreground">Add Models</strong> →{" "}
-              <strong className="text-foreground">Custom Endpoint</strong>.
+              {t(
+                "Only if auto-config fails. In VS Code: model picker → Manage Language Models → Add Models → Custom Endpoint."
+              )}
             </p>
           </div>
 
           <div className="space-y-3">
-            <WizardField label="Vendor / group name" value="mindaku" mono={false} />
+            <WizardField label={t("Vendor / group name")} value="mindaku" mono={false} />
             <WizardField
-              label="API type"
+              label={t("API type")}
               value="chat-completions"
               copyId="vscode-api-type"
               copied={copied}
               onCopy={onCopy}
             />
             <WizardField
-              label="URL (base, tanpa /v1)"
+              label={t("URL (base, without /v1)")}
               value={baseUrl}
               copyId="vscode-base"
               copied={copied}
@@ -434,11 +433,13 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             />
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                API key
+                {t("API key")}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Tempel API key Mind Aku kamu
-                {apiKey ? " (dari sesi login portal ini)." : " (dari portal setelah login)."}
+                {t("Paste your Mind Aku API key")}
+                {apiKey
+                  ? t(" (from this portal login session).")
+                  : t(" (from the portal after login).")}
               </p>
               {apiKey ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -450,7 +451,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
                     onClick={() => void onCopy("vscode-key", apiKey)}
                   >
                     {copied === "vscode-key" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                    {copied === "vscode-key" ? "Copied" : "Copy"}
+                    {copied === "vscode-key" ? t("Copied") : t("Copy")}
                   </Button>
                 </div>
               ) : null}
@@ -458,27 +459,26 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
           </div>
 
           <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            Jangan isi <code>/v1</code> di URL model. Dengan <code>apiType: chat-completions</code>,
-            VS Code akan memanggil <code>{baseUrl}/v1/chat/completions</code> sendiri.
+            {t(
+              "Do not put /v1 in the model URL. With apiType: chat-completions, VS Code will call {{url}}/v1/chat/completions itself.",
+              { url: baseUrl }
+            )}
           </div>
 
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
-              Di <code>chatLanguageModels.json</code>, set per model:{" "}
-              <code>thinking: true</code>,{" "}
-              <code>supportsReasoningEffort: [&quot;low&quot;,&quot;medium&quot;,&quot;high&quot;]</code>
-              , <code>reasoningEffortFormat: &quot;chat-completions&quot;</code>, dan{" "}
-              <code>url</code> = base gateway tanpa <code>/v1</code>.
+              {t(
+                'In chatLanguageModels.json, set per model: thinking: true, supportsReasoningEffort: ["low","medium","high"], reasoningEffortFormat: "chat-completions", and url = gateway base without /v1.'
+              )}
             </li>
             <li>
-              Di <code>settings</code> provider, set{" "}
-              <code>&quot;reasoningEffort&quot;: &quot;high&quot;</code> per model id.
+              {t('In the provider settings, set "reasoningEffort": "high" per model id.')}
             </li>
-            <li>Save file → Reload Window → pilih model mindaku di Chat.</li>
+            <li>{t("Save the file → Reload Window → pick a mindaku model in Chat.")}</li>
           </ol>
 
           <p className="text-xs text-muted-foreground">
-            Referensi resmi:{" "}
+            {t("Official reference:")}{" "}
             <a
               href={VSCODE_LM_DOCS}
               target="_blank"
@@ -496,6 +496,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
 }
 
 function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
+  const { t } = useTranslation();
   const gatewayUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -511,25 +512,25 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-6">
           <div className="space-y-2">
-            <StepLabel n={2}>Download Claude Desktop</StepLabel>
+            <StepLabel n={2}>{t("Download Claude Desktop")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Pasang aplikasi resmi Anthropic
+              {t("Install the official Anthropic app")}
             </h3>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Unduh Claude Desktop untuk macOS atau Windows, lalu instal. Kamu{" "}
-              <strong className="text-foreground">tidak perlu login Claude.ai</strong> jika
-              memakai gateway Mind Aku.
+              {t(
+                "Download Claude Desktop for macOS or Windows, then install. You do not need to sign in to Claude.ai when using the Mind Aku gateway."
+              )}
             </p>
           </div>
           <div className="flex justify-end">
             <Button asChild size="sm">
               <a href={CLAUDE_DESKTOP_DOWNLOAD} target="_blank" rel="noopener noreferrer">
-                Download <ArrowSquareOut />
+                {t("Download")} <ArrowSquareOut />
               </a>
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Sumber:{" "}
+            {t("Source:")}{" "}
             <a
               href={CLAUDE_DESKTOP_DOWNLOAD}
               target="_blank"
@@ -546,28 +547,28 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-6">
           <div className="space-y-2">
-            <StepLabel n={3}>Aktifkan Developer Mode</StepLabel>
+            <StepLabel n={3}>{t("Enable Developer Mode")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Buka menu Developer
+              {t("Open the Developer menu")}
             </h3>
           </div>
           <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            <strong>Penting:</strong> jika kamu sudah login ke akun Claude.ai di aplikasi ini,
-            <strong> logout dulu</strong> sebelum lanjut. Gateway Mind Aku dipakai tanpa
-            sign-in Claude.ai.
+            {t(
+              "Important: if you are already signed in to a Claude.ai account in this app, log out first before continuing. The Mind Aku gateway is used without Claude.ai sign-in."
+            )}
           </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
-            <li>Buka aplikasi Claude Desktop (pastikan sudah logout jika sebelumnya login).</li>
             <li>
-              Di menu bar: <strong>Help → Troubleshooting → Enable Developer Mode</strong>.
+              {t(
+                "Open the Claude Desktop app (make sure you are logged out if you previously signed in)."
+              )}
             </li>
-            <li>
-              Setelah aktif, menu <strong>Developer</strong> akan muncul di menu bar.
-            </li>
+            <li>{t("In the menu bar: Help → Troubleshooting → Enable Developer Mode.")}</li>
+            <li>{t("Once enabled, the Developer menu appears in the menu bar.")}</li>
           </ol>
           <ManualShot
             src="/setup-guides/manual-1.png"
-            alt="Enable Developer Mode di Claude Desktop"
+            alt={t("Enable Developer Mode in Claude Desktop")}
             caption="Help → Troubleshooting → Enable Developer Mode"
           />
         </CardContent>
@@ -576,22 +577,18 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-6">
           <div className="space-y-2">
-            <StepLabel n={4}>Buka pengaturan gateway</StepLabel>
+            <StepLabel n={4}>{t("Open gateway settings")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
               Configure Third-Party Inference
             </h3>
           </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
-            <li>
-              Klik <strong>Developer → Configure Third-Party Inference…</strong>
-            </li>
-            <li>
-              Pastikan tipe koneksi: <strong>Gateway</strong>.
-            </li>
+            <li>{t("Click Developer → Configure Third-Party Inference…")}</li>
+            <li>{t("Set the connection type to Gateway.")}</li>
           </ol>
           <ManualShot
             src="/setup-guides/manual-2.png"
-            alt="Configure Third-Party Inference di Claude Desktop"
+            alt={t("Configure Third-Party Inference in Claude Desktop")}
             caption="Developer → Configure Third-Party Inference…"
           />
         </CardContent>
@@ -600,19 +597,19 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-5 p-6">
           <div className="space-y-2">
-            <StepLabel n={5}>Isi kredensial Mind Aku</StepLabel>
+            <StepLabel n={5}>{t("Enter Mind Aku credentials")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Gateway credentials
+              {t("Gateway credentials")}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Di tab <strong>Connection</strong>, isi seperti berikut (sesuaikan dengan screenshot):
+              {t("On the Connection tab, fill in the following (match the screenshot):")}
             </p>
           </div>
 
           <div className="space-y-3 text-sm">
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Gateway base URL
+                {t("Gateway base URL")}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <code className="text-foreground">{gatewayUrl}</code>
@@ -623,17 +620,19 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                   onClick={() => void onCopy("gw-url", gatewayUrl)}
                 >
                   {copied === "gw-url" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                  {copied === "gw-url" ? "Copied" : "Copy"}
+                  {copied === "gw-url" ? t("Copied") : t("Copy")}
                 </Button>
               </div>
             </div>
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Gateway API key
+                {t("Gateway API key")}
               </p>
               <p className="mt-1 text-muted-foreground">
-                Tempel API key Mind Aku kamu
-                {apiKey ? " (dari sesi login portal ini)." : " (dari portal setelah login)."}
+                {t("Paste your Mind Aku API key")}
+                {apiKey
+                  ? t(" (from this portal login session).")
+                  : t(" (from the portal after login).")}
               </p>
               {apiKey ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -645,14 +644,14 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
                     onClick={() => void onCopy("gw-key", apiKey)}
                   >
                     {copied === "gw-key" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                    {copied === "gw-key" ? "Copied" : "Copy"}
+                    {copied === "gw-key" ? t("Copied") : t("Copy")}
                   </Button>
                 </div>
               ) : null}
             </div>
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Gateway auth scheme
+                {t("Gateway auth scheme")}
               </p>
               <p className="mt-1 font-medium text-foreground">
                 <code>x-api-key</code>
@@ -660,19 +659,19 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
             </div>
             <div className="rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Credential kind
+                {t("Credential kind")}
               </p>
-              <p className="mt-1 font-medium text-foreground">Static API key</p>
+              <p className="mt-1 font-medium text-foreground">{t("Static API key")}</p>
             </div>
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Opsional: klik <strong>Test connection</strong> untuk memastikan gateway terjangkau.
+            {t("Optional: click Test connection to verify the gateway is reachable.")}
           </p>
 
           <ManualShot
             src="/setup-guides/manual-3.png"
-            alt="Isi Gateway base URL dan API key Mind Aku"
+            alt={t("Fill in Gateway base URL and Mind Aku API key")}
             caption={`Gateway base URL = ${gatewayUrl}, auth scheme = x-api-key`}
           />
         </CardContent>
@@ -681,43 +680,33 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
       <Card className="scale-in border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-6">
           <div className="space-y-2">
-            <StepLabel n={6}>Atur model</StepLabel>
+            <StepLabel n={6}>{t("Configure models")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              Model discovery & tambah 3 model
+              {t("Model discovery & add 3 models")}
             </h3>
           </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             <li>
-              Nyalakan <strong>Model discovery</strong> agar model diambil dari{" "}
-              <code>{gatewayUrl}/v1/models</code>.
+              {t("Turn on Model discovery so models are fetched from {{url}}/v1/models.", {
+                url: gatewayUrl,
+              })}
             </li>
+            <li>{t("In Model list, click the + Add button below.")}</li>
             <li>
-              Di bagian <strong>Model list</strong>, klik tombol <strong>+ Add</strong> di bawah.
-            </li>
-            <li>
-              Isi form model seperti screenshot di bawah:
+              {t("Fill the model form like the screenshot below:")}
               <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                <li>
-                  <strong className="text-foreground">Model ID</strong> dan{" "}
-                  <strong className="text-foreground">Display name</strong> sama, misalnya{" "}
-                  <code className="text-foreground">claude-opus-5</code>
-                </li>
-                <li>
-                  <strong className="text-foreground">Offer 1M-context variant</strong>: nyalakan
-                  (ON)
-                </li>
-                <li>
-                  <strong className="text-foreground">Tier alias</strong>: boleh dikosongkan
-                </li>
+                <li>{t("Model ID and Display name the same, e.g. claude-opus-5")}</li>
+                <li>{t("Offer 1M-context variant: turn ON")}</li>
+                <li>{t("Tier alias: can be left empty")}</li>
               </ul>
               <ManualShot
                 src="/setup-guides/manual-4b.png"
-                alt="Form model: Model ID, Display name, Offer 1M-context ON"
-                caption="Isi Model ID + Display name; Offer 1M-context variant ON"
+                alt={t("Model form: Model ID, Display name, Offer 1M-context ON")}
+                caption={t("Fill Model ID + Display name; Offer 1M-context variant ON")}
               />
             </li>
             <li>
-              Ulangi sampai total <strong>3 model</strong> terdaftar:
+              {t("Repeat until 3 models are listed:")}
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>
                   <code>claude-opus-5</code>
@@ -731,27 +720,30 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               </ul>
             </li>
             <li>
-              Pastikan daftar sudah lengkap (Model discovery ON + 3 model), lalu klik{" "}
-              <strong>Apply Changes</strong>.
+              {t(
+                "When the list is complete (Model discovery ON + 3 models), click Apply Changes."
+              )}
               <ManualShot
                 src="/setup-guides/manual-4b.png"
-                alt="Model discovery ON dan 3 model Claude di daftar"
-                caption="Model discovery ON + 3 model, lalu Apply Changes"
+                alt={t("Model discovery ON and 3 Claude models in the list")}
+                caption={t("Model discovery ON + 3 models, then Apply Changes")}
               />
             </li>
             <li>
-              Tutup sepenuhnya Claude Desktop, lalu buka lagi. Di layar awal pilih{" "}
-              <strong>Continue</strong> (tanpa sign-in Claude.ai).
+              {t(
+                "Fully quit Claude Desktop, then reopen it. On the welcome screen choose Continue (without Claude.ai sign-in)."
+              )}
               <ManualShot
                 src="/setup-guides/login-claude.png"
-                alt="Welcome to Claude — Continue dengan custom gateway"
-                caption="Pilih Continue — gateway lokal, tanpa akun Claude.ai"
+                alt={t("Welcome to Claude — Continue with custom gateway")}
+                caption={t("Choose Continue — local gateway, no Claude.ai account")}
               />
             </li>
           </ol>
           <p className="mt-4 text-xs text-muted-foreground">
-            Alur ini mengikuti pola integrasi gateway pihak ketiga (mirip panduan OpenRouter untuk
-            Claude Desktop), disesuaikan ke Mind Aku.
+            {t(
+              "This flow follows third-party gateway integration patterns (similar to OpenRouter guides for Claude Desktop), adapted for Mind Aku."
+            )}
           </p>
         </CardContent>
       </Card>
@@ -774,6 +766,7 @@ function WizardField({
   onCopy?: (id: string, value: string) => void;
   mono?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-3">
       <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
@@ -790,7 +783,7 @@ function WizardField({
             onClick={() => onCopy(copyId, value)}
           >
             {copied === copyId ? <Check weight="bold" /> : <Copy weight="bold" />}
-            {copied === copyId ? "Copied" : "Copy"}
+            {copied === copyId ? t("Copied") : t("Copy")}
           </Button>
         ) : null}
       </div>
@@ -805,10 +798,11 @@ function CurlClientGuide({
   apiKey: string | null;
   tool: CurlClientTool;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-5">
       <div>
-        <StepLabel n={2}>Auto-config Mind Aku</StepLabel>
+        <StepLabel n={2}>{t("Auto-config Mind Aku")}</StepLabel>
         {apiKey ? (
           <ClientSetupCard
             apiKey={apiKey}
@@ -819,7 +813,7 @@ function CurlClientGuide({
         ) : (
           <Card className="border-border bg-card">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key kamu.
+              {t("Sign in again to show the auto-config command with your API key.")}
             </CardContent>
           </Card>
         )}
@@ -829,30 +823,32 @@ function CurlClientGuide({
         <CardContent className="space-y-5 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-2">
-              <StepLabel n={3}>{tool.afterTitle}</StepLabel>
+              <StepLabel n={3}>{t(tool.afterTitle)}</StepLabel>
               <h3 className="font-heading text-xl font-medium text-foreground">
-                Setelah curl selesai
+                {t("After curl finishes")}
               </h3>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                Tidak perlu isi Custom Provider manual. Katalog model sudah ditulis script.
+                {t(
+                  "No need to fill Custom Provider manually. The model catalog is already written by the script."
+                )}
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
               <a href={tool.docs} target="_blank" rel="noopener noreferrer">
-                Docs <ArrowSquareOut />
+                {t("Docs")} <ArrowSquareOut />
               </a>
             </Button>
           </div>
 
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
             {tool.afterSteps.map((step) => (
-              <li key={step}>{step}</li>
+              <li key={step}>{t(step)}</li>
             ))}
           </ol>
 
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              Jalankan
+              {t("Run")}
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-foreground">
               <code>{tool.runCmd}</code>
@@ -860,14 +856,14 @@ function CurlClientGuide({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Panduan resmi:{" "}
+            {t("Official guide:")}{" "}
             <a
               href={tool.docs}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              {tool.docsLabel}
+              {t(tool.docsLabel)}
             </a>
             .
           </p>
@@ -883,6 +879,7 @@ function parseToolParam(value: string | null): ToolId | null {
 }
 
 export function SetupPage() {
+  const { t } = useTranslation();
   const { apiKey } = useAuth();
   const [searchParams] = useSearchParams();
   const [tool, setTool] = useState<ToolId | null>(() =>
@@ -902,8 +899,8 @@ export function SetupPage() {
   return (
     <div>
       <PageHeader
-        title="Setup"
-        description="Pilih satu tool: VS Code Chat, Claude Desktop, Claude Code, Codex CLI, OpenClaw, atau Hermes — lalu ikuti langkahnya."
+        title={t("Setup")}
+        description={t("Pick one tool and connect it to Mind Aku.")}
       />
 
       <div className="space-y-5">
@@ -912,14 +909,14 @@ export function SetupPage() {
         <Card className="scale-in scale-in-delay-1 border-border bg-card shadow-sm">
           <CardContent className="space-y-5 p-6">
             <div className="space-y-2">
-              <StepLabel n={1}>Pilih tool</StepLabel>
+              <StepLabel n={1}>{t("Choose a tool")}</StepLabel>
               <h3 className="font-heading text-xl font-medium text-foreground">
-                Cukup pilih salah satu
+                {t("Pick just one")}
               </h3>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                Mulai dari <strong className="text-foreground">VS Code Chat</strong>, atau pilih
-                Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Langkah berikutnya
-                menyesuaikan pilihanmu.
+                {t(
+                  "Start with VS Code Chat, or pick Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Next steps follow your choice."
+                )}
               </p>
             </div>
 
@@ -943,11 +940,11 @@ export function SetupPage() {
                       <p className="font-heading text-lg text-foreground">{item.label}</p>
                       {active ? (
                         <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
-                          Dipilih
+                          {t("Selected")}
                         </p>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.blurb}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t(item.blurb)}</p>
                   </button>
                 );
               })}
@@ -958,13 +955,9 @@ export function SetupPage() {
         {!selected ? (
           <Card className="border-dashed border-border bg-muted/40">
             <CardContent className="p-6 text-sm text-muted-foreground">
-              Pilih <strong className="text-foreground">VS Code Chat</strong>,{" "}
-              <strong className="text-foreground">Claude Desktop</strong>,{" "}
-              <strong className="text-foreground">Claude Code</strong>,{" "}
-              <strong className="text-foreground">Codex CLI</strong>,{" "}
-              <strong className="text-foreground">OpenClaw</strong>, atau{" "}
-              <strong className="text-foreground">Hermes</strong> di atas untuk melihat panduan
-              lengkap.
+              {t(
+                "Pick VS Code Chat, Claude Desktop, Claude Code, Codex CLI, OpenClaw, or Hermes above to see the full guide."
+              )}
             </CardContent>
           </Card>
         ) : selected.kind === "vscode" ? (
@@ -979,18 +972,20 @@ export function SetupPage() {
               <CardContent className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <StepLabel n={2}>Install {selected.label}</StepLabel>
+                    <StepLabel n={2}>
+                      {t("Install {{label}}", { label: selected.label })}
+                    </StepLabel>
                     <h3 className="font-heading text-xl font-medium text-foreground">
-                      Pasang CLI di komputer kamu
+                      {t("Install the CLI on your machine")}
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                      Install sesuai OS. Setelah selesai, cek dengan{" "}
+                      {t("Install for your OS. When done, verify with")}{" "}
                       <code>{selected.checkCmd}</code>.
                     </p>
                   </div>
                   <Button asChild variant="outline" size="sm">
                     <a href={selected.docs} target="_blank" rel="noopener noreferrer">
-                      Docs <ArrowSquareOut />
+                      {t("Docs")} <ArrowSquareOut />
                     </a>
                   </Button>
                 </div>
@@ -1009,14 +1004,14 @@ export function SetupPage() {
                 </div>
 
                 <p className="mt-4 text-xs text-muted-foreground">
-                  Panduan resmi:{" "}
+                  {t("Official guide:")}{" "}
                   <a
                     href={selected.docs}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    {selected.docsLabel}
+                    {t(selected.docsLabel)}
                   </a>
                   .
                 </p>
@@ -1024,7 +1019,7 @@ export function SetupPage() {
             </Card>
 
             <div>
-              <StepLabel n={3}>Hubungkan ke Mind Aku</StepLabel>
+              <StepLabel n={3}>{t("Connect to Mind Aku")}</StepLabel>
               {apiKey ? (
                 <ClientSetupCard
                   apiKey={apiKey}
@@ -1034,8 +1029,7 @@ export function SetupPage() {
               ) : (
                 <Card className="border-border bg-card">
                   <CardContent className="p-6 text-sm text-muted-foreground">
-                    Login ulang diperlukan untuk menampilkan perintah auto-config dengan API key
-                    kamu.
+                    {t("Sign in again to show the auto-config command with your API key.")}
                   </CardContent>
                 </Card>
               )}
@@ -1045,25 +1039,27 @@ export function SetupPage() {
               <CardContent className="p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <StepLabel n={4}>Editor (opsional)</StepLabel>
+                    <StepLabel n={4}>{t("Editor (optional)")}</StepLabel>
                     <h3 className="font-heading text-xl font-medium text-foreground">
                       VS Code, Cursor, Antigravity
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                      Setelah CLI + auto-config siap, pasang extension {selected.short} di editor —
-                      lalu gunakan seperti biasa.
+                      {t(
+                        "After the CLI + auto-config are ready, install the {{tool}} extension in your editor — then use it as usual.",
+                        { tool: selected.short }
+                      )}
                     </p>
                   </div>
                   <Button asChild variant="outline" size="sm">
                     <a href={selected.ide.docsHref} target="_blank" rel="noopener noreferrer">
-                      Docs <ArrowSquareOut />
+                      {t("Docs")} <ArrowSquareOut />
                     </a>
                   </Button>
                 </div>
 
                 <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-6 text-foreground">
                   {selected.ide.steps.map((step) => (
-                    <li key={step}>{step}</li>
+                    <li key={step}>{t(step)}</li>
                   ))}
                 </ol>
 
@@ -1075,7 +1071,9 @@ export function SetupPage() {
                     >
                       <p className="font-medium text-foreground">{name}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Install extension {selected.short}, lalu pakai seperti biasa.
+                        {t("Install the {{tool}} extension, then use it as usual.", {
+                          tool: selected.short,
+                        })}
                       </p>
                     </div>
                   ))}

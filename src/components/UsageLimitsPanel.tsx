@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type {
   CustomerUsageLimits,
   PaygBalance,
@@ -22,34 +24,42 @@ import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
 type Variant = "compact" | "detailed";
 
-const SUB_WINDOWS: Array<{
-  key: "fiveHour" | "daily" | "weekly";
-  label: string;
-}> = [
-  { key: "fiveHour", label: "Limit 5 jam" },
-  { key: "daily", label: "Limit harian" },
-  { key: "weekly", label: "Limit mingguan" },
-];
+const SUB_WINDOW_KEYS = ["fiveHour", "daily", "weekly"] as const;
 
-function activeSubWindows(limits: CustomerUsageLimits | null | undefined) {
+function subWindowLabel(
+  key: (typeof SUB_WINDOW_KEYS)[number],
+  t: TFunction
+): string {
+  if (key === "fiveHour") return t("5-hour limit");
+  if (key === "daily") return t("Daily limit");
+  return t("Weekly limit");
+}
+
+function activeSubWindows(
+  limits: CustomerUsageLimits | null | undefined,
+  t: TFunction
+) {
   if (!limits) return [];
-  return SUB_WINDOWS.flatMap((item) => {
-    const window = limits[item.key];
-    return window ? [{ ...item, window }] : [];
+  return SUB_WINDOW_KEYS.flatMap((key) => {
+    const window = limits[key];
+    return window ? [{ key, label: subWindowLabel(key, t), window }] : [];
   });
 }
 
-function primaryExceededHint(limits: CustomerUsageLimits | null | undefined): string | null {
+function primaryExceededHint(
+  limits: CustomerUsageLimits | null | undefined,
+  t: TFunction
+): string | null {
   if (!limits?.enabled) return null;
-  for (const item of activeSubWindows(limits)) {
+  for (const item of activeSubWindows(limits, t)) {
     if (!item.window.exceeded) continue;
     const reset = formatResetIn(item.window.resetAt);
     return reset
-      ? `${item.label} tercapai — reset ${reset}.`
-      : `${item.label} tercapai.`;
+      ? t("{{label}} reached — resets {{reset}}.", { label: item.label, reset })
+      : t("{{label}} reached.", { label: item.label });
   }
   if (limits.lifetime?.exceeded) {
-    return "Lifetime cap habis — top up untuk lanjut (tidak reset otomatis).";
+    return t("Lifetime cap exhausted — top up to continue (does not reset automatically).");
   }
   return null;
 }
@@ -61,37 +71,37 @@ function WindowRows({
   window: UsageLimitWindow;
   detailed: boolean;
 }) {
+  const { t } = useTranslation();
   const pct = usedPercent(window.spentUsd, window.limitUsd);
   return (
     <div className="space-y-3">
       <ProgressBar percent={pct} />
       {detailed ? (
         <dl className="space-y-0.5">
-          <MetricRow label="Limit" value={formatUsd(window.limitUsd)} />
-          <MetricRow label="Spent" value={formatUsd(window.spentUsd)} />
-          <MetricRow label="Sisa" value={formatUsd(window.remainingUsd)} />
-          <MetricRow label="Used %" value={formatPercent(pct)} emphasize />
+          <MetricRow label={t("Limit")} value={formatUsd(window.limitUsd)} />
+          <MetricRow label={t("Spent")} value={formatUsd(window.spentUsd)} />
+          <MetricRow label={t("Left")} value={formatUsd(window.remainingUsd)} />
+          <MetricRow label={t("Used %")} value={formatPercent(pct)} emphasize />
           <MetricRow
-            label="Reset"
-            value={window.resetAt ? formatResetIn(window.resetAt) ?? "—" : "Tidak reset"}
+            label={t("Reset")}
+            value={window.resetAt ? formatResetIn(window.resetAt) ?? "—" : t("No reset")}
           />
         </dl>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Spent {formatUsd(window.spentUsd)} · {pct != null ? `${pct.toFixed(1)}%` : "—"}
-          {window.resetAt ? ` · reset ${formatResetIn(window.resetAt)}` : ""}
+          {t("Spent {{spent}} · {{pct}}", {
+            spent: formatUsd(window.spentUsd),
+            pct: pct != null ? `${pct.toFixed(1)}%` : "—",
+          })}
+          {window.resetAt
+            ? t(" · reset {{reset}}", { reset: formatResetIn(window.resetAt) ?? "" })
+            : ""}
         </p>
       )}
     </div>
   );
 }
 
-/**
- * PaygCard renders the "Saldo top up" card from the per-key pay-as-you-go pool.
- * Subscription keys (UsageLimits configured) report payg.enabled=false, in which
- * case this card hides entirely. Unlimited keys show "Unlimited" instead of a
- * numeric remaining balance.
- */
 function PaygCard({
   payg,
   compact,
@@ -107,6 +117,7 @@ function PaygCard({
   activeUntil?: string | null;
   activeUnitIdr?: number;
 }) {
+  const { t } = useTranslation();
   const hasPayg = payg != null;
   const unlimited = payg?.unlimited ?? false;
   const remaining = payg?.remainingUsd ?? null;
@@ -119,14 +130,14 @@ function PaygCard({
         <CardContent className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Saldo top up
+              {t("Top-up balance")}
             </p>
             {topUpAllowed && !unlimited ? (
               <Link
                 to="/payments"
                 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline"
               >
-                Top up →
+                {t("Top up →")}
               </Link>
             ) : null}
           </div>
@@ -136,26 +147,34 @@ function PaygCard({
               exhausted ? "text-destructive" : "text-foreground"
             )}
           >
-            {unlimited ? "Unlimited" : hasPayg ? formatUsd(remaining) : "—"}
+            {unlimited ? t("Unlimited") : hasPayg ? formatUsd(remaining) : "—"}
             {!unlimited ? (
-              <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+              <span className="ml-2 text-base font-normal text-muted-foreground">
+                {t("left")}
+              </span>
             ) : null}
           </p>
           <p className="text-sm text-muted-foreground">
             {unlimited
-              ? "Pay as you go tanpa batas."
+              ? t("Unlimited pay as you go.")
               : hasPayg
-                ? `Spent ${formatUsd(spent)} sepanjang masa · pay as you go · saldo tidak hangus.`
-                : "Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa."}
+                ? t("Spent {{spent}} lifetime · pay as you go · balance never expires.", {
+                    spent: formatUsd(spent),
+                  })
+                : t(
+                    "Pay-as-you-go balance is managed by admin — contact admin to check remaining."
+                  )}
           </p>
           {active != null || activeUntil ? (
             <p className="text-xs text-muted-foreground">
-              Masa aktif: {formatPaygActiveUntil(active, activeUntil)}
+              {t("Active period: {{label}}", {
+                label: formatPaygActiveUntil(active, activeUntil),
+              })}
             </p>
           ) : null}
           {exhausted ? (
             <p className="text-sm text-destructive">
-              Saldo top up habis — top up untuk lanjut (tidak ada reset window).
+              {t("Top-up balance exhausted — top up to continue (no reset window).")}
             </p>
           ) : null}
         </CardContent>
@@ -168,52 +187,57 @@ function PaygCard({
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="space-y-1">
-            <h3 className="font-heading text-2xl font-semibold text-foreground">Saldo top up</h3>
+            <h3 className="font-heading text-2xl font-semibold text-foreground">
+              {t("Top-up balance")}
+            </h3>
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
-              {hasPayg ? "Pay as you go · tidak reset" : "Dikelola admin"}
+              {hasPayg ? t("Pay as you go · never resets") : t("Managed by admin")}
             </p>
           </div>
           {topUpAllowed && !unlimited ? (
             <Button variant="outline" size="sm" asChild>
-              <Link to="/payments">Top up</Link>
+              <Link to="/payments">{t("Top up")}</Link>
             </Button>
           ) : null}
         </div>
 
         {unlimited ? (
-          <p className="font-heading text-4xl font-semibold text-foreground">Unlimited</p>
+          <p className="font-heading text-4xl font-semibold text-foreground">{t("Unlimited")}</p>
         ) : hasPayg ? (
           <>
             <p
               className={cn(
                 "font-heading text-4xl font-semibold",
-                remaining != null && remaining <= 0
-                  ? "text-destructive"
-                  : "text-foreground"
+                remaining != null && remaining <= 0 ? "text-destructive" : "text-foreground"
               )}
             >
               {formatUsd(remaining)}
-              <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+              <span className="ml-2 text-base font-normal text-muted-foreground">{t("left")}</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              Spent {formatUsd(spent)} sepanjang masa · top-up menambah saldo. Kelipatan penuh{" "}
-              {formatIdr(activeUnitIdr)} memperpanjang masa aktif. Sisa saldo tidak hangus.
+              {t(
+                "Spent {{spent}} lifetime · top-ups add balance. Full multiples of {{unit}} extend the active period. Unused balance never expires.",
+                { spent: formatUsd(spent), unit: formatIdr(activeUnitIdr) }
+              )}
             </p>
             {active != null || activeUntil ? (
               <p className="text-sm text-muted-foreground">
-                Masa aktif: {formatPaygActiveUntil(active, activeUntil)}
+                {t("Active period: {{label}}", {
+                  label: formatPaygActiveUntil(active, activeUntil),
+                })}
               </p>
             ) : null}
             {remaining != null && remaining <= 0 ? (
               <p className="text-sm text-destructive">
-                Saldo top up habis — top up untuk lanjut (tidak ada reset window).
+                {t("Top-up balance exhausted — top up to continue (no reset window).")}
               </p>
             ) : null}
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Saldo pay as you go dikelola admin — hubungi admin untuk cek sisa, atau buka
-            halaman Top up untuk menambah.
+            {t(
+              "Pay-as-you-go balance is managed by admin — contact admin to check remaining, or open Top up to add more."
+            )}
           </p>
         )}
       </CardContent>
@@ -221,28 +245,21 @@ function PaygCard({
   );
 }
 
-function TokenPackageCard({
-  pack,
-  compact,
-}: {
-  pack: TokenPackage;
-  compact: boolean;
-}) {
+function TokenPackageCard({ pack, compact }: { pack: TokenPackage; compact: boolean }) {
+  const { t } = useTranslation();
   const remaining = pack.remainingTokens;
   const total = pack.totalTokens;
   const used = pack.usedTokens;
   const exhausted = remaining <= 0;
   const pct = usedPercent(used, total);
-  const modelLabel = pack.modelsRestricted
-    ? pack.models.join(", ")
-    : "Semua model di grup";
+  const modelLabel = pack.modelsRestricted ? pack.models.join(", ") : t("All models in group");
 
   if (compact) {
     return (
       <Card className="scale-in scale-in-delay-1">
         <CardContent className="space-y-3">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Paket token
+            {t("Token package")}
           </p>
           <p
             className={cn(
@@ -251,11 +268,15 @@ function TokenPackageCard({
             )}
           >
             {formatTokenCount(remaining)}
-            <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+            <span className="ml-2 text-base font-normal text-muted-foreground">{t("left")}</span>
           </p>
           <ProgressBar percent={pct} />
           <p className="text-sm text-muted-foreground">
-            Terpakai {formatTokenCount(used)} dari {formatTokenCount(total)} · {modelLabel}
+            {t("Used {{used}} of {{total}} · {{models}}", {
+              used: formatTokenCount(used),
+              total: formatTokenCount(total),
+              models: modelLabel,
+            })}
           </p>
         </CardContent>
       </Card>
@@ -266,9 +287,11 @@ function TokenPackageCard({
     <Card className="scale-in scale-in-delay-1">
       <CardContent className="space-y-4">
         <div className="space-y-1">
-          <h3 className="font-heading text-2xl font-semibold text-foreground">Paket token</h3>
+          <h3 className="font-heading text-2xl font-semibold text-foreground">
+            {t("Token package")}
+          </h3>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
-            Input + output + cache = 1
+            {t("Input + output + cache = 1")}
           </p>
         </div>
         <p
@@ -278,17 +301,19 @@ function TokenPackageCard({
           )}
         >
           {formatTokenCount(remaining)}
-          <span className="ml-2 text-base font-normal text-muted-foreground">sisa</span>
+          <span className="ml-2 text-base font-normal text-muted-foreground">{t("left")}</span>
         </p>
         <ProgressBar percent={pct} />
         <dl>
-          <MetricRow label="Terpakai" value={formatTokenCount(used)} />
-          <MetricRow label="Total paket" value={formatTokenCount(total)} />
-          <MetricRow label="Model" value={modelLabel} emphasize />
+          <MetricRow label={t("Used")} value={formatTokenCount(used)} />
+          <MetricRow label={t("Package total")} value={formatTokenCount(total)} />
+          <MetricRow label={t("Model")} value={modelLabel} emphasize />
         </dl>
         {exhausted ? (
           <p className="text-sm text-destructive">
-            Paket token habis. Model di daftar ini akan memakai saldo USD jika masih ada.
+            {t(
+              "Token package exhausted. Models on this list will use USD balance if any remains."
+            )}
           </p>
         ) : null}
       </CardContent>
@@ -308,13 +333,9 @@ export function UsageLimitsPanel({
   activeUnitIdr = 100_000,
   activePeriodDays = 30,
 }: {
-  /** Per-key payg pool, the source of the "Saldo top up" card. */
   paygBalance?: PaygBalance | null;
-  /** Prepaid token package remaining on this key, if billed by tokens. */
   tokenPackage?: TokenPackage | null;
-  /** Live USD windows from API Manager enforcement (optional for older API). */
   usageLimits?: CustomerUsageLimits | null;
-  /** Top-up eligibility (subscription keys receive false). */
   topUpAllowed?: boolean;
   variant?: Variant;
   className?: string;
@@ -323,23 +344,22 @@ export function UsageLimitsPanel({
   activeUnitIdr?: number;
   activePeriodDays?: number;
 }) {
-  const subs = activeSubWindows(usageLimits);
+  const { t } = useTranslation();
+  const subs = activeSubWindows(usageLimits, t);
   const hasSubs = subs.length > 0;
   const enabled = usageLimits?.enabled ?? hasSubs;
-  const exceededHint = primaryExceededHint(usageLimits);
+  const exceededHint = primaryExceededHint(usageLimits, t);
   const compact = variant === "compact";
-  // The "Saldo top up" card is always visible — admin can add saldo manually
-  // even when the API key has no subscription windows. Hide only when the
-  // backend explicitly reports `unlimited: true`. When `paygBalance` is
-  // absent (older backend) we still render a hint card so users know saldo
-  // is admin-managed.
   const showPayg = paygBalance == null ? true : !paygBalance.unlimited;
   const gridCols = compact && showPayg && hasSubs ? "md:grid-cols-2" : "";
+
   return (
     <div className={cn("grid gap-6", gridCols, className)}>
       {usageLimits && !usageLimits.enabled && hasSubs ? (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100 md:col-span-2">
-          Limit terkonfigurasi tetapi belum diaktifkan admin (`usage limit` off). Belum di-enforce.
+          {t(
+            "Limits are configured but not activated by admin (`usage limit` off). Not enforced yet."
+          )}
         </div>
       ) : null}
 
@@ -351,11 +371,13 @@ export function UsageLimitsPanel({
 
       {active === false ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-foreground md:col-span-2">
-          Masa aktif habis — API tidak bisa dipakai. Top up minimal {formatIdr(activeUnitIdr)} untuk
-          perpanjang {activePeriodDays} hari. Sisa di bawah itu hanya nambah saldo.{" "}
+          {t(
+            "Active period expired — API cannot be used. Top up at least {{unit}} to extend {{days}} days. Amounts below that only add balance.",
+            { unit: formatIdr(activeUnitIdr), days: String(activePeriodDays) }
+          )}{" "}
           {topUpAllowed ? (
             <Link to="/payments" className="font-semibold text-primary hover:underline">
-              Top up →
+              {t("Top up →")}
             </Link>
           ) : null}
         </div>
@@ -372,16 +394,17 @@ export function UsageLimitsPanel({
         />
       ) : null}
 
-      {tokenPackage?.enabled ? (
-        <TokenPackageCard pack={tokenPackage} compact={compact} />
-      ) : null}
+      {tokenPackage?.enabled ? <TokenPackageCard pack={tokenPackage} compact={compact} /> : null}
 
       {hasSubs && compact ? (
         <SummaryCard
           className="scale-in scale-in-delay-2"
-          label="Limit subscription"
-          value={`${subs.filter((s) => !s.window.exceeded).length}/${subs.length} aktif`}
-          hint="Rate cap paket · reset per window"
+          label={t("Subscription limits")}
+          value={t("{{active}}/{{total}} active", {
+            active: String(subs.filter((s) => !s.window.exceeded).length),
+            total: String(subs.length),
+          })}
+          hint={t("Package rate cap · resets per window")}
         >
           <ul className="space-y-4">
             {subs.map(({ key, label, window }) => {
@@ -416,7 +439,7 @@ export function UsageLimitsPanel({
                   ) : null}
                   {window.resetAt ? (
                     <p className="text-[11px] text-muted-foreground">
-                      Reset {formatResetIn(window.resetAt)}
+                      {t("Reset {{reset}}", { reset: formatResetIn(window.resetAt) ?? "" })}
                     </p>
                   ) : null}
                 </li>
@@ -432,15 +455,15 @@ export function UsageLimitsPanel({
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div className="space-y-1">
                 <h3 className="font-heading text-2xl font-semibold text-foreground">
-                  Limit subscription
+                  {t("Subscription limits")}
                 </h3>
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
-                  5 jam / harian / mingguan · terpisah dari top up
+                  {t("5h / daily / weekly · separate from top up")}
                 </p>
               </div>
               {SUBSCRIPTION_PAGE_ENABLED ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/subscription">Paket</Link>
+                  <Link to="/subscription">{t("Plans")}</Link>
                 </Button>
               ) : null}
             </div>
@@ -463,15 +486,23 @@ export function UsageLimitsPanel({
                       )}
                     >
                       {formatUsd(window.remainingUsd)}
-                      <span className="ml-1 text-sm font-normal text-muted-foreground">sisa</span>
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                        {t("left")}
+                      </span>
                     </p>
                   </div>
                   {enabled ? <WindowRows window={window} detailed /> : null}
-                  {window.exceeded && enabled && paygBalance?.enabled && !paygBalance.unlimited &&
-                    paygBalance.remainingUsd != null && paygBalance.remainingUsd > 0 ? (
+                  {window.exceeded &&
+                  enabled &&
+                  paygBalance?.enabled &&
+                  !paygBalance.unlimited &&
+                  paygBalance.remainingUsd != null &&
+                  paygBalance.remainingUsd > 0 ? (
                     <p className="text-xs text-muted-foreground">
-                      Saldo top up masih ada, tapi {label.toLowerCase()} habis — tunggu reset
-                      window.
+                      {t(
+                        "Top-up balance remains, but {{label}} is exhausted — wait for the window reset.",
+                        { label: label.toLowerCase() }
+                      )}
                     </p>
                   ) : null}
                 </div>

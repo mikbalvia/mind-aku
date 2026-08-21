@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { easeOut } from "../../lib/motion";
+import { useTranslation } from "react-i18next";
 
 export function ChatConversationList({
   conversations,
@@ -18,19 +19,20 @@ export function ChatConversationList({
   onCreate: () => void;
   onDelete: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const reduced = useReducedMotion();
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 p-3">
         <Button type="button" className="w-full justify-start gap-2" onClick={onCreate}>
           <Plus weight="bold" className="size-4" />
-          New chat
+          {t("New chat")}
         </Button>
       </div>
       <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-3">
         {conversations.length === 0 ? (
           <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-            Belum ada percakapan. Mulai chat baru.
+            {t("No conversations yet…")}
           </p>
         ) : (
           <AnimatePresence initial={false}>
@@ -63,7 +65,7 @@ export function ChatConversationList({
                   <button
                     type="button"
                     className="mr-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-                    aria-label={`Delete ${conv.title}`}
+                    aria-label={t("Delete {{title}}", { title: conv.title })}
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(conv.id);

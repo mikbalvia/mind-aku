@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowSquareOut } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 import { fetchModels } from "../api/client";
 import { ApiError } from "../api/types";
 import type { ModelItem } from "../api/types";
@@ -15,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toIntlLocale } from "@/i18n/languages";
 
 const OPENAI_PRICING_URL = "https://platform.openai.com/docs/pricing";
 const CLAUDE_PRICING_URL = "https://platform.claude.com/docs/en/about-claude/pricing";
@@ -30,11 +32,13 @@ function formatRate(value: number | null | undefined): string {
 }
 
 export function ModelsPage() {
+  const { t, i18n } = useTranslation();
   const { apiKey } = useAuth();
   const [models, setModels] = useState<ModelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const locale = toIntlLocale(i18n.resolvedLanguage || i18n.language);
 
   useEffect(() => {
     if (!apiKey) return;
@@ -57,7 +61,7 @@ export function ModelsPage() {
         }
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof ApiError ? err.message : "Failed to load models.");
+        setError(err instanceof ApiError ? err.message : t("Failed to load models."));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -67,7 +71,7 @@ export function ModelsPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiKey]);
+  }, [apiKey, t]);
 
   async function copyModelId(id: string) {
     try {
@@ -82,18 +86,19 @@ export function ModelsPage() {
   return (
     <div>
       <PageHeader
-        title="Models"
-        description="Katalog model yang bisa kamu tembak. Rate dalam USD per 1M tokens."
+        title={t("Models")}
+        description={t("Model catalog you can call from your API key.")}
       />
 
       <Card className="mb-5 scale-in border-border bg-card shadow-sm">
         <CardContent className="p-5">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            Notes · Pricing
+            {t("Notes · Pricing")}
           </p>
           <p className="mt-2 text-sm leading-relaxed text-foreground">
-            Dasar harga model mengikuti harga resmi provider (USD per 1M tokens). Nilai di
-            tabel di bawah diambil dinamis dari API gateway; untuk referensi resmi lihat:
+            {t(
+              "Model prices follow official provider rates (USD per 1M tokens). Values in the table below are loaded live from the API gateway; for official references see:"
+            )}
           </p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
@@ -103,7 +108,7 @@ export function ModelsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary hover:underline"
               >
-                OpenAI Pricing <ArrowSquareOut className="size-3.5" />
+                {t("OpenAI Pricing")} <ArrowSquareOut className="size-3.5" />
               </a>
               <span className="text-muted-foreground"> — platform.openai.com/docs/pricing</span>
             </li>
@@ -114,7 +119,7 @@ export function ModelsPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary hover:underline"
               >
-                Claude Pricing <ArrowSquareOut className="size-3.5" />
+                {t("Claude Pricing")} <ArrowSquareOut className="size-3.5" />
               </a>
               <span className="text-muted-foreground">
                 {" "}
@@ -126,12 +131,12 @@ export function ModelsPage() {
       </Card>
 
       {error ? <ErrorBanner message={error} /> : null}
-      {loading ? <LoadingBlock label="Loading model catalog…" /> : null}
+      {loading ? <LoadingBlock label={t("Loading model catalog…")} /> : null}
 
       {!loading && !error && models.length === 0 ? (
         <EmptyState
-          title="Belum ada model"
-          description="Minta admin unlock model untuk API key ini."
+          title={t("No models yet")}
+          description={t("Ask admin to unlock models for your key.")}
         />
       ) : null}
 
@@ -141,12 +146,12 @@ export function ModelsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Model</TableHead>
-                  <TableHead>Context</TableHead>
-                  <TableHead>Input</TableHead>
-                  <TableHead>Output</TableHead>
-                  <TableHead>Cached</TableHead>
-                  <TableHead>Cache Creation</TableHead>
+                  <TableHead>{t("Model")}</TableHead>
+                  <TableHead>{t("Context")}</TableHead>
+                  <TableHead>{t("Input")}</TableHead>
+                  <TableHead>{t("Output")}</TableHead>
+                  <TableHead>{t("Cached")}</TableHead>
+                  <TableHead>{t("Cache Creation")}</TableHead>
                   <TableHead className="text-right" />
                 </TableRow>
               </TableHeader>
@@ -155,12 +160,16 @@ export function ModelsPage() {
                   <TableRow key={model.id}>
                     <TableCell className="font-mono text-[13px] text-foreground">{model.id}</TableCell>
                     <TableCell className="tabular-nums">
-                      {model.context_length != null ? model.context_length.toLocaleString() : "—"}
+                      {model.context_length != null
+                        ? model.context_length.toLocaleString(locale)
+                        : "—"}
                     </TableCell>
                     <TableCell className="tabular-nums">{formatRate(model.pricing?.input)}</TableCell>
                     <TableCell className="tabular-nums">{formatRate(model.pricing?.output)}</TableCell>
                     <TableCell className="tabular-nums">{formatRate(model.pricing?.cached)}</TableCell>
-                    <TableCell className="tabular-nums">{formatRate(model.pricing?.cache_creation)}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {formatRate(model.pricing?.cache_creation)}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button
                         type="button"
@@ -168,7 +177,7 @@ export function ModelsPage() {
                         size="sm"
                         onClick={() => void copyModelId(model.id)}
                       >
-                        {copiedId === model.id ? "Copied" : "Copy"}
+                        {copiedId === model.id ? t("Copied") : t("Copy")}
                       </Button>
                     </TableCell>
                   </TableRow>

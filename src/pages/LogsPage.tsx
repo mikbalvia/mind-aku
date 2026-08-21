@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 50;
 
@@ -71,6 +72,7 @@ function formatSpend(value: number | null | undefined): string {
 }
 
 export function LogsPage() {
+  const { t } = useTranslation();
   const { apiKey } = useAuth();
   const [logs, setLogs] = useState<CallLog[]>([]);
   const [total, setTotal] = useState(0);
@@ -103,7 +105,7 @@ export function LogsPage() {
         setTotal(response.total);
         setOffset(response.offset);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load logs.");
+        setError(err instanceof ApiError ? err.message : t("Failed to load logs."));
       } finally {
         setLoading(false);
       }
@@ -148,32 +150,32 @@ export function LogsPage() {
   return (
     <div>
       <PageHeader
-        title="Usage logs"
-        description="Jejak request dari API key kamu — biar eksperimen tetap terkontrol."
+        title={t("Usage logs")}
+        description={t("Request trail for this API key.")}
       />
 
       <Card className="scale-in scale-in-delay-1 mb-5 border-border bg-card shadow-sm">
         <CardContent className="grid gap-4 p-4 sm:p-5 md:grid-cols-[140px_1fr_1.4fr_auto] md:items-end">
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Status</Label>
+            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("Status")}</Label>
             <Select
               value={status || "all"}
               onValueChange={(value) => setStatus(value === "all" ? "" : (value as "ok" | "error"))}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="All" />
+                <SelectValue placeholder={t("All")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="ok">OK</SelectItem>
-                <SelectItem value="error">Error</SelectItem>
+                <SelectItem value="all">{t("All")}</SelectItem>
+                <SelectItem value="ok">{t("OK")}</SelectItem>
+                <SelectItem value="error">{t("Error")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Model</Label>
+            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("Model")}</Label>
             <Input
-              placeholder="Filter by model"
+              placeholder={t("Filter by model")}
               value={model}
               onChange={(e) => setModel(e.target.value)}
               onKeyDown={(e) => {
@@ -182,9 +184,9 @@ export function LogsPage() {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Search</Label>
+            <Label className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{t("Search")}</Label>
             <Input
-              placeholder="Path, provider, correlation…"
+              placeholder={t("Path, provider, correlation…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -193,18 +195,18 @@ export function LogsPage() {
             />
           </div>
           <Button type="button" onClick={applyFilters} className="md:mb-0.5">
-            Apply
+            {t("Apply")}
           </Button>
         </CardContent>
       </Card>
 
       {error ? <ErrorBanner message={error} /> : null}
-      {loading ? <LoadingBlock label="Loading request trail…" /> : null}
+      {loading ? <LoadingBlock label={t("Loading request trail…")} /> : null}
 
       {!loading && !error && logs.length === 0 ? (
         <EmptyState
-          title="No activity yet"
-          description="Requests made with this API key will appear here."
+          title={t("No activity yet")}
+          description={t("Requests made with this API key will appear here.")}
         />
       ) : null}
 
@@ -215,12 +217,12 @@ export function LogsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Model</TableHead>
-                    <TableHead>Tokens</TableHead>
-                    <TableHead>Spend</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Time</TableHead>
+                    <TableHead>{t("Status")}</TableHead>
+                    <TableHead>{t("Model")}</TableHead>
+                    <TableHead>{t("Tokens")}</TableHead>
+                    <TableHead>{t("Spend")}</TableHead>
+                    <TableHead>{t("Duration")}</TableHead>
+                    <TableHead>{t("Time")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -267,7 +269,7 @@ export function LogsPage() {
                 disabled={offset <= 0}
                 onClick={() => void load(Math.max(0, offset - PAGE_SIZE))}
               >
-                Previous
+                {t("Previous")}
               </Button>
               <Button
                 type="button"
@@ -275,7 +277,7 @@ export function LogsPage() {
                 disabled={offset + PAGE_SIZE >= total}
                 onClick={() => void load(offset + PAGE_SIZE)}
               >
-                Next
+                {t("Next")}
               </Button>
             </div>
           </div>
@@ -292,7 +294,7 @@ export function LogsPage() {
             </SheetDescription>
           </SheetHeader>
 
-          {detailLoading ? <LoadingBlock label="Loading detail…" /> : null}
+          {detailLoading ? <LoadingBlock label={t("Loading detail…")} /> : null}
 
           {selected ? (
             <div className="space-y-0 px-4 pb-6 text-sm">

@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { ChatCircleDots, X } from "@phosphor-icons/react";
+import { useTranslation } from "react-i18next";
 import {
   buildAdminWhatsAppHref,
   getActiveCommunityCampaign,
-  WHATSAPP_MESSAGE,
 } from "../config";
 
 export function WhatsAppWidget() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(true);
   const campaign = getActiveCommunityCampaign();
   const href = buildAdminWhatsAppHref(
     campaign
-      ? "Hai admin Mikbalvia Digital, saya ingin klaim promo / bertanya tentang layanan Mind Aku."
-      : WHATSAPP_MESSAGE
+      ? t("Hi Mikbalvia Digital admin, I want to claim a promo / ask about Mind Aku.")
+      : t("Hi Mikbalvia Digital admin, I have a question about Mind Aku.")
   );
 
   return (
@@ -22,25 +23,27 @@ export function WhatsAppWidget() {
           <button
             type="button"
             className="whatsapp-widget__close"
-            aria-label="Tutup bantuan WhatsApp"
+            aria-label={t("Close WhatsApp help")}
             onClick={() => setOpen(false)}
           >
             <X weight="bold" className="size-4" />
           </button>
           <p className="whatsapp-widget__title">
-            {campaign ? "Klaim promo?" : "Butuh bantuan?"}
+            {campaign ? t("Claim a promo?") : t("Need help?")}
           </p>
           <p className="whatsapp-widget__text">
             {campaign
-              ? "Chat admin untuk klaim promo, order API, atau pertanyaan. Channel pengumuman khusus broadcast admin."
-              : "Ada yang ingin ditanyakan, order API, atau perpanjang API? Hubungi admin via WhatsApp."}
+              ? t(
+                  "Chat admin to claim a promo, order an API, or ask a question. The announcement channel is admin broadcast only."
+                )
+              : t("Questions, API orders, or renewals? Contact admin on WhatsApp.")}
           </p>
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer"
             className="whatsapp-widget__link"
-            aria-label="Hubungi admin melalui WhatsApp"
+            aria-label={t("Contact admin on WhatsApp")}
           >
             <ChatCircleDots weight="fill" className="size-9" />
           </a>
@@ -51,7 +54,7 @@ export function WhatsAppWidget() {
           target="_blank"
           rel="noopener noreferrer"
           className="whatsapp-widget__link whatsapp-widget__link--closed"
-          aria-label="Buka bantuan WhatsApp"
+          aria-label={t("Open WhatsApp help")}
         >
           <ChatCircleDots weight="fill" className="size-9" />
         </a>

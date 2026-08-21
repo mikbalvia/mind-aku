@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPayment, fetchPayments, fetchPaymentsConfig, simulatePayment } from "../api/client";
 import { ApiError } from "../api/types";
 import type { PaymentHistoryItem, PaymentsConfig } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { EmptyState, ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome";
-import { formatIdrPerUsdRate, formatPaygActiveUntil } from "../lib/format";
+import { formatIdr, formatIdrPerUsdRate, formatPaygActiveUntil, formatUsd } from "../lib/format";
 import { canDownloadInvoice, downloadInvoice } from "../lib/invoice";
 import { captureReferralFromUrl, getStoredReferralCode } from "../lib/referral";
 import { isAllowedPaymentCheckoutUrl } from "../lib/safeUrl";
@@ -22,30 +23,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { toIntlLocale } from "@/i18n/languages";
 
-function formatUsd(value: number | null | undefined): string {
-  if (value == null || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatIdr(value: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function statusLabel(status: string, credited: boolean): string {
-  if (credited) return "Credited";
+function statusLabel(status: string, credited: boolean, t: (k: string) => string): string {
+  if (credited) return t("Credited");
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 export function PaymentsPage() {
+  const { t, i18n } = useTranslation();
   const { apiKey, status, logout } = useAuth();
   const [config, setConfig] = useState<PaymentsConfig | null>(null);
   const [history, setHistory] = useState<PaymentHistoryItem[]>([]);
@@ -56,7 +42,8 @@ export function PaymentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const buyerName = status?.apiKey?.name ?? "API Key Member";
+  const buyerName = status?.apiKey?.name ?? t("API Key Member");
+  const locale = toIntlLocale(i18n.resolvedLanguage || i18n.language);
 
   const minTopUpIdr = config?.minTopUpIdr ?? 10_000;
   const activeUnitIdr = config?.activeUnitIdr ?? 100_000;
@@ -98,11 +85,11 @@ export function PaymentsPage() {
       setHistory(list.data ?? []);
       if (cfg.packages[0]) setSelectedIdr(cfg.packages[0].amountIdr);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load payments.");
+      setError(err instanceof ApiError ? err.message : t("Failed to load payments."));
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [apiKey, t]);
 
   useEffect(() => {
     void load();
@@ -115,7 +102,7 @@ export function PaymentsPage() {
 
   async function onTopUp() {
     if (!apiKey || !amountValid || activeIdr == null) {
-      setError(`Pilih nominal minimal ${formatIdr(minTopUpIdr)}.`);
+      setError(t("Choose an amount of at least {{amount}}.", { amount: formatIdr(minTopUpIdr) }));
       return;
     }
     setSubmitting(true);
@@ -140,9 +127,17 @@ export function PaymentsPage() {
         await simulatePayment(apiKey, payment.id);
         await load();
         const nextBalance = config?.paygBalance?.remainingUsd;
-        const saldoText = nextBalance != null ? ` Saldo pay as you go sekarang ${formatUsd(nextBalance)}.` : "";
+        const balanceNote =
+          nextBalance != null
+            ? t(" Current pay-as-you-go balance is {{balance}}.", {
+                balance: formatUsd(nextBalance),
+              })
+            : "";
         setSuccessMessage(
-          `Top up ${formatUsd(payment.usdCredit)} berhasil di-credit ke saldo pay as you go.${saldoText}`,
+          t("Top up {{credit}} credited to your pay-as-you-go balance.{{balance}}", {
+            credit: formatUsd(payment.usdCredit),
+            balance: balanceNote,
+          })
         );
         setSubmitting(false);
         return;
@@ -156,20 +151,21 @@ export function PaymentsPage() {
           // ignore
         }
         setError(
-          `Payment link host is not allowed (${host}). Contact support if this persists.`
+          t("Payment link host is not allowed ({{host}}). Contact support if this persists.", {
+            host,
+          })
         );
         setSubmitting(false);
         return;
       }
 
-      // Full-page navigate to SumoPod checkout (checkout.pymnt.app).
       window.location.replace(payment.paymentLinkUrl);
     } catch (err) {
       if (err instanceof ApiError && err.code === "unauthorized") {
         logout({ clearRemembered: true });
         return;
       }
-      setError(err instanceof ApiError ? err.message : "Failed to create payment.");
+      setError(err instanceof ApiError ? err.message : t("Failed to create payment."));
       setSubmitting(false);
     }
   }
@@ -178,22 +174,25 @@ export function PaymentsPage() {
     try {
       downloadInvoice(item, buyerName);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to open invoice.");
+      setError(err instanceof Error ? err.message : t("Unable to open invoice."));
     }
   }
 
+  const headerDescription = !config?.topUpAllowed
+    ? t("Top-up unavailable: this key is unlimited, so pay-as-you-go balance does not apply.")
+    : mockMode
+      ? t(
+          "Local mock mode. Minimum {{min}} adds balance. Each full {{unit}} = +1 month of active period (Rp 120,000 stays 1 month).",
+          { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
+        )
+      : t(
+          "Minimum {{min}} adds balance. Each full {{unit}} = +1 month. Rp 120,000 stays 1 month; Rp 300,000 = 3 months. Unused balance never expires.",
+          { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
+        );
+
   return (
     <div>
-      <PageHeader
-        title="Top up"
-        description={
-          !config?.topUpAllowed
-            ? "Top-up tidak tersedia: key ini adalah unlimited, saldo pay-as-you-go tidak relevan."
-            : mockMode
-              ? `Mode mock lokal. Minimal ${formatIdr(minTopUpIdr)} menambah saldo. Setiap ${formatIdr(activeUnitIdr)} penuh = +1 bulan masa aktif (Rp 120.000 tetap 1 bulan).`
-              : `Minimal ${formatIdr(minTopUpIdr)} menambah saldo. Setiap ${formatIdr(activeUnitIdr)} penuh = +1 bulan. Rp 120.000 tetap 1 bulan; Rp 300.000 = 3 bulan. Sisa saldo tidak hangus.`
-        }
-      />
+      <PageHeader title={t("Top up")} description={headerDescription} />
 
       {error ? <ErrorBanner message={error} /> : null}
       {successMessage ? (
@@ -201,7 +200,7 @@ export function PaymentsPage() {
           <AlertDescription className="text-[var(--ok)]">{successMessage}</AlertDescription>
         </Alert>
       ) : null}
-      {loading ? <LoadingBlock label="Siapkan paket credit…" /> : null}
+      {loading ? <LoadingBlock label={t("Preparing credit packages…")} /> : null}
 
       {!loading && config ? (
         <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
@@ -209,21 +208,24 @@ export function PaymentsPage() {
             <CardContent className="space-y-5 p-4 sm:p-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h3 className="font-heading text-2xl font-medium text-foreground">Select credit</h3>
+                  <h3 className="font-heading text-2xl font-medium text-foreground">
+                    {t("Select credit")}
+                  </h3>
                   <p className="mt-1 text-xs uppercase tracking-[0.16em] text-primary">
-                    {mockMode ? "Mock · " : ""}
+                    {mockMode ? t("Mock · ") : ""}
                     {formatIdrPerUsdRate(config.idrPerUsd)}
                   </p>
                 </div>
                 {!config.configured ? (
-                  <p className="text-sm text-destructive">Gateway not configured</p>
+                  <p className="text-sm text-destructive">{t("Gateway not configured")}</p>
                 ) : null}
               </div>
 
               {!config.topUpAllowed ? (
                 <div className="rounded-lg border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground">
-                  Top-up tidak tersedia: API key ini unlimited, saldo pay-as-you-go tidak
-                  diperlukan. Hubungi admin jika ini tidak sesuai.
+                  {t(
+                    "Top-up unavailable: this API key is unlimited, so pay-as-you-go balance is not needed. Contact admin if this looks wrong."
+                  )}
                 </div>
               ) : (
                 <>
@@ -246,22 +248,27 @@ export function PaymentsPage() {
                           )}
                         >
                           <div className="font-heading text-xl text-foreground">{pkg.label}</div>
-                          <div className="mt-1 text-xs font-semibold text-primary">{formatIdr(pkg.amountIdr)}</div>
+                          <div className="mt-1 text-xs font-semibold text-primary">
+                            {formatIdr(pkg.amountIdr)}
+                          </div>
                         </button>
                       );
                     })}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="custom-idr" className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                      Custom IDR (min {formatIdr(minTopUpIdr)})
+                    <Label
+                      htmlFor="custom-idr"
+                      className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
+                    >
+                      {t("Custom IDR (min {{min}})", { min: formatIdr(minTopUpIdr) })}
                     </Label>
                     <Input
                       id="custom-idr"
                       type="number"
                       min={minTopUpIdr}
                       step={1000}
-                      placeholder={`e.g. ${minTopUpIdr}`}
+                      placeholder={t("e.g. {{min}}", { min: String(minTopUpIdr) })}
                       value={customIdr}
                       onChange={(e) => setCustomIdr(e.target.value)}
                     />
@@ -270,17 +277,23 @@ export function PaymentsPage() {
                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
                     <div>
                       <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                        {mockMode ? "Simulated charge" : "You pay"}
+                        {mockMode ? t("Simulated charge") : t("You pay")}
                       </p>
                       <p className="mt-1 font-heading text-2xl text-foreground">
                         {previewIdr != null ? formatIdr(previewIdr) : "—"}
                       </p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Credits {previewCreditUsd != null ? formatUsd(previewCreditUsd) : "—"} ke saldo
+                        {t("Credits {{credit}} to balance", {
+                          credit: previewCreditUsd != null ? formatUsd(previewCreditUsd) : "—",
+                        })}
                         {previewMonths > 0
-                          ? ` · +${previewMonths} bulan masa aktif`
+                          ? t(" · +{{months}} months active period", {
+                              months: String(previewMonths),
+                            })
                           : previewIdr != null
-                            ? ` · tanpa tambah masa aktif (butuh kelipatan ${formatIdr(activeUnitIdr)})`
+                            ? t(" · no extra active period (needs multiples of {{unit}})", {
+                                unit: formatIdr(activeUnitIdr),
+                              })
                             : ""}
                       </p>
                     </div>
@@ -292,11 +305,11 @@ export function PaymentsPage() {
                     >
                       {submitting
                         ? mockMode
-                          ? "Simulating…"
-                          : "Redirecting…"
+                          ? t("Simulating…")
+                          : t("Redirecting…")
                         : mockMode
-                          ? "Simulate top-up"
-                          : "Pay with QRIS"}
+                          ? t("Simulate top-up")
+                          : t("Pay with QRIS")}
                     </Button>
                   </div>
                 </>
@@ -306,39 +319,54 @@ export function PaymentsPage() {
 
           <Card className="scale-in scale-in-delay-2 border-border bg-card shadow-sm">
             <CardContent className="space-y-5 p-6">
-              <h3 className="font-heading text-2xl font-medium text-foreground">Saldo pay as you go</h3>
+              <h3 className="font-heading text-2xl font-medium text-foreground">
+                {t("Pay-as-you-go balance")}
+              </h3>
               {config.paygBalance?.enabled ? (
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between gap-3 border-b border-border pb-3.5">
-                    <dt className="text-muted-foreground">Masa aktif</dt>
+                    <dt className="text-muted-foreground">{t("Active period")}</dt>
                     <dd className="text-right text-foreground">
                       {formatPaygActiveUntil(config.active, config.activeUntil ?? null)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3 border-b border-border pb-3.5">
-                    <dt className="text-muted-foreground">Spent</dt>
+                    <dt className="text-muted-foreground">{t("Spent")}</dt>
                     <dd className="tabular-nums text-muted-foreground">
                       {formatUsd(config.paygBalance.spentUsd)}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3 pt-1">
-                    <dt className="text-muted-foreground">Remaining</dt>
+                    <dt className="text-muted-foreground">{t("Remaining")}</dt>
                     <dd className="tabular-nums font-medium text-primary">
-                      {config.paygBalance.unlimited ? "Unlimited" : formatUsd(config.paygBalance.remainingUsd)}
+                      {config.paygBalance.unlimited
+                        ? t("Unlimited")
+                        : formatUsd(config.paygBalance.remainingUsd)}
                     </dd>
                   </div>
                 </dl>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Saldo ini tidak tersedia untuk key ini (unlimited).
+                  {t("This balance is not available for this key (unlimited).")}
                 </p>
               )}
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {config.active === false
-                  ? `Masa aktif habis. Top up minimal ${formatIdr(activeUnitIdr)} untuk hidupkan API lagi selama ${activePeriodDays} hari per unit. Sisa saldo tidak hangus.`
+                  ? t(
+                      "Active period expired. Top up at least {{unit}} to reactivate the API for {{days}} days per unit. Unused balance never expires.",
+                      {
+                        unit: formatIdr(activeUnitIdr),
+                        days: String(activePeriodDays),
+                      }
+                    )
                   : mockMode
-                    ? "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
-                    : `Setelah bayar, saldo bertambah. Masa aktif hanya nambah untuk setiap kelipatan penuh ${formatIdr(activeUnitIdr)}.`}
+                    ? t(
+                        "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
+                      )
+                    : t(
+                        "After payment, balance increases. Active period only extends for each full multiple of {{unit}}.",
+                        { unit: formatIdr(activeUnitIdr) }
+                      )}
               </p>
             </CardContent>
           </Card>
@@ -347,10 +375,15 @@ export function PaymentsPage() {
 
       {!loading ? (
         <div className="mt-8">
-          <h3 className="font-heading text-xl font-medium text-foreground">Payment history</h3>
+          <h3 className="font-heading text-xl font-medium text-foreground">
+            {t("Payment history")}
+          </h3>
           {history.length === 0 ? (
             <div className="mt-4">
-              <EmptyState title="No top-ups yet" description="Completed payments will appear here." />
+              <EmptyState
+                title={t("No top-ups yet.")}
+                description={t("Completed payments will appear here.")}
+              />
             </div>
           ) : (
             <Card className="mt-4 overflow-hidden border-border bg-card shadow-sm">
@@ -358,12 +391,12 @@ export function PaymentsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order</TableHead>
-                      <TableHead>Credit</TableHead>
-                      <TableHead>Paid</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Invoice</TableHead>
+                      <TableHead>{t("Order")}</TableHead>
+                      <TableHead>{t("Credit")}</TableHead>
+                      <TableHead>{t("Paid")}</TableHead>
+                      <TableHead>{t("Status")}</TableHead>
+                      <TableHead>{t("Time")}</TableHead>
+                      <TableHead>{t("Invoice")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -371,11 +404,15 @@ export function PaymentsPage() {
                       const invoiceReady = canDownloadInvoice(item);
                       return (
                         <TableRow key={item.id}>
-                          <TableCell className="font-mono text-[12px] text-foreground">{item.orderId}</TableCell>
+                          <TableCell className="font-mono text-[12px] text-foreground">
+                            {item.orderId}
+                          </TableCell>
                           <TableCell>{formatUsd(item.usdCredit)}</TableCell>
                           <TableCell>{formatIdr(item.amountIdr)}</TableCell>
-                          <TableCell>{statusLabel(item.status, item.credited)}</TableCell>
-                          <TableCell>{new Date(item.createdAt).toLocaleString()}</TableCell>
+                          <TableCell>{statusLabel(item.status, item.credited, t)}</TableCell>
+                          <TableCell>
+                            {new Date(item.createdAt).toLocaleString(locale)}
+                          </TableCell>
                           <TableCell>
                             {invoiceReady ? (
                               <Button
@@ -384,7 +421,7 @@ export function PaymentsPage() {
                                 className="h-auto p-0 text-xs uppercase tracking-[0.12em]"
                                 onClick={() => onDownloadInvoice(item)}
                               >
-                                Download
+                                {t("Download")}
                               </Button>
                             ) : (
                               <span className="text-xs text-muted-foreground">—</span>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, Copy } from "@phosphor-icons/react";
 import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ async function copyText(value: string): Promise<boolean> {
 }
 
 export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState<"mac" | "win" | "base" | "v1" | null>(null);
 
   const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
@@ -44,21 +46,21 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
     <Card>
       <CardContent className="p-6">
         <h3 className="font-heading text-xl font-semibold text-foreground">
-          Auto-config ke Mind Aku
+          {t("Auto-config to Mind Aku")}
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
           {lead
-            ? lead
+            ? t(lead)
             : toolLabel
-              ? `Setelah ${toolLabel} terpasang, jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL.`
-              : "Jalankan satu perintah di bawah. Token API key kamu sudah ikut di URL."}{" "}
-          <strong className="text-foreground">Jangan bagikan perintah ini</strong> ke orang lain.
+              ? t("After {{tool}} is installed, run one command below. Your API key token is already in the URL.", { tool: toolLabel })
+              : t("Run one command below. Your API key token is already in the URL.")}{" "}
+          <strong className="text-foreground">{t("Do not share this command")}</strong>.
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-muted/40 p-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Gateway base URL
+              {t("Gateway base URL")}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <code className="min-w-0 flex-1 break-all font-mono text-xs text-foreground">{baseUrl}</code>
@@ -70,13 +72,13 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
                 onClick={() => void onCopy("base", baseUrl)}
               >
                 {copied === "base" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                {copied === "base" ? "Copied" : null}
+                {copied === "base" ? t("Copied") : null}
               </Button>
             </div>
           </div>
           <div className="rounded-lg border border-border bg-muted/40 p-3">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              OpenAI endpoint (/v1)
+              {t("OpenAI endpoint (/v1)")}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <code className="min-w-0 flex-1 break-all font-mono text-xs text-foreground">{v1Url}</code>
@@ -88,7 +90,7 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
                 onClick={() => void onCopy("v1", v1Url)}
               >
                 {copied === "v1" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                {copied === "v1" ? "Copied" : null}
+                {copied === "v1" ? t("Copied") : null}
               </Button>
             </div>
           </div>
@@ -97,7 +99,7 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
         <div className="mt-5 space-y-4">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              macOS / Linux
+              {t("macOS / Linux")}
             </p>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
               <pre className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 font-mono text-xs leading-5 text-foreground">
@@ -111,14 +113,14 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
                 onClick={() => void onCopy("mac", macCmd)}
               >
                 {copied === "mac" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                {copied === "mac" ? "Copied" : "Copy"}
+                {copied === "mac" ? t("Copied") : t("Copy")}
               </Button>
             </div>
           </div>
 
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Windows (PowerShell)
+              {t("Windows (PowerShell)")}
             </p>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
               <pre className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 font-mono text-xs leading-5 text-foreground">
@@ -132,14 +134,14 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
                 onClick={() => void onCopy("win", winCmd)}
               >
                 {copied === "win" ? <Check weight="bold" /> : <Copy weight="bold" />}
-                {copied === "win" ? "Copied" : "Copy"}
+                {copied === "win" ? t("Copied") : t("Copy")}
               </Button>
             </div>
           </div>
         </div>
 
         {modelsNote ? (
-          <p className="mt-4 text-xs text-muted-foreground">{modelsNote}</p>
+          <p className="mt-4 text-xs text-muted-foreground">{t(modelsNote)}</p>
         ) : null}
       </CardContent>
     </Card>

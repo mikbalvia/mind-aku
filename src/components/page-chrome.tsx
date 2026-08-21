@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -59,12 +60,13 @@ export function EmptyState({ title, description }: { title: string; description?
   );
 }
 
-export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
+export function LoadingBlock({ label }: { label?: string }) {
+  const { t } = useTranslation();
   return (
     <Card className="fade-in py-16 text-center text-sm text-muted-foreground">
       <CardContent className="px-6">
         <span className="loading-dot" aria-hidden="true" />
-        {label}
+        {label ?? t("Loading…")}
       </CardContent>
     </Card>
   );

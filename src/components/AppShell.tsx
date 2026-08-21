@@ -1,5 +1,6 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   House,
   ChatTeardropText,
@@ -18,6 +19,7 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import { ApiKeySession } from "./ApiKeySession";
 import { BrandLockup } from "./BrandLogo";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { VsCodeChatAnnouncementPopup } from "./VsCodeChatAnnouncementPopup";
 import { CommunityJoinModal } from "./CommunityJoinModal";
 import { Backdrop } from "./Backdrop";
@@ -28,22 +30,22 @@ import { SUBSCRIPTION_PAGE_ENABLED } from "../config";
 
 type NavItem = {
   to: string;
-  label: string;
+  labelKey: string;
   icon: typeof House;
   delay: string;
 };
 
 const allNavItems: NavItem[] = [
-  { to: "/console", label: "Dashboard", icon: House, delay: "0ms" },
-  { to: "/chat", label: "Chat", icon: ChatTeardropText, delay: "40ms" },
-  { to: "/setup", label: "Setup", icon: Wrench, delay: "80ms" },
-  { to: "/sample-api", label: "Sample API", icon: Code, delay: "100ms" },
-  { to: "/models", label: "Models", icon: Stack, delay: "140ms" },
-  { to: "/usage", label: "Usage", icon: ChartLineUp, delay: "180ms" },
-  { to: "/logs", label: "Logs", icon: ListChecks, delay: "220ms" },
-  { to: "/subscription", label: "Subscription", icon: Crown, delay: "260ms" },
-  { to: "/payments", label: "Top up", icon: CreditCard, delay: "300ms" },
-  { to: "/affiliate", label: "Affiliate", icon: UsersThree, delay: "340ms" },
+  { to: "/console", labelKey: "Dashboard", icon: House, delay: "0ms" },
+  { to: "/chat", labelKey: "Chat", icon: ChatTeardropText, delay: "40ms" },
+  { to: "/setup", labelKey: "Setup", icon: Wrench, delay: "80ms" },
+  { to: "/sample-api", labelKey: "Sample API", icon: Code, delay: "100ms" },
+  { to: "/models", labelKey: "Models", icon: Stack, delay: "140ms" },
+  { to: "/usage", labelKey: "Usage", icon: ChartLineUp, delay: "180ms" },
+  { to: "/logs", labelKey: "Logs", icon: ListChecks, delay: "220ms" },
+  { to: "/subscription", labelKey: "Subscription", icon: Crown, delay: "260ms" },
+  { to: "/payments", labelKey: "Top up", icon: CreditCard, delay: "300ms" },
+  { to: "/affiliate", labelKey: "Affiliate", icon: UsersThree, delay: "340ms" },
 ];
 
 const navItems: NavItem[] = SUBSCRIPTION_PAGE_ENABLED
@@ -57,6 +59,11 @@ function navClass({ isActive }: { isActive: boolean }) {
       ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-foreground shadow-[inset_0_0_0_1px_rgba(249,115,22,0.3)]"
       : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
   );
+}
+
+function BuilderName({ name }: { name: string }) {
+  const { t } = useTranslation();
+  return <>{t("Builder · {{name}}", { name })}</>;
 }
 
 function BrandBlock({
@@ -86,7 +93,7 @@ function BrandBlock({
           )}
           title={memberName}
         >
-          Builder · {memberName}
+          <BuilderName name={memberName} />
         </p>
       ) : null}
     </div>
@@ -94,6 +101,7 @@ function BrandBlock({
 }
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
   return (
     <nav className="flex flex-1 flex-col gap-0.5">
       {navItems.map((item) => {
@@ -121,7 +129,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                     isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                   )}
                 />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{t(item.labelKey)}</span>
               </>
             )}
           </NavLink>
@@ -132,6 +140,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const { apiKey, status, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -166,8 +175,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <Backdrop />
 
-      {/* Mobile top bar — brand name + menu toggle */}
-      <header className="fixed inset-x-0 top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-[rgba(7,8,13,0.85)] px-4 backdrop-blur-xl md:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border/60 bg-[rgba(7,8,13,0.85)] px-4 backdrop-blur-xl md:hidden">
         <Link to="/console" className="min-w-0">
           <BrandLockup
             showTagline={false}
@@ -175,36 +183,38 @@ export function AppShell({ children }: { children: ReactNode }) {
             nameClassName="text-base"
           />
         </Link>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          aria-expanded={menuOpen}
-          aria-label="Toggle navigation"
-          onClick={() => setMenuOpen((open) => !open)}
-          className="h-9 px-3"
-        >
-          {menuOpen ? (
-            <>
-              <X weight="bold" className="size-4" />
-              <span>Close</span>
-            </>
-          ) : (
-            <>
-              <List weight="bold" className="size-4" />
-              <span>Menu</span>
-            </>
-          )}
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <LanguageSwitcher />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-expanded={menuOpen}
+            aria-label={t("Toggle navigation")}
+            onClick={() => setMenuOpen((open) => !open)}
+            className="h-9 px-3"
+          >
+            {menuOpen ? (
+              <>
+                <X weight="bold" className="size-4" />
+                <span>{t("Close")}</span>
+              </>
+            ) : (
+              <>
+                <List weight="bold" className="size-4" />
+                <span>{t("Menu")}</span>
+              </>
+            )}
+          </Button>
+        </div>
       </header>
 
-      {/* Mobile menu drawer — overlay from below header, full-height scroll */}
       {menuOpen ? (
         <div
           className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col border-b border-border/60 bg-[rgba(7,8,13,0.96)] backdrop-blur-xl md:hidden"
           role="dialog"
           aria-modal="true"
-          aria-label="Navigation menu"
+          aria-label={t("Navigation menu")}
         >
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-6 pt-5">
             <div className="mb-6">
@@ -215,7 +225,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
             </div>
             <NavList onNavigate={() => setMenuOpen(false)} />
-            <div className="mt-6 border-t border-border/60 pt-5">
+            <div className="mt-6 space-y-3 border-t border-border/60 pt-5">
+              <LanguageSwitcher className="w-full justify-center" />
               <Button
                 type="button"
                 variant="ghost"
@@ -223,14 +234,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 onClick={signOut}
               >
                 <SignOut weight="bold" className="size-4" />
-                Sign out
+                {t("Sign out")}
               </Button>
             </div>
           </div>
         </div>
       ) : null}
 
-      {/* Desktop sidebar — fixed left, full height, does NOT scroll with content */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border/60 bg-[rgba(10,11,18,0.78)] backdrop-blur-xl md:flex">
         <div
           aria-hidden
@@ -242,6 +252,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <NavList />
           <div className="mt-8 space-y-3 border-t border-border/60 pt-5">
+            <LanguageSwitcher className="w-full justify-center" />
             <Button
               type="button"
               variant="ghost"
@@ -249,13 +260,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               onClick={signOut}
             >
               <SignOut weight="bold" className="size-4" />
-              Sign out
+              {t("Sign out")}
             </Button>
           </div>
         </div>
       </aside>
 
-      {/* Main — offset by sidebar width on desktop; scroll container on its own */}
       <main
         className={cn(
           "relative z-10 min-w-0 flex-1 md:ml-64",

@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import App from "./App";
 import { installForceFreshBuild } from "./lib/forceFreshBuild";
+import "./i18n/config";
 import "./index.css";
 
 installForceFreshBuild();
