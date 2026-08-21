@@ -1,20 +1,20 @@
 # Production deploy — Mind Aku portal
 
-Dokumentasi deploy frontend portal ke Ubuntu (nginx, static build). Portal kanonik: **mindaku.com**. Domain lama **mind-aku.my.id** di-301 ke mindaku.com.
+Dokumentasi deploy frontend portal ke Ubuntu (nginx, static build). Domain kanonik untuk marketing/link baru: **mindaku.com**. Domain lama **mind-aku.my.id** tetap **serve paralel** (dual-serve) agar password tersimpan di browser untuk origin lama tetap berfungsi.
 
 ## Ringkasan
 
 | Item | Nilai |
 |------|--------|
 | Publik (kanonik) | https://mindaku.com |
-| Domain lama | https://mind-aku.my.id → **301** `https://mindaku.com$request_uri` |
+| Domain lama (dual-serve) | https://mind-aku.my.id — SPA sama, **tanpa** 301 |
 | Repo GitHub | https://github.com/mikbalvia/mind-aku.git |
 | Server | Ubuntu VPS (SSH key auth; host details in private runbook) |
 | Path aplikasi | `/var/www/mind-aku` |
 | Artefak production | `/var/www/mind-aku/dist` (hasil `npm run build`) |
-| Nginx vhost (portal) | `/etc/nginx/sites-available/mindaku.com` → `sites-enabled/` |
-| Nginx vhost (legacy redirect) | `/etc/nginx/sites-available/mind-aku.my.id` → 301 ke mindaku.com |
-| TLS | Let's Encrypt: `mindaku.com` (+ www); cert lama `mind-aku.my.id` tetap untuk HTTPS redirect |
+| Nginx vhost (kanonik) | `/etc/nginx/sites-available/mindaku.com` → `sites-enabled/` |
+| Nginx vhost (legacy) | `/etc/nginx/sites-available/mind-aku.my.id` → `root` dist yang sama |
+| TLS | Let's Encrypt: `mindaku.com` (+ www → apex); `mind-aku.my.id` punya cert sendiri |
 | API OmniRoute | https://vip-api.mind-aku.my.id (tidak ikut migrasi domain portal) |
 | DNS | Cloudflare → origin VPS |
 
@@ -24,15 +24,12 @@ Portal **hanya static files**; tidak ada proses Node yang berjalan di production
 
 ```mermaid
 flowchart LR
-  OldUser[mind-aku.my.id] -->|301| NewPortal[mindaku.com]
-  NewUser[User] --> CF[Cloudflare]
-  CF --> NewPortal
-  NewPortal --> Nginx[Nginx 80/443]
-  Nginx --> Dist["/var/www/mind-aku/dist"]
-  Browser[Browser portal] --> API["vip-api.mind-aku.my.id"]
+  OldDom[mind-aku.my.id] --> Dist["/var/www/mind-aku/dist"]
+  NewDom[mindaku.com] --> Dist
+  Dist --> API[vip-api.mind-aku.my.id]
 ```
 
-Nginx di server yang sama juga melayani vhost lain (mis. `gateway-ai.mind-aku.my.id`, `vip-api.mind-aku.my.id`, `api-gateway.mind-aku.my.id`, dll.). Deploy portal **hanya** menyentuh site `mindaku.com` / redirect `mind-aku.my.id`; tidak mengubah port atau config site API.
+Nginx di server yang sama juga melayani vhost lain (mis. `gateway-ai.mind-aku.my.id`, `vip-api.mind-aku.my.id`, `api-gateway.mind-aku.my.id`, dll.). Deploy portal menyentuh site `mindaku.com` dan `mind-aku.my.id` (root dist yang sama); tidak mengubah port atau config site API.
 
 ## Environment production (build-time)
 
@@ -69,7 +66,7 @@ Browser memanggil API dari origin `https://mindaku.com`. Di OmniRoute env:
 CORS_ALLOWED_ORIGINS="https://mindaku.com,https://www.mindaku.com,https://mind-aku.my.id"
 ```
 
-Setelah masa transisi, `mind-aku.my.id` boleh dihapus dari daftar. Runtime saat ini juga mengembalikan `Access-Control-Allow-Origin: *` pada beberapa endpoint — tetap set daftar eksplisit di env agar konfigurasi terdokumentasi.
+Setelah masa transisi panjang, `mind-aku.my.id` boleh dihapus dari daftar jika domain lama dinonaktifkan. Runtime saat ini juga mengembalikan `Access-Control-Allow-Origin: *` pada beberapa endpoint — tetap set daftar eksplisit di env agar konfigurasi terdokumentasi.
 
 ## Prasyarat di server
 
@@ -112,7 +109,7 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d mindaku.com -d www.mindaku.com --non-interactive --agree-tos --register-unsafely-without-email --redirect
 ```
 
-Legacy redirect (`mind-aku.my.id`): HTTPS/HTTP `return 301 https://mindaku.com$request_uri;` (pertahankan cert Let's Encrypt lama).
+Legacy dual-serve (`mind-aku.my.id`): same `root /var/www/mind-aku/dist` + SPA `try_files` + cert Let's Encrypt `mind-aku.my.id` (bukan redirect).
 
 ## Deploy ulang (update kode)
 
@@ -187,7 +184,7 @@ Di server:
 
 ```bash
 curl -sI http://127.0.0.1 -H 'Host: mindaku.com' | head -5
-curl -sI --resolve mind-aku.my.id:443:127.0.0.1 https://mind-aku.my.id/login | grep -i location
+curl -sI --resolve mind-aku.my.id:443:127.0.0.1 https://mind-aku.my.id/login | head -5
 ls -la /var/www/mind-aku/dist/index.html
 sudo nginx -t
 ```
@@ -196,13 +193,14 @@ Dari luar:
 
 ```bash
 curl -sI https://mindaku.com
-curl -sI https://mind-aku.my.id/login   # expect Location: https://mindaku.com/login
+curl -sI https://mind-aku.my.id/login   # expect 200 (dual-serve), bukan 301
 curl -sI -H 'Origin: https://mindaku.com' https://vip-api.mind-aku.my.id/api/v1/me/status
+curl -sI -H 'Origin: https://mind-aku.my.id' https://vip-api.mind-aku.my.id/api/v1/me/status
 ```
 
-Harapan: portal HTTP 200; legacy domain 301 ke mindaku.com; API boleh 401/404 tanpa API key, tetapi response CORS menyertakan `access-control-allow-origin`.
+Harapan: kedua domain portal HTTP 200 dengan SPA yang sama; API boleh 401/404 tanpa API key, tetapi response CORS menyertakan `access-control-allow-origin`.
 
-Di browser: buka https://mindaku.com (atau bookmark lama mind-aku.my.id) → login dengan API key → Models / Usage / Logs.
+Di browser: buka https://mindaku.com atau https://mind-aku.my.id → login dengan API key → Models / Usage / Logs. Password tersimpan per-origin: user yang pernah save di domain lama tetap buka `mind-aku.my.id`.
 
 ## Keamanan & operasi
 
