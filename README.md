@@ -19,7 +19,7 @@ API keys are stored in `sessionStorage` and sent as `Authorization: Bearer <key>
 
 Payment docs: [docs/sumopod-payment-gateway.md](docs/sumopod-payment-gateway.md).
 
-Production (nginx, mind-aku.my.id): [docs/production-deploy.md](docs/production-deploy.md).
+Production (nginx, [mindaku.com](https://mindaku.com); legacy `mind-aku.my.id` 301): [docs/production-deploy.md](docs/production-deploy.md).
 
 ## Prerequisites
 

@@ -1,20 +1,22 @@
 # Production deploy — Mind Aku portal
 
-Dokumentasi deploy frontend portal ke Ubuntu (nginx, static build). Terakhir diperbarui setelah deploy awal ke **mind-aku.my.id**.
+Dokumentasi deploy frontend portal ke Ubuntu (nginx, static build). Portal kanonik: **mindaku.com**. Domain lama **mind-aku.my.id** di-301 ke mindaku.com.
 
 ## Ringkasan
 
 | Item | Nilai |
 |------|--------|
-| Publik | https://mind-aku.my.id |
+| Publik (kanonik) | https://mindaku.com |
+| Domain lama | https://mind-aku.my.id → **301** `https://mindaku.com$request_uri` |
 | Repo GitHub | https://github.com/mikbalvia/mind-aku.git |
 | Server | Ubuntu VPS (SSH key auth; host details in private runbook) |
 | Path aplikasi | `/var/www/mind-aku` |
 | Artefak production | `/var/www/mind-aku/dist` (hasil `npm run build`) |
-| Nginx vhost | `/etc/nginx/sites-available/mind-aku.my.id` → `sites-enabled/` |
-| TLS origin | Let's Encrypt (`certbot`), cert: `/etc/letsencrypt/live/mind-aku.my.id/` |
-| API OmniRoute | https://vip-api.mind-aku.my.id (proxy nginx → backend lokal, bukan bagian deploy portal) |
-| DNS | Cloudflare → origin |
+| Nginx vhost (portal) | `/etc/nginx/sites-available/mindaku.com` → `sites-enabled/` |
+| Nginx vhost (legacy redirect) | `/etc/nginx/sites-available/mind-aku.my.id` → 301 ke mindaku.com |
+| TLS | Let's Encrypt: `mindaku.com` (+ www); cert lama `mind-aku.my.id` tetap untuk HTTPS redirect |
+| API OmniRoute | https://vip-api.mind-aku.my.id (tidak ikut migrasi domain portal) |
+| DNS | Cloudflare → origin VPS |
 
 Portal **hanya static files**; tidak ada proses Node yang berjalan di production. Variabel `VITE_*` di-inject saat **build**, bukan saat runtime.
 
@@ -22,13 +24,15 @@ Portal **hanya static files**; tidak ada proses Node yang berjalan di production
 
 ```mermaid
 flowchart LR
-  User[Pengguna] --> CF[Cloudflare]
-  CF --> Nginx[Nginx 80/443]
+  OldUser[mind-aku.my.id] -->|301| NewPortal[mindaku.com]
+  NewUser[User] --> CF[Cloudflare]
+  CF --> NewPortal
+  NewPortal --> Nginx[Nginx 80/443]
   Nginx --> Dist["/var/www/mind-aku/dist"]
   Browser[Browser portal] --> API["vip-api.mind-aku.my.id"]
 ```
 
-Nginx di server yang sama juga melayani vhost lain (mis. `gateway-ai.mind-aku.my.id`, `vip-api.mind-aku.my.id`, `api-gateway.mind-aku.my.id`, dll.). Deploy portal **hanya menambah** site `mind-aku.my.id`; tidak mengubah port atau config site lain.
+Nginx di server yang sama juga melayani vhost lain (mis. `gateway-ai.mind-aku.my.id`, `vip-api.mind-aku.my.id`, `api-gateway.mind-aku.my.id`, dll.). Deploy portal **hanya** menyentuh site `mindaku.com` / redirect `mind-aku.my.id`; tidak mengubah port atau config site API.
 
 ## Environment production (build-time)
 
@@ -37,7 +41,7 @@ File `/var/www/mind-aku/.env` (tidak di-commit; `chmod 600`):
 ```env
 VITE_OMNIROUTE_BASE_URL=https://vip-api.mind-aku.my.id
 VITE_AI_BASE_URL=https://vip-api.mind-aku.my.id/v1
-VITE_PUBLIC_WEB_URL=https://mind-aku.my.id
+VITE_PUBLIC_WEB_URL=https://mindaku.com
 VITE_WHATSAPP_NUMBER=6281990609939
 VITE_WHATSAPP_MESSAGE=Hai admin Mikbalvia Digital, saya ingin bertanya tentang layanan Mind Aku.
 # Announcement-only group invite (hide join UI if empty)
@@ -50,15 +54,22 @@ VITE_WHATSAPP_MESSAGE=Hai admin Mikbalvia Digital, saya ingin bertanya tentang l
 
 Setelah mengubah `.env`, wajib **`npm run build`** ulang agar perubahan terbawa ke `dist/`.
 
-## CORS (OmniRoute)
+OmniRoute payment defaults (server `/opt/omniroute-vip/shared/.env`):
 
-Browser memanggil API dari origin `https://mind-aku.my.id`. Di OmniRoute (env atau dashboard):
-
-```bash
-CORS_ALLOWED_ORIGINS="https://mind-aku.my.id"
+```env
+PAYMENT_SUCCESS_RETURN_URL=https://mindaku.com/payments/success
+PAYMENT_CANCEL_RETURN_URL=https://mindaku.com/payments/cancel
 ```
 
-Pada deploy awal, API sudah mengembalikan header `access-control-allow-origin: https://mind-aku.my.id` untuk preflight/request dari portal.
+## CORS (OmniRoute)
+
+Browser memanggil API dari origin `https://mindaku.com`. Di OmniRoute env:
+
+```bash
+CORS_ALLOWED_ORIGINS="https://mindaku.com,https://www.mindaku.com,https://mind-aku.my.id"
+```
+
+Setelah masa transisi, `mind-aku.my.id` boleh dihapus dari daftar. Runtime saat ini juga mengembalikan `Access-Control-Allow-Origin: *` pada beberapa endpoint — tetap set daftar eksplisit di env agar konfigurasi terdokumentasi.
 
 ## Prasyarat di server
 
@@ -74,9 +85,7 @@ export NVM_DIR="$HOME/.nvm"
 nvm use 20
 ```
 
-## Deploy awal (referensi)
-
-Langkah yang sudah dilakukan; berguna jika rebuild di server baru.
+## Deploy awal / domain baru (referensi)
 
 ```bash
 sudo mkdir -p /var/www/mind-aku
@@ -85,25 +94,25 @@ cd /var/www/mind-aku
 git clone https://github.com/mikbalvia/mind-aku.git .
 # buat .env (lihat di atas)
 chmod 600 .env
-npm install   # atau npm ci jika lock file sinkron
+npm install
 npm run build
 test -f dist/index.html
 ```
 
-Nginx (ringkas — Certbot kemudian menambahkan blok `listen 443 ssl`):
+Nginx portal (`mindaku.com`):
 
-- `server_name mind-aku.my.id` (dan opsional `www` jika DNS ada)
+- `server_name mindaku.com`; `www.mindaku.com` → `301 https://mindaku.com$request_uri`
 - `root /var/www/mind-aku/dist`
 - `location / { try_files $uri $uri/ /index.html; }`
-- `/.well-known/acme-challenge/` → `root /var/www/html` (untuk Let's Encrypt)
+- `/.well-known/acme-challenge/` → `root /var/www/html`
 
 ```bash
-sudo ln -sf /etc/nginx/sites-available/mind-aku.my.id /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/mindaku.com /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d mind-aku.my.id --non-interactive --agree-tos --register-unsafely-without-email --redirect
+sudo certbot --nginx -d mindaku.com -d www.mindaku.com --non-interactive --agree-tos --register-unsafely-without-email --redirect
 ```
 
-**Catatan `www`:** `www.mind-aku.my.id` belum punya record DNS saat certbot pertama; sertifikat hanya untuk `mind-aku.my.id`. Jika nanti menambah DNS `www`, jalankan certbot lagi dengan `-d www.mind-aku.my.id` atau perbarui `server_name` sesuai kebutuhan.
+Legacy redirect (`mind-aku.my.id`): HTTPS/HTTP `return 301 https://mindaku.com$request_uri;` (pertahankan cert Let's Encrypt lama).
 
 ## Deploy ulang (update kode)
 
@@ -133,7 +142,7 @@ OmniRoute env (optional): `SETUP_PUBLIC_BASE_URL=https://vip-api.mind-aku.my.id`
 
 ## Security headers (portal nginx)
 
-Add inside the `server { ... }` block for `mind-aku.my.id` (HTTPS), then `sudo nginx -t && sudo systemctl reload nginx`.
+Add inside the `server { ... }` block for `mindaku.com` (HTTPS), then `sudo nginx -t && sudo systemctl reload nginx`.
 
 **Important:** hashed JS/CSS may use long `immutable` cache. `index.html` (SPA shell) must use **`no-store`** — otherwise browsers/CDN keep an old HTML that points at an old JS hash after deploy.
 
@@ -168,16 +177,17 @@ location ~* \.(js|mjs|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
 }
 ```
 
-The portal also auto-reloads when it detects a newer `index-*.js` hash after deploy (`src/lib/forceFreshBuild.ts`).
+The portal also auto-reloads when it detects a newer build id after deploy (`src/lib/forceFreshBuild.ts`).
 
-Verify: `curl -sI https://mind-aku.my.id | grep -iE 'cache-control|pragma|etag|content-security|strict-transport'`.
+Verify: `curl -sI https://mindaku.com | grep -iE 'cache-control|pragma|etag|content-security|strict-transport'`.
 
 ## Verifikasi
 
 Di server:
 
 ```bash
-curl -sI http://127.0.0.1 -H 'Host: mind-aku.my.id' | head -5
+curl -sI http://127.0.0.1 -H 'Host: mindaku.com' | head -5
+curl -sI --resolve mind-aku.my.id:443:127.0.0.1 https://mind-aku.my.id/login | grep -i location
 ls -la /var/www/mind-aku/dist/index.html
 sudo nginx -t
 ```
@@ -185,13 +195,14 @@ sudo nginx -t
 Dari luar:
 
 ```bash
-curl -sI https://mind-aku.my.id
-curl -sI -H 'Origin: https://mind-aku.my.id' https://vip-api.mind-aku.my.id/api/v1/me/status
+curl -sI https://mindaku.com
+curl -sI https://mind-aku.my.id/login   # expect Location: https://mindaku.com/login
+curl -sI -H 'Origin: https://mindaku.com' https://vip-api.mind-aku.my.id/api/v1/me/status
 ```
 
-Harapan: portal HTTP 200; API boleh 401 tanpa API key, tetapi response CORS harus menyertakan `access-control-allow-origin: https://mind-aku.my.id`.
+Harapan: portal HTTP 200; legacy domain 301 ke mindaku.com; API boleh 401/404 tanpa API key, tetapi response CORS menyertakan `access-control-allow-origin`.
 
-Di browser: buka https://mind-aku.my.id → login dengan API key → Models / Usage / Logs.
+Di browser: buka https://mindaku.com (atau bookmark lama mind-aku.my.id) → login dengan API key → Models / Usage / Logs.
 
 ## Keamanan & operasi
 
@@ -202,8 +213,8 @@ Di browser: buka https://mind-aku.my.id → login dengan API key → Models / Us
 
 ## Yang tidak termasuk deploy portal
 
-- Menjalankan atau mengonfigurasi proses OmniRoute (port backend, env payment, webhook SumoPod, dll.)
-- Mengubah vhost nginx selain `mind-aku.my.id`
+- Menjalankan atau mengonfigurasi proses OmniRoute (port backend, env payment, webhook SumoPod, dll.) kecuali payment return URL yang sudah diganti ke mindaku.com
+- Mengubah vhost nginx API (`vip-api`, gateway, dll.)
 - Pembukaan firewall port baru (hanya 80/443 nginx yang dipakai)
 
 Payment & webhook: lihat [sumopod-payment-gateway.md](./sumopod-payment-gateway.md).
