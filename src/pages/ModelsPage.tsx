@@ -31,14 +31,45 @@ function formatRate(value: number | null | undefined): string {
   }).format(value);
 }
 
+function PriceCell({
+  value,
+  groupRatio,
+  freeLabel,
+}: {
+  value: number | null | undefined;
+  groupRatio: number | null;
+  freeLabel: string;
+}) {
+  if (value == null || Number.isNaN(value)) {
+    return <span>—</span>;
+  }
+
+  const ratio = groupRatio == null || Number.isNaN(groupRatio) ? 1 : groupRatio;
+  if (!(ratio < 1)) {
+    return <span>{formatRate(value)}</span>;
+  }
+
+  const discounted = value * ratio;
+  return (
+    <span className="inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+      <span className="text-muted-foreground line-through decoration-1">{formatRate(value)}</span>
+      <span className="font-medium text-foreground">
+        {ratio === 0 ? freeLabel : formatRate(discounted)}
+      </span>
+    </span>
+  );
+}
+
 export function ModelsPage() {
   const { t, i18n } = useTranslation();
   const { apiKey } = useAuth();
   const [models, setModels] = useState<ModelItem[]>([]);
+  const [groupRatio, setGroupRatio] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const locale = toIntlLocale(i18n.resolvedLanguage || i18n.language);
+  const hasGroupDiscount = groupRatio != null && groupRatio < 1;
 
   useEffect(() => {
     if (!apiKey) return;
@@ -58,6 +89,11 @@ export function ModelsPage() {
             return a.id.localeCompare(b.id, undefined, { sensitivity: "base" });
           });
           setModels(sorted);
+          setGroupRatio(
+            typeof response.group_ratio === "number" && !Number.isNaN(response.group_ratio)
+              ? response.group_ratio
+              : null
+          );
         }
       } catch (err) {
         if (cancelled) return;
@@ -100,6 +136,13 @@ export function ModelsPage() {
               "Model prices follow official provider rates (USD per 1M tokens). Values in the table below are loaded live from the API gateway; for official references see:"
             )}
           </p>
+          {hasGroupDiscount ? (
+            <p className="mt-2 text-sm leading-relaxed text-foreground">
+              {t(
+                "Struck-through amounts are list prices. The active amount already includes your group discount."
+              )}
+            </p>
+          ) : null}
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               <a
@@ -164,11 +207,33 @@ export function ModelsPage() {
                         ? model.context_length.toLocaleString(locale)
                         : "—"}
                     </TableCell>
-                    <TableCell className="tabular-nums">{formatRate(model.pricing?.input)}</TableCell>
-                    <TableCell className="tabular-nums">{formatRate(model.pricing?.output)}</TableCell>
-                    <TableCell className="tabular-nums">{formatRate(model.pricing?.cached)}</TableCell>
                     <TableCell className="tabular-nums">
-                      {formatRate(model.pricing?.cache_creation)}
+                      <PriceCell
+                        value={model.pricing?.input}
+                        groupRatio={groupRatio}
+                        freeLabel={t("Free")}
+                      />
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      <PriceCell
+                        value={model.pricing?.output}
+                        groupRatio={groupRatio}
+                        freeLabel={t("Free")}
+                      />
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      <PriceCell
+                        value={model.pricing?.cached}
+                        groupRatio={groupRatio}
+                        freeLabel={t("Free")}
+                      />
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      <PriceCell
+                        value={model.pricing?.cache_creation}
+                        groupRatio={groupRatio}
+                        freeLabel={t("Free")}
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

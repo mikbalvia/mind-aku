@@ -97,6 +97,8 @@ export type ModelItem = {
 export type ModelsResponse = {
   object: string;
   data: ModelItem[];
+  group?: string;
+  group_ratio?: number;
 };
 
 export type CallLogSpend = {
