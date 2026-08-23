@@ -47,7 +47,6 @@ export function PaymentsPage() {
 
   const minTopUpIdr = config?.minTopUpIdr ?? 10_000;
   const activeUnitIdr = config?.activeUnitIdr ?? 100_000;
-  const activePeriodDays = config?.activePeriodDays ?? 30;
 
   const activeIdr = useMemo(() => {
     if (customIdr.trim()) {
@@ -182,11 +181,11 @@ export function PaymentsPage() {
     ? t("Top-up unavailable: this key is unlimited, so pay-as-you-go balance does not apply.")
     : mockMode
       ? t(
-          "Local mock mode. Minimum {{min}} adds balance. Each full {{unit}} = +1 month of active period (Rp 120,000 stays 1 month).",
+          "Local mock mode. Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months).",
           { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
         )
       : t(
-          "Minimum {{min}} adds balance. Each full {{unit}} = +1 month. Rp 120,000 stays 1 month; Rp 300,000 = 3 months. Unused balance never expires.",
+          "Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months).",
           { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
         );
 
@@ -353,18 +352,18 @@ export function PaymentsPage() {
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {config.active === false
                   ? t(
-                      "Active period expired. Top up at least {{unit}} to reactivate the API for {{days}} days per unit. Unused balance never expires.",
+                      "Active period expired. Top up at least {{unit}} to reactivate (+1 month per unit, e.g. Rp 200,000 = 2 months). Balance never expires — top up anytime.",
                       {
                         unit: formatIdr(activeUnitIdr),
-                        days: String(activePeriodDays),
                       }
                     )
                   : mockMode
                     ? t(
-                        "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money."
+                        "PAYMENT_MOCK is on. Simulate top-up credits your key without SumoPod or real money. Balance never expires; each full {{unit}} adds +1 month.",
+                        { unit: formatIdr(activeUnitIdr) }
                       )
                     : t(
-                        "After payment, balance increases. Active period only extends for each full multiple of {{unit}}.",
+                        "After payment, balance increases and never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months). Top up anytime.",
                         { unit: formatIdr(activeUnitIdr) }
                       )}
               </p>
