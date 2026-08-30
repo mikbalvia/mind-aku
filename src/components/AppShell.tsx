@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   House,
   ChatTeardropText,
+  ChatsCircle,
   Wrench,
   Code,
   Stack,
@@ -38,6 +39,7 @@ type NavItem = {
 const allNavItems: NavItem[] = [
   { to: "/console", labelKey: "Dashboard", icon: House, delay: "0ms" },
   { to: "/chat", labelKey: "Chat", icon: ChatTeardropText, delay: "40ms" },
+  { to: "/chat-guide", labelKey: "Web Chat", icon: ChatsCircle, delay: "60ms" },
   { to: "/setup", labelKey: "Setup", icon: Wrench, delay: "80ms" },
   { to: "/sample-api", labelKey: "Sample API", icon: Code, delay: "100ms" },
   { to: "/models", labelKey: "Models", icon: Stack, delay: "140ms" },

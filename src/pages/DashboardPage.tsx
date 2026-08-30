@@ -13,6 +13,7 @@ import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber, formatUsd } from "../lib/format";
+import { logCacheTokens } from "../lib/logTokens";
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -104,7 +105,7 @@ export function DashboardPage() {
               className="scale-in scale-in-delay-2"
               label={t("Tokens this period")}
               value={formatNumber(tokens?.totalTokens)}
-              hint={`${t("In")} ${formatNumber(tokens?.inputTokens)} · ${t("Out")} ${formatNumber(tokens?.outputTokens)}`}
+              hint={`${t("In")} ${formatNumber(tokens?.inputTokens)} · ${t("Out")} ${formatNumber(tokens?.outputTokens)} · ${t("Cache read / write")} ${formatNumber(tokens?.cacheReadTokens)}/${formatNumber(tokens?.cacheCreationTokens)}`}
             />
           </div>
 
@@ -153,7 +154,9 @@ export function DashboardPage() {
                   <p className="text-sm text-muted-foreground">{t("No requests yet.")}</p>
                 ) : (
                   <ul className="divide-y divide-border">
-                    {logs.map((log) => (
+                    {logs.map((log) => {
+                      const cache = logCacheTokens(log);
+                      return (
                       <li key={log.id} className="flex items-center justify-between gap-3 py-3.5 text-sm">
                         <div className="min-w-0">
                           <p className="truncate text-foreground">
@@ -161,11 +164,17 @@ export function DashboardPage() {
                           </p>
                           <p className="text-xs text-muted-foreground">{formatDate(log.timestamp)}</p>
                         </div>
-                        <span className="shrink-0 tabular-nums text-muted-foreground">
-                          {log.status ?? "—"}
-                        </span>
+                        <div className="shrink-0 text-right tabular-nums">
+                          <p className="text-muted-foreground">
+                            {log.tokens.in}/{log.tokens.out}
+                          </p>
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                            {t("Cache read / write")} {cache.read}/{cache.write}
+                          </p>
+                        </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </CardContent>

@@ -96,8 +96,10 @@ export function UsagePage() {
               <dl className="mt-6">
                 <MetricRow label={t("Input")} value={formatNumber(tokens?.inputTokens)} />
                 <MetricRow label={t("Output")} value={formatNumber(tokens?.outputTokens)} />
-                <MetricRow label={t("Cache read")} value={formatNumber(tokens?.cacheReadTokens)} />
-                <MetricRow label={t("Cache write")} value={formatNumber(tokens?.cacheCreationTokens)} />
+                <MetricRow
+                  label={t("Cache read / write")}
+                  value={`${formatNumber(tokens?.cacheReadTokens)} / ${formatNumber(tokens?.cacheCreationTokens)}`}
+                />
                 <MetricRow label={t("Reasoning")} value={formatNumber(tokens?.reasoningTokens)} />
                 <MetricRow label={t("Total")} value={formatNumber(tokens?.totalTokens)} emphasize />
               </dl>

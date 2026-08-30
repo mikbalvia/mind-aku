@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { logCacheTokens } from "../lib/logTokens";
 import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 50;
@@ -220,13 +221,16 @@ export function LogsPage() {
                     <TableHead>{t("Status")}</TableHead>
                     <TableHead>{t("Model")}</TableHead>
                     <TableHead>{t("Tokens")}</TableHead>
+                    <TableHead>{t("Cache read / write")}</TableHead>
                     <TableHead>{t("Spend")}</TableHead>
                     <TableHead>{t("Duration")}</TableHead>
                     <TableHead>{t("Time")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {logs.map((log) => (
+                  {logs.map((log) => {
+                    const cache = logCacheTokens(log);
+                    return (
                     <TableRow
                       key={log.id}
                       className="cursor-pointer"
@@ -246,13 +250,17 @@ export function LogsPage() {
                       <TableCell className="tabular-nums">
                         {log.tokens.in}/{log.tokens.out}
                       </TableCell>
+                      <TableCell className="tabular-nums">
+                        {cache.read}/{cache.write}
+                      </TableCell>
                       <TableCell className="tabular-nums text-primary">
                         {formatSpend(log.spend?.totalUsd)}
                       </TableCell>
                       <TableCell className="tabular-nums">{formatDuration(log.duration)}</TableCell>
                       <TableCell>{formatTime(log.timestamp)}</TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
@@ -310,9 +318,10 @@ export function LogsPage() {
                   ["Tokens in/out", `${selected.tokens.in}/${selected.tokens.out}`],
                   [
                     "Cache read / write",
-                    `${selected.tokens.cacheRead ?? selected.spend?.tokens.cacheRead ?? 0} / ${
-                      selected.tokens.cacheWrite ?? selected.spend?.tokens.cacheCreation ?? 0
-                    }`,
+                    (() => {
+                      const cache = logCacheTokens(selected);
+                      return `${cache.read} / ${cache.write}`;
+                    })(),
                   ],
                   [
                     "Reasoning tokens",

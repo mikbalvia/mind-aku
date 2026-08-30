@@ -3,6 +3,7 @@ import { RequireAuth } from "./auth/RequireAuth";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ChatPage } from "./pages/ChatPage";
+import { ChatGuidePage } from "./pages/ChatGuidePage";
 import { ModelsPage } from "./pages/ModelsPage";
 import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
@@ -42,6 +43,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route path="/console" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/chat-guide" element={<ChatGuidePage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/sample-api" element={<SampleApiPage />} />
         <Route path="/models" element={<ModelsPage />} />
