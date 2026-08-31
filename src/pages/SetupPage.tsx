@@ -102,20 +102,20 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     kind: "curl-client",
     label: "Cursor",
     short: "Cursor",
-    blurb: "Cursor Chat via Mind Aku Custom Endpoint — one curl command.",
+    blurb: "Cursor Chat via Mind Aku OpenAI-compatible settings — one curl command.",
     docs: CURSOR_DOWNLOAD,
     docsLabel: "Cursor download",
-    runCmd: "Reload Cursor window, then open Chat",
+    runCmd: "Quit & reopen Cursor, then Settings → Models",
     lead:
-      "Run the one command below. The script writes chatLanguageModels.json to the Cursor User folder if Cursor is installed.",
+      "Run the one command below. The script writes Cursor AI settings to state.vscdb (SQLite) if Cursor is installed — Cursor does not use chatLanguageModels.json.",
     modelsNote:
-      "Model catalog is fetched live from /v1/models. Reload Cursor after curl finishes, then pick a mindaku model in Chat.",
-    afterTitle: "Open Cursor Chat",
+      "Models are fetched live from /v1/models and registered in Cursor Settings → Models. Quit and reopen Cursor after setup.",
+    afterTitle: "Use Cursor Chat",
     afterSteps: [
-      "After curl finishes, in Cursor run Developer: Reload Window (Command Palette).",
-      "Open the Chat panel, then open the model picker.",
-      "Pick a model in the mindaku group (list follows the gateway models API).",
-      "Set Thinking Effort to High if available.",
+      "Quit Cursor completely, then reopen it (Reload Window is not enough for state.vscdb).",
+      "Open Settings → Models and confirm OpenAI API Key and Override OpenAI Base URL are enabled.",
+      "Open Chat and pick a Mind Aku model from the model list.",
+      "If Agent mode fails, try Ask mode (custom endpoints use Chat Completions).",
     ],
   },
   cline: {
@@ -127,14 +127,14 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     docsLabel: "Cline docs",
     runCmd: "Open Cline from the editor sidebar",
     lead:
-      "Run the one command below. The script writes Cline OpenAI-compatible settings (base URL, API key, default model) into your editor settings.json.",
+      "Run the one command below. The script writes OpenAI Compatible settings to ~/.cline/data/globalState.json and your API key to secrets.json (modern Cline no longer uses VS Code settings.json).",
     modelsNote:
-      "Works in VS Code and Cursor if installed. Reload the editor after curl, then open Cline and verify the model picker.",
+      "Provider: openai-compatible. Base URL and model ID are written automatically. Reload the editor after setup.",
     afterTitle: "Open Cline",
     afterSteps: [
       "Install the Cline extension from the marketplace if you have not already.",
-      "After curl finishes, reload the editor window.",
-      "Open Cline from the sidebar and confirm API Provider is OpenAI Compatible with the Mind Aku /v1 endpoint.",
+      "After curl finishes, reload the VS Code or Cursor window.",
+      "Open Cline and confirm API Provider is OpenAI Compatible with the Mind Aku /v1 endpoint.",
       "Pick the default model written by the script (claude-sonnet-5 when available).",
     ],
   },
@@ -184,38 +184,38 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     kind: "curl-client",
     label: "OpenCode",
     short: "OpenCode",
-    blurb: "OpenCode terminal agent to Mind Aku — one curl command.",
+    blurb: "OpenCode CLI & Desktop to Mind Aku — one curl command.",
     docs: OPENCODE_DOCS,
     docsLabel: "OpenCode docs",
     runCmd: "opencode",
     lead:
-      "Run the one command below. The script installs OpenCode if needed, then writes ~/.config/opencode/opencode.json with the mindaku provider.",
+      "Run the one command below. The script writes ~/.config/opencode/opencode.json (baseURL + models) and stores your API key in ~/.local/share/opencode/auth.json for OpenCode Desktop.",
     modelsNote:
-      "Uses OPENAI_API_KEY from your shell profile. Default model: mindaku/claude-sonnet-5 when available. Then run: opencode",
+      "OpenCode Desktop does not read shell env vars — auth.json + ~/.mindaku/opencode-api-key are written automatically. Default model: mindaku/claude-sonnet-5 when available.",
     afterTitle: "Open OpenCode",
     afterSteps: [
-      "After curl finishes, open a new terminal (or source your shell profile).",
-      "Run opencode and pick a mindaku/… model.",
-      "Provider config lives in ~/.config/opencode/opencode.json.",
+      "Quit and reopen OpenCode Desktop (or open a new terminal for CLI).",
+      "Pick provider mindaku and a model (e.g. mindaku/claude-sonnet-5).",
+      "If auth fails, check Settings → Providers → mindaku or re-run the curl setup.",
     ],
   },
   kilocode: {
     kind: "curl-client",
     label: "KiloCode",
     short: "KiloCode",
-    blurb: "KiloCode CLI & VS Code extension to Mind Aku — one curl command.",
+    blurb: "KiloCode CLI & Desktop to Mind Aku — one curl command.",
     docs: KILOCODE_DOCS,
     docsLabel: "KiloCode docs",
     runCmd: "kilo",
     lead:
-      "Run the one command below. The script installs KiloCode CLI if needed, then writes ~/.config/kilo/kilo.jsonc with the mindaku provider.",
+      "Run the one command below. The script writes ~/.config/kilo/kilo.jsonc (baseURL + models) and stores your API key in ~/.local/share/kilo/auth.json for Kilo Desktop.",
     modelsNote:
-      "Same config is used by the Kilo Code VS Code extension. Default model: mindaku/claude-sonnet-5 when available. Then run: kilo",
+      "Kilo Desktop does not read shell env vars — auth.json + ~/.mindaku/api-key are written automatically. Default model: mindaku/claude-sonnet-5 when available.",
     afterTitle: "Open KiloCode",
     afterSteps: [
-      "After curl finishes, open a new terminal (or source your shell profile).",
-      "Run kilo and pick a mindaku/… model.",
-      "Provider config lives in ~/.config/kilo/kilo.jsonc.",
+      "Quit and reopen Kilo Desktop (or open a new terminal for CLI).",
+      "Pick provider mindaku and a model (e.g. mindaku/claude-sonnet-5).",
+      "If auth fails, re-run the curl setup or check ~/.local/share/kilo/auth.json.",
     ],
   },
   claude: {
@@ -389,7 +389,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
               </h3>
               <p className="max-w-2xl text-sm text-muted-foreground">
                 {t(
-                  "Use Chat in VS Code (or Cursor) with Mind Aku models via a Custom Endpoint. Auto-config writes chatLanguageModels.json and force-sets env keys in your shell."
+                  "Use Chat in VS Code with Mind Aku models via a Custom Endpoint. Auto-config writes chatLanguageModels.json and force-sets env keys in your shell. For Cursor, pick Cursor above — it uses state.vscdb instead."
                 )}
               </p>
             </div>
@@ -412,7 +412,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
             <li>{t("Make sure the Chat feature is available (Chat panel in the sidebar).")}</li>
             <li>
               {t(
-                "Optional: Cursor is also supported — auto-config writes to the Cursor User folder if installed."
+                "For Cursor IDE, use the Cursor tab — setup writes OpenAI API settings to state.vscdb, not chatLanguageModels.json."
               )}
             </li>
           </ol>

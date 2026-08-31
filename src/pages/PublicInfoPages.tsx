@@ -90,7 +90,7 @@ function Content({ page }: { page: PublicPage }) {
         </p>
         <p>
           {t(
-            "The script points Claude Code, Codex, OpenClaw, Hermes, OpenCode, KiloCode, Cline, VS Code, and Cursor at the Mind Aku gateway. Model lists come from the gateway API."
+            "The script points Claude Code, Codex, OpenClaw, Hermes, OpenCode, KiloCode, Cline, VS Code, and Cursor at the Mind Aku gateway. Model lists come from the gateway API. Cursor uses state.vscdb (Settings → Models), not chatLanguageModels.json."
           )}
         </p>
         <h3>{t("May I share my API key?")}</h3>
