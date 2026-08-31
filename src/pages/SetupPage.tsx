@@ -189,14 +189,15 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     docsLabel: "OpenCode docs",
     runCmd: "opencode",
     lead:
-      "Run the one command below. The script writes ~/.config/opencode/opencode.json (baseURL + models) and stores your API key in ~/.local/share/opencode/auth.json for OpenCode Desktop.",
+      "Run the one command below. The script writes opencode.json to both CLI (~/.config/opencode/) and Desktop (~/Library/Application Support/ai.opencode.desktop/ on macOS), plus auth.json in each data directory.",
     modelsNote:
-      "OpenCode Desktop does not read shell env vars — auth.json + ~/.mindaku/opencode-api-key are written automatically. Default model: mindaku/claude-sonnet-5 when available.",
+      "Quit and reopen OpenCode Desktop, then run /models or open the model picker. Default model: mindaku/claude-sonnet-5 when available.",
     afterTitle: "Open OpenCode",
     afterSteps: [
-      "Quit and reopen OpenCode Desktop (or open a new terminal for CLI).",
+      "Quit OpenCode Desktop completely, then reopen it.",
+      "Run /models in the TUI or open the model picker in Desktop.",
       "Pick provider mindaku and a model (e.g. mindaku/claude-sonnet-5).",
-      "If auth fails, check Settings → Providers → mindaku or re-run the curl setup.",
+      "If mindaku is still missing, re-run curl setup after deploying the latest backend.",
     ],
   },
   kilocode: {
