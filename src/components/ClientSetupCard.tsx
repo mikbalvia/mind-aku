@@ -5,6 +5,18 @@ import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+const CONFIGURED_CLIENTS = [
+  "Claude Code",
+  "Codex CLI",
+  "OpenClaw",
+  "Hermes Agent",
+  "OpenCode",
+  "KiloCode",
+  "Cline",
+  "VS Code",
+  "Cursor",
+] as const;
+
 type Props = {
   apiKey: string;
   toolLabel?: string;
@@ -143,6 +155,22 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
         {modelsNote ? (
           <p className="mt-4 text-xs text-muted-foreground">{t(modelsNote)}</p>
         ) : null}
+
+        <div className="mt-5 rounded-lg border border-border bg-muted/30 p-4">
+          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            {t("Configured clients")}
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
+            {CONFIGURED_CLIENTS.map((client) => (
+              <li key={client}>{t(client)}</li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t(
+              "Reload your editor after setup to apply model and extension settings."
+            )}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

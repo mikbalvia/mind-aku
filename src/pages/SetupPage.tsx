@@ -11,9 +11,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type ToolId = "vscode" | "desktop" | "claude" | "codex" | "openclaw" | "hermes";
+type ToolId =
+  | "vscode"
+  | "cursor"
+  | "cline"
+  | "desktop"
+  | "claude"
+  | "codex"
+  | "openclaw"
+  | "hermes"
+  | "opencode"
+  | "kilocode";
 
-const TOOL_ORDER: ToolId[] = ["vscode", "desktop", "claude", "codex", "openclaw", "hermes"];
+const TOOL_ORDER: ToolId[] = [
+  "vscode",
+  "cursor",
+  "cline",
+  "desktop",
+  "claude",
+  "codex",
+  "openclaw",
+  "hermes",
+  "opencode",
+  "kilocode",
+];
 
 const CLAUDE_DOCS = "https://code.claude.com/docs/en/quickstart";
 const CODEX_DOCS = "https://learn.chatgpt.com/docs/codex/cli#getting-started";
@@ -22,6 +43,10 @@ const CODEX_IDE = "https://learn.chatgpt.com/docs/codex/ide";
 const CLAUDE_DESKTOP_DOWNLOAD = "https://claude.com/download";
 const OPENCLAW_DOCS = "https://docs.openclaw.ai/install";
 const HERMES_DOCS = "https://hermes-agent.nousresearch.com/docs/getting-started/quickstart";
+const OPENCODE_DOCS = "https://opencode.ai/docs";
+const KILOCODE_DOCS = "https://kilo.ai/docs";
+const CLINE_DOCS = "https://docs.cline.bot/";
+const CURSOR_DOWNLOAD = "https://cursor.com";
 const VSCODE_LM_DOCS = "https://code.visualstudio.com/docs/copilot/customization/language-models";
 const VSCODE_DOWNLOAD = "https://code.visualstudio.com/download";
 
@@ -73,6 +98,46 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
     short: "VS Code",
     blurb: "Chat / Agent integration in Visual Studio Code via a Mind Aku Custom Endpoint.",
   },
+  cursor: {
+    kind: "curl-client",
+    label: "Cursor",
+    short: "Cursor",
+    blurb: "Cursor Chat via Mind Aku Custom Endpoint — one curl command.",
+    docs: CURSOR_DOWNLOAD,
+    docsLabel: "Cursor download",
+    runCmd: "Reload Cursor window, then open Chat",
+    lead:
+      "Run the one command below. The script writes chatLanguageModels.json to the Cursor User folder if Cursor is installed.",
+    modelsNote:
+      "Model catalog is fetched live from /v1/models. Reload Cursor after curl finishes, then pick a mindaku model in Chat.",
+    afterTitle: "Open Cursor Chat",
+    afterSteps: [
+      "After curl finishes, in Cursor run Developer: Reload Window (Command Palette).",
+      "Open the Chat panel, then open the model picker.",
+      "Pick a model in the mindaku group (list follows the gateway models API).",
+      "Set Thinking Effort to High if available.",
+    ],
+  },
+  cline: {
+    kind: "curl-client",
+    label: "Cline",
+    short: "Cline",
+    blurb: "Cline extension (VS Code / Cursor) to Mind Aku — one curl command.",
+    docs: CLINE_DOCS,
+    docsLabel: "Cline docs",
+    runCmd: "Open Cline from the editor sidebar",
+    lead:
+      "Run the one command below. The script writes Cline OpenAI-compatible settings (base URL, API key, default model) into your editor settings.json.",
+    modelsNote:
+      "Works in VS Code and Cursor if installed. Reload the editor after curl, then open Cline and verify the model picker.",
+    afterTitle: "Open Cline",
+    afterSteps: [
+      "Install the Cline extension from the marketplace if you have not already.",
+      "After curl finishes, reload the editor window.",
+      "Open Cline from the sidebar and confirm API Provider is OpenAI Compatible with the Mind Aku /v1 endpoint.",
+      "Pick the default model written by the script (claude-sonnet-5 when available).",
+    ],
+  },
   desktop: {
     kind: "desktop",
     label: "Claude Desktop",
@@ -113,6 +178,44 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
       "After curl finishes, run hermes (or hermes --tui).",
       "See Mind Aku models via /model or hermes model.",
       "Pick a model from the mindaku provider. New default: claude-sonnet-5.",
+    ],
+  },
+  opencode: {
+    kind: "curl-client",
+    label: "OpenCode",
+    short: "OpenCode",
+    blurb: "OpenCode terminal agent to Mind Aku — one curl command.",
+    docs: OPENCODE_DOCS,
+    docsLabel: "OpenCode docs",
+    runCmd: "opencode",
+    lead:
+      "Run the one command below. The script installs OpenCode if needed, then writes ~/.config/opencode/opencode.json with the mindaku provider.",
+    modelsNote:
+      "Uses OPENAI_API_KEY from your shell profile. Default model: mindaku/claude-sonnet-5 when available. Then run: opencode",
+    afterTitle: "Open OpenCode",
+    afterSteps: [
+      "After curl finishes, open a new terminal (or source your shell profile).",
+      "Run opencode and pick a mindaku/… model.",
+      "Provider config lives in ~/.config/opencode/opencode.json.",
+    ],
+  },
+  kilocode: {
+    kind: "curl-client",
+    label: "KiloCode",
+    short: "KiloCode",
+    blurb: "KiloCode CLI & VS Code extension to Mind Aku — one curl command.",
+    docs: KILOCODE_DOCS,
+    docsLabel: "KiloCode docs",
+    runCmd: "kilo",
+    lead:
+      "Run the one command below. The script installs KiloCode CLI if needed, then writes ~/.config/kilo/kilo.jsonc with the mindaku provider.",
+    modelsNote:
+      "Same config is used by the Kilo Code VS Code extension. Default model: mindaku/claude-sonnet-5 when available. Then run: kilo",
+    afterTitle: "Open KiloCode",
+    afterSteps: [
+      "After curl finishes, open a new terminal (or source your shell profile).",
+      "Run kilo and pick a mindaku/… model.",
+      "Provider config lives in ~/.config/kilo/kilo.jsonc.",
     ],
   },
   claude: {
@@ -915,7 +1018,7 @@ export function SetupPage() {
               </h3>
               <p className="max-w-2xl text-sm text-muted-foreground">
                 {t(
-                  "Start with VS Code Chat, or pick Claude Desktop / Claude Code / Codex / OpenClaw / Hermes. Next steps follow your choice."
+                  "Start with VS Code Chat, Cursor, Cline, Claude Desktop, Claude Code, Codex, OpenClaw, Hermes, OpenCode, or KiloCode. Next steps follow your choice."
                 )}
               </p>
             </div>
@@ -956,7 +1059,7 @@ export function SetupPage() {
           <Card className="border-dashed border-border bg-muted/40">
             <CardContent className="p-6 text-sm text-muted-foreground">
               {t(
-                "Pick VS Code Chat, Claude Desktop, Claude Code, Codex CLI, OpenClaw, or Hermes above to see the full guide."
+                "Pick a tool above — VS Code Chat, Cursor, Cline, Claude Desktop, Claude Code, Codex CLI, OpenClaw, Hermes, OpenCode, or KiloCode — to see the full guide."
               )}
             </CardContent>
           </Card>

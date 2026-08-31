@@ -75,10 +75,10 @@ function Content({ page }: { page: PublicPage }) {
         <p>
           <code>{AI_BASE_URL}</code>
         </p>
-        <h3>{t("How do I auto-setup Claude Code / Codex / OpenClaw / Hermes / Claude Desktop?")}</h3>
+        <h3>{t("How do I auto-setup Claude Code / Codex / OpenClaw / Hermes / OpenCode / KiloCode / Cline / Cursor / Claude Desktop?")}</h3>
         <p>
           {t(
-            "Log in to the portal and open Setup. Pick one tool. OpenClaw and Hermes need a single curl command (the script installs the CLI if needed, then writes the model catalog without renaming agents). Claude Desktop: download the app, enable Developer Mode, and fill in the Mind Aku gateway. Claude/Codex CLI: install → auto-config → (optional) extension in VS Code / Cursor / Antigravity. Or run (the script will ask for your API key):"
+            "Log in to the portal and open Setup. Pick one tool. Most tools need a single curl command (the script installs the CLI if needed, then writes Mind Aku config). Claude Desktop: download the app, enable Developer Mode, and fill in the Mind Aku gateway. Claude/Codex CLI: install → auto-config → (optional) extension in VS Code / Cursor / Antigravity. Or run (the script will ask for your API key):"
           )}
         </p>
         <p>
@@ -90,7 +90,7 @@ function Content({ page }: { page: PublicPage }) {
         </p>
         <p>
           {t(
-            "The script points Claude Code, Codex, OpenClaw, and Hermes at the Mind Aku gateway. Model lists come from the gateway API."
+            "The script points Claude Code, Codex, OpenClaw, Hermes, OpenCode, KiloCode, Cline, VS Code, and Cursor at the Mind Aku gateway. Model lists come from the gateway API."
           )}
         </p>
         <h3>{t("May I share my API key?")}</h3>
