@@ -888,5 +888,7 @@
   "Example": "Example",
   "cURL text-to-image": "cURL text-to-image",
   "Replace YOUR_API_KEY with the key from this portal login. Endpoint uses your Mind Aku base URL.": "Replace YOUR_API_KEY with the key from this portal login. Endpoint uses your Mind Aku base URL.",
-  "Try it in the Image studio": "Try it in the Image studio"
+  "Try it in the Image studio": "Try it in the Image studio",
+  "Image edit upload max size: 1 MB. Larger files often return HTTP 413 — compress to JPEG/WebP or resize before uploading.": "Image edit upload max size: 1 MB. Larger files often return HTTP 413 — compress to JPEG/WebP or resize before uploading.",
+  "Max edit image size: 1 MB per file.": "Max edit image size: 1 MB per file."
 }

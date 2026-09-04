@@ -426,6 +426,11 @@ export function ImageGenerationPage() {
                 "Call POST /v1/images/generations or /v1/images/edits. Do not use /v1/chat/completions for gpt-image-2 — size, quality, and output_format will not apply correctly."
               )}
             </p>
+            <p>
+              {t(
+                "Image edit upload max size: 1 MB. Larger files often return HTTP 413 — compress to JPEG/WebP or resize before uploading."
+              )}
+            </p>
           </CardContent>
         </Card>
 
@@ -485,13 +490,30 @@ export function ImageGenerationPage() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/jpg"
                     disabled={sending}
-                    onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null;
+                      if (file && file.size > 1 * 1024 * 1024) {
+                        setEditFile(null);
+                        e.target.value = "";
+                        setSendError(
+                          t(
+                            "Image edit upload max size: 1 MB. Larger files often return HTTP 413 — compress to JPEG/WebP or resize before uploading."
+                          )
+                        );
+                        return;
+                      }
+                      setSendError(null);
+                      setEditFile(file);
+                    }}
                     className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary/15 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground"
                   />
                   <p className="text-xs text-muted-foreground">
                     {t(
                       "Upload the source image (multipart field: image). Describe what to keep and what to change in the prompt."
                     )}
+                  </p>
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    {t("Max edit image size: 1 MB per file.")}
                   </p>
                 </div>
                 <div className="space-y-2">

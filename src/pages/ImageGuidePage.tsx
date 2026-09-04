@@ -68,6 +68,10 @@ const STEPS: Step[] = [
     titleKey: "Edit with multipart upload",
     bodyKey:
       "POST /v1/images/edits with multipart/form-data. Field image is the source file; prompt describes what to keep and change. Do not set Content-Type manually — the client must send the boundary.",
+    bullets: [
+      "Max edit image size: 1 MB per file.",
+      "Image edit upload max size: 1 MB. Larger files often return HTTP 413 — compress to JPEG/WebP or resize before uploading.",
+    ],
   },
   {
     id: "timeout",
