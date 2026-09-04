@@ -25,7 +25,6 @@ import { BrandLockup } from "./BrandLogo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { VsCodeChatAnnouncementPopup } from "./VsCodeChatAnnouncementPopup";
 import { CommunityJoinModal } from "./CommunityJoinModal";
-import { Backdrop } from "./Backdrop";
 import { PageEnter } from "./PageEnter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -179,9 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         isChat ? "h-dvh overflow-hidden" : "min-h-screen"
       )}
     >
-      <Backdrop />
-
-      <header className="fixed inset-x-0 top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border/60 bg-[rgba(7,8,13,0.85)] px-4 backdrop-blur-xl md:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border/60 bg-[rgba(7,8,13,0.96)] px-4 md:hidden">
         <Link to="/console" className="min-w-0">
           <BrandLockup
             showTagline={false}
@@ -217,7 +214,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {menuOpen ? (
         <div
-          className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col border-b border-border/60 bg-[rgba(7,8,13,0.96)] backdrop-blur-xl md:hidden"
+          className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col border-b border-border/60 bg-[rgba(7,8,13,0.98)] md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label={t("Navigation menu")}
@@ -247,7 +244,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       ) : null}
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border/60 bg-[rgba(10,11,18,0.78)] backdrop-blur-xl md:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border/60 bg-[rgba(10,11,18,0.98)] md:flex">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"

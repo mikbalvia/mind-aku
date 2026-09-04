@@ -17,7 +17,7 @@ import {
   Lightning,
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,6 +66,7 @@ function formatCreditRateNote(idrPerUsd: number, t: (k: string, o?: Record<strin
 
 export function HomePage() {
   const { t } = useTranslation();
+  const reduceMotion = useReducedMotion();
   const [shop, setShop] = useState<ShopConfig | null>(null);
   const [catalog, setCatalog] = useState<ModelItem[]>([]);
   const [shopLoading, setShopLoading] = useState(true);
@@ -179,11 +180,11 @@ export function HomePage() {
         <section className="grid items-center gap-10 sm:gap-16 lg:grid-cols-[1.05fr_.95fr]">
           <div>
             <div className="rise-in mb-7 flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-md">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary shadow-[0_0_8px_var(--primary)]" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 {t("AI infrastructure online")}
               </div>
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-primary backdrop-blur-md">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/20 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
                 <Flame weight="fill" className="size-3.5" />
                 {t("Promo · 15× cheaper")}
               </div>
@@ -202,7 +203,7 @@ export function HomePage() {
               {t("than market FX.")}
             </p>
             <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <motion.div whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+              <motion.div whileTap={reduceMotion ? undefined : { scale: 0.97 }} className="w-full sm:w-auto">
                 <Button asChild size="lg" className="w-full sm:w-auto glow-primary">
                   <Link to="/beli">
                     {t("Buy credit")} <ArrowUpRight weight="bold" />
@@ -233,14 +234,14 @@ export function HomePage() {
           </div>
 
           <div className="relative mx-auto aspect-square w-full max-w-[460px] sm:w-[min(100%,460px)]">
-            <div className="absolute inset-[12%] rounded-full border border-primary/30 [animation:ringSpinSlow_24s_linear_infinite]" />
-            <div className="absolute inset-[23%] rounded-full border border-primary/25 [animation:ringSpinReverse_18s_linear_infinite]" />
+            <div className="absolute inset-[12%] rounded-full border border-primary/30" />
+            <div className="absolute inset-[23%] rounded-full border border-primary/25" />
             <div className="absolute inset-[34%] rounded-full border border-dashed border-white/15" />
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, ease: easeOut, delay: 0.2 }}
-              className="absolute left-1/2 top-1/2 flex size-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-primary/40 bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10 shadow-[0_0_60px_-12px_rgba(249,115,22,0.55)] backdrop-blur-xl md:size-44"
+              transition={{ duration: 0.35, ease: easeOut, delay: 0.1 }}
+              className="absolute left-1/2 top-1/2 flex size-36 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-primary/40 bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10 shadow-[0_0_60px_-12px_rgba(249,115,22,0.55)] md:size-44"
             >
               <Atom weight="duotone" className="mb-2 size-8 text-primary" />
               <span className="font-mono text-[10px] uppercase tracking-[.25em] text-muted-foreground">
@@ -248,13 +249,13 @@ export function HomePage() {
               </span>
               <span className="mt-1 text-xs text-foreground">{t("AI CORE / 01")}</span>
             </motion.div>
-            <div className="absolute left-[11%] top-[30%] rounded-lg border border-border/60 bg-card/70 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)] backdrop-blur-md [animation:pulseGlow_3.2s_ease-in-out_infinite]">
+            <div className="absolute left-[11%] top-[30%] rounded-lg border border-border/60 bg-card/90 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)]">
               <Cpu weight="duotone" className="size-5 text-primary" />
             </div>
-            <div className="absolute bottom-[18%] right-[12%] rounded-lg border border-border/60 bg-card/70 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)] backdrop-blur-md [animation:pulseGlow_3.6s_ease-in-out_infinite_700ms]">
+            <div className="absolute bottom-[18%] right-[12%] rounded-lg border border-border/60 bg-card/90 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)]">
               <Gauge weight="duotone" className="size-5 text-primary" />
             </div>
-            <div className="absolute right-[4%] top-[17%] rounded-lg border border-border/60 bg-card/70 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)] backdrop-blur-md [animation:pulseGlow_3s_ease-in-out_infinite_1400ms]">
+            <div className="absolute right-[4%] top-[17%] rounded-lg border border-border/60 bg-card/90 p-3 shadow-[0_0_24px_-8px_rgba(249,115,22,0.35)]">
               <ShieldCheck weight="duotone" className="size-5 text-accent" />
             </div>
           </div>
@@ -315,7 +316,7 @@ export function HomePage() {
             </p>
           </div>
 
-          <div className="gradient-border overflow-hidden rounded-2xl bg-card/60 shadow-[0_24px_64px_-24px_rgba(0,0,0,0.7)] backdrop-blur-md">
+          <div className="gradient-border overflow-hidden rounded-2xl bg-card/90 shadow-[0_24px_64px_-24px_rgba(0,0,0,0.7)]">
             <div className="grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
               <div className="border-b border-border/60 p-6 sm:p-8 lg:border-b-0 lg:border-r">
                 <div className="flex flex-wrap items-center gap-2">
@@ -352,7 +353,7 @@ export function HomePage() {
                 </div>
 
                 <motion.div
-                  initial="hidden"
+                  initial={reduceMotion ? false : "hidden"}
                   whileInView="visible"
                   viewport={{ once: true, margin: "-10% 0px" }}
                   variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
@@ -365,7 +366,7 @@ export function HomePage() {
                         hidden: { opacity: 0, y: 10 },
                         visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: easeOut } },
                       }}
-                      whileHover={{ y: -2 }}
+                      whileHover={reduceMotion ? undefined : { y: -2 }}
                       className="rounded-xl border border-border/60 bg-white/[0.03] p-4 transition-colors hover:border-primary/30 hover:bg-white/[0.05]"
                     >
                       <Icon weight="duotone" className="size-4 text-primary" />
@@ -375,7 +376,7 @@ export function HomePage() {
                   ))}
                 </motion.div>
 
-                <motion.div whileTap={{ scale: 0.98 }}>
+                <motion.div whileTap={reduceMotion ? undefined : { scale: 0.98 }}>
                   <Button asChild size="lg" className="mt-8 h-12 w-full">
                     <Link to="/beli">
                       {t("Buy credit now")} <ArrowUpRight weight="bold" />
@@ -474,7 +475,7 @@ export function HomePage() {
             </span>
           </div>
           <motion.div
-            initial="hidden"
+            initial={reduceMotion ? false : "hidden"}
             whileInView="visible"
             viewport={{ once: true, margin: "-10% 0px" }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
@@ -487,8 +488,8 @@ export function HomePage() {
                   hidden: { opacity: 0, y: 12 },
                   visible: { opacity: 1, y: 0, transition: { duration: 0.36, ease: easeOut } },
                 }}
-                whileHover={{ y: -2 }}
-                className="group relative bg-card/60 p-6 backdrop-blur-md transition-colors hover:bg-white/[0.04]"
+                whileHover={reduceMotion ? undefined : { y: -2 }}
+                className="group relative bg-card/90 p-6 transition-colors hover:bg-white/[0.04]"
               >
                 <Icon
                   weight="duotone"
