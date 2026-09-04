@@ -4,6 +4,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ChatPage } from "./pages/ChatPage";
 import { ChatGuidePage } from "./pages/ChatGuidePage";
+import { ImageGenerationPage } from "./pages/ImageGenerationPage";
+import { ImageGuidePage } from "./pages/ImageGuidePage";
 import { ModelsPage } from "./pages/ModelsPage";
 import { UsagePage } from "./pages/UsagePage";
 import { LogsPage } from "./pages/LogsPage";
@@ -43,6 +45,8 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route path="/console" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/images" element={<ImageGenerationPage />} />
+        <Route path="/image-guide" element={<ImageGuidePage />} />
         <Route path="/chat-guide" element={<ChatGuidePage />} />
         <Route path="/setup" element={<SetupPage />} />
         <Route path="/sample-api" element={<SampleApiPage />} />

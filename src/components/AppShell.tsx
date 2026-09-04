@@ -5,6 +5,8 @@ import {
   House,
   ChatTeardropText,
   ChatsCircle,
+  Image as ImageIcon,
+  BookOpenText,
   Wrench,
   Code,
   Stack,
@@ -39,6 +41,8 @@ type NavItem = {
 const allNavItems: NavItem[] = [
   { to: "/console", labelKey: "Dashboard", icon: House, delay: "0ms" },
   { to: "/chat", labelKey: "Chat", icon: ChatTeardropText, delay: "40ms" },
+  { to: "/images", labelKey: "Image", icon: ImageIcon, delay: "50ms" },
+  { to: "/image-guide", labelKey: "Image Guide", icon: BookOpenText, delay: "55ms" },
   { to: "/chat-guide", labelKey: "Web Chat", icon: ChatsCircle, delay: "60ms" },
   { to: "/setup", labelKey: "Setup", icon: Wrench, delay: "80ms" },
   { to: "/sample-api", labelKey: "Sample API", icon: Code, delay: "100ms" },
