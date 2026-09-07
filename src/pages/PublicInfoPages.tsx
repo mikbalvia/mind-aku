@@ -78,15 +78,20 @@ function Content({ page }: { page: PublicPage }) {
         <h3>{t("How do I auto-setup Claude Code / Codex / OpenClaw / Hermes / OpenCode / KiloCode / Cline / Cursor / Claude Desktop?")}</h3>
         <p>
           {t(
-            "Log in to the portal and open Setup. Pick one tool. Most tools need a single curl command (the script installs the CLI if needed, then writes Mind Aku config). Claude Desktop: download the app, enable Developer Mode, and fill in the Mind Aku gateway. Claude/Codex CLI: install → auto-config → (optional) extension in VS Code / Cursor / Antigravity. Or run (the script will ask for your API key):"
+            "Log in to the portal and open Setup. Pick one tool. Most tools need a single curl command (the script installs the CLI if needed, then writes Mind Aku config). Claude Desktop: download the app, enable Developer Mode, and fill in the Mind Aku gateway. Claude/Codex CLI: install → auto-config → (optional) extension in VS Code / Cursor / Antigravity."
           )}
         </p>
         <p>
-          <code>{`curl -fsSL "${OMNIROUTE_BASE_URL}/setup" | bash`}</code>
+          <code>{`curl -fsSL "${OMNIROUTE_BASE_URL}/setup/<tool>?token=YOUR_TOKEN" | bash`}</code>
         </p>
         <p>
           {t("Windows PowerShell:")}{" "}
-          <code>{`irm "${OMNIROUTE_BASE_URL}/setup" | iex`}</code>
+          <code>{`irm "${OMNIROUTE_BASE_URL}/setup/<tool>.ps1?token=YOUR_TOKEN" | iex`}</code>
+        </p>
+        <p>
+          {t(
+            "Replace <tool> with one of: claude, codex, openclaw, hermes, opencode, kilocode, cline, vscode, cursor, desktop. Each endpoint configures only that tool — useful when you only need one client. To configure every tool at once, drop the /<tool> path and use the legacy all-in-one endpoint."
+          )}
         </p>
         <p>
           {t(

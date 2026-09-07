@@ -5,7 +5,7 @@ import { AI_BASE_URL, OMNIROUTE_BASE_URL } from "../config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-const CONFIGURED_CLIENTS = [
+const ALL_CONFIGURED_CLIENTS = [
   "Claude Code",
   "Codex CLI",
   "OpenClaw",
@@ -17,11 +17,32 @@ const CONFIGURED_CLIENTS = [
   "Cursor",
 ] as const;
 
+// Map tool id (used in the /setup/:tool endpoint) to display name shown in
+// the "Configured clients" list. A null/undefined tool id means the legacy
+// all-in-one setup, which configures every client.
+const CONFIGURED_CLIENTS_BY_TOOL: Record<string, readonly string[]> = {
+  claude: ["Claude Code"],
+  codex: ["Codex CLI"],
+  openclaw: ["OpenClaw"],
+  hermes: ["Hermes Agent"],
+  opencode: ["OpenCode"],
+  kilocode: ["KiloCode"],
+  cline: ["Cline"],
+  vscode: ["VS Code"],
+  cursor: ["Cursor"],
+  desktop: ["Claude Desktop"],
+};
+
 type Props = {
   apiKey: string;
   toolLabel?: string;
   modelsNote?: string;
   lead?: string;
+  // Backend tool id matching one of knownClientTools. When provided the
+  // curl/irm command points at /setup/<tool>?token=... so only that one
+  // tool is configured. When omitted the legacy /setup?token=... is used
+  // and every tool gets configured.
+  tool?: string;
 };
 
 async function copyText(value: string): Promise<boolean> {
@@ -33,19 +54,38 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) {
+export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead, tool }: Props) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState<"mac" | "win" | "base" | "v1" | null>(null);
 
   const baseUrl = OMNIROUTE_BASE_URL.replace(/\/$/, "");
   const v1Url = AI_BASE_URL.replace(/\/$/, "");
-  const setupUrl = useMemo(
-    () => `${baseUrl}/setup?token=${encodeURIComponent(apiKey)}`,
-    [apiKey, baseUrl]
+
+  const { setupUrl, configuredClients, isPerTool } = useMemo(() => {
+    const trimmedTool = tool?.trim();
+    const path = trimmedTool ? `/setup/${encodeURIComponent(trimmedTool)}` : "/setup";
+    const url = `${baseUrl}${path}?token=${encodeURIComponent(apiKey)}`;
+    const clients =
+      trimmedTool && CONFIGURED_CLIENTS_BY_TOOL[trimmedTool]
+        ? CONFIGURED_CLIENTS_BY_TOOL[trimmedTool]
+        : ALL_CONFIGURED_CLIENTS;
+    return {
+      setupUrl: url,
+      configuredClients: clients,
+      isPerTool: Boolean(trimmedTool),
+    };
+  }, [apiKey, baseUrl, tool]);
+
+  // PowerShell users can opt into the .ps1 variant explicitly. The bash
+  // script under /setup/<tool> also works via curl on PowerShell, but
+  // the .ps1 endpoint emits native PowerShell syntax.
+  const winSetupUrl = useMemo(
+    () => (isPerTool ? setupUrl + ".ps1" : setupUrl),
+    [setupUrl, isPerTool]
   );
 
   const macCmd = `curl -fsSL "${setupUrl}" | bash`;
-  const winCmd = `irm "${setupUrl}" | iex`;
+  const winCmd = `irm "${winSetupUrl}" | iex`;
 
   async function onCopy(kind: "mac" | "win" | "base" | "v1", value: string) {
     const ok = await copyText(value);
@@ -54,11 +94,17 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
     window.setTimeout(() => setCopied(null), 2000);
   }
 
+  const configuredClientsTitle = isPerTool
+    ? t("This setup configures")
+    : t("Configured clients");
+
   return (
     <Card>
       <CardContent className="p-6">
         <h3 className="font-heading text-xl font-semibold text-foreground">
-          {t("Auto-config to Mind Aku")}
+          {isPerTool && toolLabel
+            ? t("Auto-config {{tool}}", { tool: toolLabel })
+            : t("Auto-config to Mind Aku")}
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
           {lead
@@ -158,17 +204,19 @@ export function ClientSetupCard({ apiKey, toolLabel, modelsNote, lead }: Props) 
 
         <div className="mt-5 rounded-lg border border-border bg-muted/30 p-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            {t("Configured clients")}
+            {configuredClientsTitle}
           </p>
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
-            {CONFIGURED_CLIENTS.map((client) => (
+            {configuredClients.map((client) => (
               <li key={client}>{t(client)}</li>
             ))}
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">
-            {t(
-              "Reload your editor after setup to apply model and extension settings."
-            )}
+            {isPerTool
+              ? t(
+                  "Only this tool is configured. Re-run with another tool's curl to set up a different client."
+                )
+              : t("Reload your editor after setup to apply model and extension settings.")}
           </p>
         </div>
       </CardContent>

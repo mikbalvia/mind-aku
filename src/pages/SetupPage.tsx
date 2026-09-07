@@ -72,6 +72,9 @@ type DesktopTool = {
 
 type CurlClientTool = {
   kind: "curl-client";
+  // Backend tool id used in /setup/<id>?token=... — keeps the curl slim to
+  // only this client. Must match one of the backend knownClientTools.
+  id: ToolId;
   label: string;
   short: string;
   blurb: string;
@@ -100,6 +103,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   cursor: {
     kind: "curl-client",
+    id: "cursor",
     label: "Cursor",
     short: "Cursor",
     blurb: "Cursor Chat via Mind Aku OpenAI-compatible settings — one curl command.",
@@ -120,6 +124,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   cline: {
     kind: "curl-client",
+    id: "cline",
     label: "Cline",
     short: "Cline",
     blurb: "Cline extension (VS Code / Cursor) to Mind Aku — one curl command.",
@@ -146,6 +151,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   openclaw: {
     kind: "curl-client",
+    id: "openclaw",
     label: "OpenClaw",
     short: "OpenClaw",
     blurb: "OpenClaw agent to Mind Aku — one curl command.",
@@ -164,6 +170,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   hermes: {
     kind: "curl-client",
+    id: "hermes",
     label: "Hermes",
     short: "Hermes",
     blurb: "Hermes Agent to Mind Aku — one curl command.",
@@ -182,6 +189,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   opencode: {
     kind: "curl-client",
+    id: "opencode",
     label: "OpenCode",
     short: "OpenCode",
     blurb: "OpenCode CLI & Desktop to Mind Aku — one curl command.",
@@ -202,6 +210,7 @@ const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool>
   },
   kilocode: {
     kind: "curl-client",
+    id: "kilocode",
     label: "KiloCode",
     short: "KiloCode",
     blurb: "KiloCode CLI & Desktop to Mind Aku — one curl command.",
@@ -432,6 +441,7 @@ function VsCodeChatGuide({ apiKey }: { apiKey: string | null }) {
           <ClientSetupCard
             apiKey={apiKey}
             toolLabel="VS Code"
+            tool="vscode"
             modelsNote="This command fills chatLanguageModels.json (all models from the API, URLs without /v1), force-sets OPENAI_API_KEY + ANTHROPIC_API_KEY in your shell profile, then Chat is ready."
           />
         ) : (
@@ -911,6 +921,7 @@ function CurlClientGuide({
           <ClientSetupCard
             apiKey={apiKey}
             toolLabel={tool.label}
+            tool={tool.id}
             lead={tool.lead}
             modelsNote={tool.modelsNote}
           />
@@ -1128,6 +1139,7 @@ export function SetupPage() {
                 <ClientSetupCard
                   apiKey={apiKey}
                   toolLabel={selected.label}
+                  tool={tool ?? undefined}
                   modelsNote={selected.modelsNote}
                 />
               ) : (
