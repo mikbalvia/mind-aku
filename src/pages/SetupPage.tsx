@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Check, Copy, ArrowSquareOut } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
@@ -996,11 +996,13 @@ function parseToolParam(value: string | null): ToolId | null {
 export function SetupPage() {
   const { t } = useTranslation();
   const { apiKey } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tool, setTool] = useState<ToolId | null>(() =>
     parseToolParam(searchParams.get("tool"))
   );
   const [copied, setCopied] = useState<string | null>(null);
+  const [guideScrollTick, setGuideScrollTick] = useState(0);
+  const guideRef = useRef<HTMLDivElement>(null);
 
   async function onCopy(id: string, value: string) {
     const ok = await copyText(value);
@@ -1008,6 +1010,38 @@ export function SetupPage() {
     setCopied(id);
     window.setTimeout(() => setCopied(null), 2000);
   }
+
+  function selectTool(id: ToolId) {
+    setTool(id);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tool", id);
+        return next;
+      },
+      { replace: true }
+    );
+    setGuideScrollTick((n) => n + 1);
+  }
+
+  useEffect(() => {
+    if (!tool || guideScrollTick === 0) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frame = window.requestAnimationFrame(() => {
+      guideRef.current?.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [tool, guideScrollTick]);
+
+  // Deep-link /setup?tool=… — scroll to steps after first paint.
+  const initialTool = useRef(parseToolParam(searchParams.get("tool")));
+  useEffect(() => {
+    if (!initialTool.current) return;
+    setGuideScrollTick(1);
+  }, []);
 
   const selected = tool ? tools[tool] : null;
 
@@ -1043,7 +1077,7 @@ export function SetupPage() {
                   <button
                     key={id}
                     type="button"
-                    onClick={() => setTool(id)}
+                    onClick={() => selectTool(id)}
                     className={cn(
                       "rounded-xl border px-4 py-3 text-left transition-all duration-200",
                       active
@@ -1075,128 +1109,136 @@ export function SetupPage() {
               )}
             </CardContent>
           </Card>
-        ) : selected.kind === "vscode" ? (
-          <VsCodeChatGuide apiKey={apiKey} />
-        ) : selected.kind === "desktop" ? (
-          <ClaudeDesktopGuide apiKey={apiKey} />
-        ) : selected.kind === "curl-client" ? (
-          <CurlClientGuide apiKey={apiKey} tool={selected} />
         ) : (
-          <>
-            <Card className="scale-in border-border bg-card shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <StepLabel n={2}>
-                      {t("Install {{label}}", { label: selected.label })}
-                    </StepLabel>
-                    <h3 className="font-heading text-xl font-medium text-foreground">
-                      {t("Install the CLI on your machine")}
-                    </h3>
-                    <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                      {t("Install for your OS. When done, verify with")}{" "}
-                      <code>{selected.checkCmd}</code>.
+          <div
+            ref={guideRef}
+            id="setup-guide"
+            className="scroll-mt-6 space-y-5"
+          >
+            {selected.kind === "vscode" ? (
+              <VsCodeChatGuide apiKey={apiKey} />
+            ) : selected.kind === "desktop" ? (
+              <ClaudeDesktopGuide apiKey={apiKey} />
+            ) : selected.kind === "curl-client" ? (
+              <CurlClientGuide apiKey={apiKey} tool={selected} />
+            ) : (
+              <>
+                <Card className="scale-in border-border bg-card shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <StepLabel n={2}>
+                          {t("Install {{label}}", { label: selected.label })}
+                        </StepLabel>
+                        <h3 className="font-heading text-xl font-medium text-foreground">
+                          {t("Install the CLI on your machine")}
+                        </h3>
+                        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                          {t("Install for your OS. When done, verify with")}{" "}
+                          <code>{selected.checkCmd}</code>.
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" size="sm">
+                        <a href={selected.docs} target="_blank" rel="noopener noreferrer">
+                          {t("Docs")} <ArrowSquareOut />
+                        </a>
+                      </Button>
+                    </div>
+
+                    <div className="mt-5 space-y-4">
+                      {selected.install.map((cmd) => (
+                        <InstallCommand
+                          key={cmd.id}
+                          label={cmd.label}
+                          command={cmd.command}
+                          copyId={cmd.id}
+                          copied={copied}
+                          onCopy={onCopy}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="mt-4 text-xs text-muted-foreground">
+                      {t("Official guide:")}{" "}
+                      <a
+                        href={selected.docs}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {t(selected.docsLabel)}
+                      </a>
+                      .
                     </p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <a href={selected.docs} target="_blank" rel="noopener noreferrer">
-                      {t("Docs")} <ArrowSquareOut />
-                    </a>
-                  </Button>
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  {selected.install.map((cmd) => (
-                    <InstallCommand
-                      key={cmd.id}
-                      label={cmd.label}
-                      command={cmd.command}
-                      copyId={cmd.id}
-                      copied={copied}
-                      onCopy={onCopy}
-                    />
-                  ))}
-                </div>
-
-                <p className="mt-4 text-xs text-muted-foreground">
-                  {t("Official guide:")}{" "}
-                  <a
-                    href={selected.docs}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {t(selected.docsLabel)}
-                  </a>
-                  .
-                </p>
-              </CardContent>
-            </Card>
-
-            <div>
-              <StepLabel n={3}>{t("Connect to Mind Aku")}</StepLabel>
-              {apiKey ? (
-                <ClientSetupCard
-                  apiKey={apiKey}
-                  toolLabel={selected.label}
-                  tool={tool ?? undefined}
-                  modelsNote={selected.modelsNote}
-                />
-              ) : (
-                <Card className="border-border bg-card">
-                  <CardContent className="p-6 text-sm text-muted-foreground">
-                    {t("Sign in again to show the auto-config command with your API key.")}
                   </CardContent>
                 </Card>
-              )}
-            </div>
 
-            <Card className="scale-in border-border bg-card shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <StepLabel n={4}>{t("Editor (optional)")}</StepLabel>
-                    <h3 className="font-heading text-xl font-medium text-foreground">
-                      VS Code, Cursor, Antigravity
-                    </h3>
-                    <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                      {t(
-                        "After the CLI + auto-config are ready, install the {{tool}} extension in your editor — then use it as usual.",
-                        { tool: selected.short }
-                      )}
-                    </p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <a href={selected.ide.docsHref} target="_blank" rel="noopener noreferrer">
-                      {t("Docs")} <ArrowSquareOut />
-                    </a>
-                  </Button>
+                <div>
+                  <StepLabel n={3}>{t("Connect to Mind Aku")}</StepLabel>
+                  {apiKey ? (
+                    <ClientSetupCard
+                      apiKey={apiKey}
+                      toolLabel={selected.label}
+                      tool={tool ?? undefined}
+                      modelsNote={selected.modelsNote}
+                    />
+                  ) : (
+                    <Card className="border-border bg-card">
+                      <CardContent className="p-6 text-sm text-muted-foreground">
+                        {t("Sign in again to show the auto-config command with your API key.")}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
-                <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-6 text-foreground">
-                  {selected.ide.steps.map((step) => (
-                    <li key={step}>{t(step)}</li>
-                  ))}
-                </ol>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {["VS Code", "Cursor", "Antigravity"].map((name) => (
-                    <div
-                      key={name}
-                      className="rounded-lg border border-border bg-muted/30 px-3 py-3 text-sm"
-                    >
-                      <p className="font-medium text-foreground">{name}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {t("Install the {{tool}} extension, then use it as usual.", {
-                          tool: selected.short,
-                        })}
-                      </p>
+                <Card className="scale-in border-border bg-card shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <StepLabel n={4}>{t("Editor (optional)")}</StepLabel>
+                        <h3 className="font-heading text-xl font-medium text-foreground">
+                          VS Code, Cursor, Antigravity
+                        </h3>
+                        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                          {t(
+                            "After the CLI + auto-config are ready, install the {{tool}} extension in your editor — then use it as usual.",
+                            { tool: selected.short }
+                          )}
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" size="sm">
+                        <a href={selected.ide.docsHref} target="_blank" rel="noopener noreferrer">
+                          {t("Docs")} <ArrowSquareOut />
+                        </a>
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </>
+
+                    <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-6 text-foreground">
+                      {selected.ide.steps.map((step) => (
+                        <li key={step}>{t(step)}</li>
+                      ))}
+                    </ol>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      {["VS Code", "Cursor", "Antigravity"].map((name) => (
+                        <div
+                          key={name}
+                          className="rounded-lg border border-border bg-muted/30 px-3 py-3 text-sm"
+                        >
+                          <p className="font-medium text-foreground">{name}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {t("Install the {{tool}} extension, then use it as usual.", {
+                              tool: selected.short,
+                            })}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>

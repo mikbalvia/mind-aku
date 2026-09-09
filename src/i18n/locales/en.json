@@ -371,6 +371,7 @@
   "In the provider settings, set \"reasoningEffort\": \"high\" per model id.": "In the provider settings, set \"reasoningEffort\": \"high\" per model id.",
   "Input": "Input",
   "Input / output price per 1M tokens ($)": "Input / output price per 1M tokens ($)",
+  "Input / output / cache price per 1M tokens ($)": "Input / output / cache price per 1M tokens ($)",
   "Input + output + cache = 1": "Input + output + cache = 1",
   "Install {{label}}": "Install {{label}}",
   "Install CLI": "Install CLI",

@@ -397,7 +397,7 @@ export function HomePage() {
                       {t("Models")}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {t("Input / output price per 1M tokens ($)")}
+                      {t("Input / output / cache price per 1M tokens ($)")}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {t("Rate {{rate}}. Pay in rupiah, get far more USD credit — unused balance never expires.", {
@@ -437,6 +437,8 @@ export function HomePage() {
                           <TableHead>{t("Model")}</TableHead>
                           <TableHead className="text-right">{t("Input")}</TableHead>
                           <TableHead className="text-right">{t("Output")}</TableHead>
+                          <TableHead className="text-right">{t("Cached")}</TableHead>
+                          <TableHead className="text-right">{t("Cache Creation")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -448,6 +450,12 @@ export function HomePage() {
                             </TableCell>
                             <TableCell className="text-right tabular-nums text-xs sm:text-sm">
                               {formatTokenPriceUsd(model.pricing?.output)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-xs sm:text-sm">
+                              {formatTokenPriceUsd(model.pricing?.cached)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-xs sm:text-sm">
+                              {formatTokenPriceUsd(model.pricing?.cache_creation)}
                             </TableCell>
                           </TableRow>
                         ))}
