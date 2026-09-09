@@ -274,7 +274,7 @@ export type PaymentsListResponse = {
 export type ShopModelItem = {
   id: string;
   object: string;
-  pricing?: Pick<ModelPricing, "input" | "output" | "unit"> | null;
+  pricing?: Pick<ModelPricing, "input" | "output" | "cached" | "cache_creation" | "unit"> | null;
 };
 
 export type ShopConfig = {
