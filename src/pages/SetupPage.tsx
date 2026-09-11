@@ -796,51 +796,32 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
           <div className="space-y-2">
             <StepLabel n={6}>{t("Configure models")}</StepLabel>
             <h3 className="font-heading text-xl font-medium text-foreground">
-              {t("Model discovery & add 3 models")}
+              {t("Model discovery & Apply Changes")}
             </h3>
           </div>
           <ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-foreground">
+            <li>{t("Scroll to the MODELS section in Third-Party Inference settings.")}</li>
             <li>
               {t("Turn on Model discovery so models are fetched from {{url}}/v1/models.", {
                 url: gatewayUrl,
               })}
             </li>
-            <li>{t("In Model list, click the + Add button below.")}</li>
             <li>
-              {t("Fill the model form like the screenshot below:")}
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
-                <li>{t("Model ID and Display name the same, e.g. claude-opus-5")}</li>
-                <li>{t("Offer 1M-context variant: turn ON")}</li>
-                <li>{t("Tier alias: can be left empty")}</li>
-              </ul>
-              <ManualShot
-                src="/setup-guides/manual-4b.png"
-                alt={t("Model form: Model ID, Display name, Offer 1M-context ON")}
-                caption={t("Fill Model ID + Display name; Offer 1M-context variant ON")}
-              />
-            </li>
-            <li>
-              {t("Repeat until 3 models are listed:")}
-              <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>
-                  <code>claude-opus-5</code>
-                </li>
-                <li>
-                  <code>claude-sonnet-5</code>
-                </li>
-                <li>
-                  <code>claude-haiku-4.5</code>
-                </li>
-              </ul>
+              {t(
+                "Click Test model discovery (top right). A green result should appear, e.g. “Model discovery — found 6 models”, listing IDs such as claude-opus-5 and claude-haiku-4.5."
+              )}
             </li>
             <li>
               {t(
-                "When the list is complete (Model discovery ON + 3 models), click Apply Changes."
+                "Leave Default to 1M context and Show estimated cost OFF unless you need them. Model list can stay empty — discovery fills the picker automatically (+ Add model is only an override)."
               )}
+            </li>
+            <li>
+              {t("Click Apply Changes at the bottom of the window.")}
               <ManualShot
-                src="/setup-guides/manual-4b.png"
-                alt={t("Model discovery ON and 3 Claude models in the list")}
-                caption={t("Model discovery ON + 3 models, then Apply Changes")}
+                src="/setup-guides/set-model-dekstop.png"
+                alt={t("Model discovery ON, Test model discovery succeeded, Apply Changes")}
+                caption={t("Model discovery ON → Test model discovery → Apply Changes")}
               />
             </li>
             <li>
@@ -854,6 +835,41 @@ function ClaudeDesktopGuide({ apiKey }: { apiKey: string | null }) {
               />
             </li>
           </ol>
+
+          <div className="mt-5 space-y-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-4 text-sm text-foreground">
+            <p className="font-medium">{t("Windows only — Missing HCS services (Cowork)")}</p>
+            <p className="text-muted-foreground">
+              {t(
+                "If Claude Desktop shows “Missing HCS services: HNS, vmcompute, vfpext”, Cowork cannot find Host Compute Service components (HNS = Host Network Service, vmcompute = Hyper-V Host Compute Service, vfpext = Virtual Filtering Platform Extension). This is a common Windows issue."
+              )}
+            </p>
+            <p className="font-medium">{t("Quick fix")}</p>
+            <ol className="list-decimal space-y-2 pl-5 text-muted-foreground">
+              <li>{t("Open PowerShell as Administrator (right-click → Run as administrator).")}</li>
+              <li>{t("Run these commands one by one:")}</li>
+            </ol>
+            <div className="space-y-3">
+              <InstallCommand
+                label="PowerShell"
+                command={`Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+Enable-WindowsOptionalFeature -Online -FeatureName Containers -All`}
+                copyId="hcs-base"
+                copied={copied}
+                onCopy={onCopy}
+              />
+              <InstallCommand
+                label="Windows Pro / Enterprise / Education (also run)"
+                command="Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All"
+                copyId="hcs-hyperv"
+                copied={copied}
+                onCopy={onCopy}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("Restart Windows after the features install, then reopen Claude Desktop.")}
+            </p>
+          </div>
+
           <p className="mt-4 text-xs text-muted-foreground">
             {t(
               "This flow follows third-party gateway integration patterns (similar to OpenRouter guides for Claude Desktop), adapted for Mind Aku."
