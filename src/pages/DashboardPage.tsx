@@ -13,7 +13,7 @@ import { ErrorBanner, LoadingBlock, PageHeader } from "../components/page-chrome
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, formatNumber, formatUsd } from "../lib/format";
-import { logCacheTokens } from "../lib/logTokens";
+import { logCacheTokens, logDisplayInputTokens } from "../lib/logTokens";
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -166,7 +166,7 @@ export function DashboardPage() {
                         </div>
                         <div className="shrink-0 text-right tabular-nums">
                           <p className="text-muted-foreground">
-                            {log.tokens.in}/{log.tokens.out}
+                            {logDisplayInputTokens(log)}/{log.tokens.out}
                           </p>
                           <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
                             {t("Cache read / write")} {cache.read}/{cache.write}

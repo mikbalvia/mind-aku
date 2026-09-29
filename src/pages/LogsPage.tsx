@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { logCacheTokens } from "../lib/logTokens";
+import { logCacheTokens, logDisplayInputTokens } from "../lib/logTokens";
 import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 50;
@@ -248,7 +248,7 @@ export function LogsPage() {
                         ) : null}
                       </TableCell>
                       <TableCell className="tabular-nums">
-                        {log.tokens.in}/{log.tokens.out}
+                        {logDisplayInputTokens(log)}/{log.tokens.out}
                       </TableCell>
                       <TableCell className="tabular-nums">
                         {cache.read}/{cache.write}
@@ -315,7 +315,7 @@ export function LogsPage() {
                   ["Model", selected.comboName || selected.requestedModel || selected.model || "—"],
                   ["Provider", selected.provider ?? "—"],
                   ["Duration", formatDuration(selected.duration)],
-                  ["Tokens in/out", `${selected.tokens.in}/${selected.tokens.out}`],
+                  ["Tokens in/out", `${logDisplayInputTokens(selected)}/${selected.tokens.out}`],
                   [
                     "Cache read / write",
                     (() => {

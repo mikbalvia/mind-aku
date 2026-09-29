@@ -6,3 +6,10 @@ export function logCacheTokens(log: CallLog): { read: number; write: number } {
     write: log.tokens.cacheWrite ?? log.spend?.tokens.cacheCreation ?? 0,
   };
 }
+
+/** Uncached input tokens for display (prompt − cache read, floored at 0). */
+export function logDisplayInputTokens(log: CallLog): number {
+  const cacheRead = logCacheTokens(log).read;
+  const prompt = log.tokens.in ?? 0;
+  return Math.max(0, prompt - cacheRead);
+}
