@@ -1,4 +1,5 @@
 import { OMNIROUTE_BASE_URL } from "../config";
+import { excludeResellModels } from "../lib/models";
 import {
   ApiError,
   type LogsQuery,
@@ -18,6 +19,13 @@ import {
   type AdminAffiliateReferralItem,
   type AffiliateWithdrawalItem,
 } from "./types";
+
+function withoutResellModels(response: ModelsResponse): ModelsResponse {
+  return {
+    ...response,
+    data: excludeResellModels(response.data ?? []),
+  };
+}
 
 async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
   let message = fallback;
@@ -108,16 +116,16 @@ export function fetchMeStatus(apiKey: string): Promise<MeStatus> {
   return request<MeStatus>("/api/v1/me/status", apiKey);
 }
 
-export function fetchModels(apiKey: string): Promise<ModelsResponse> {
-  return request<ModelsResponse>("/v1/models", apiKey);
+export async function fetchModels(apiKey: string): Promise<ModelsResponse> {
+  return withoutResellModels(await request<ModelsResponse>("/v1/models", apiKey));
 }
 
-export function fetchPortalModels(apiKey: string): Promise<ModelsResponse> {
-  return request<ModelsResponse>("/api/v1/me/models", apiKey);
+export async function fetchPortalModels(apiKey: string): Promise<ModelsResponse> {
+  return withoutResellModels(await request<ModelsResponse>("/api/v1/me/models", apiKey));
 }
 
-export function fetchPublicPortalModels(): Promise<ModelsResponse> {
-  return requestPublic<ModelsResponse>("/api/v1/me/models");
+export async function fetchPublicPortalModels(): Promise<ModelsResponse> {
+  return withoutResellModels(await requestPublic<ModelsResponse>("/api/v1/me/models"));
 }
 
 export function fetchLogs(apiKey: string, query: LogsQuery = {}): Promise<LogsResponse> {
@@ -178,8 +186,12 @@ export function simulatePayment(
   });
 }
 
-export function fetchShopConfig(): Promise<ShopConfig> {
-  return requestPublic<ShopConfig>("/api/v1/shop/config");
+export async function fetchShopConfig(): Promise<ShopConfig> {
+  const config = await requestPublic<ShopConfig>("/api/v1/shop/config");
+  return {
+    ...config,
+    models: config.models ? excludeResellModels(config.models) : config.models,
+  };
 }
 
 export function createShopCheckout(body: {

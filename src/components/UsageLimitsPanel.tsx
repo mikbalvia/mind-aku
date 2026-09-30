@@ -10,6 +10,7 @@ import type {
 import { MetricRow, ProgressBar, SummaryCard } from "./metrics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { excludeResellModelIds } from "@/lib/models";
 import { cn } from "@/lib/utils";
 import {
   formatIdr,
@@ -252,7 +253,9 @@ function TokenPackageCard({ pack, compact }: { pack: TokenPackage; compact: bool
   const used = pack.usedTokens;
   const exhausted = remaining <= 0;
   const pct = usedPercent(used, total);
-  const modelLabel = pack.modelsRestricted ? pack.models.join(", ") : t("All models in group");
+  const modelLabel = pack.modelsRestricted
+    ? excludeResellModelIds(pack.models).join(", ")
+    : t("All models in group");
 
   if (compact) {
     return (
