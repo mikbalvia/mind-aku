@@ -76,7 +76,7 @@ export function HomePage() {
     () => [
       { icon: Robot, label: t("Models"), text: t("One door to AI models ready to use.") },
       { icon: ChartLine, label: t("Usage"), text: t("Track tokens and spend without guessing.") },
-      { icon: Terminal, label: t("Logs"), text: t("Trace every request from prompt to output.") },
+      { icon: Terminal, label: t("Logs"), text: t("Trace usage metadata — not prompt content.") },
       { icon: Database, label: t("Top up"), text: t("Manage balance and experiment with confidence.") },
     ],
     [t]
@@ -92,6 +92,11 @@ export function HomePage() {
       { icon: Brain, label: t("Thinking"), text: t("Thinking mode for deeper reasoning.") },
       { icon: Lightning, label: t("xhigh / ultra"), text: t("High weight for heavy workloads.") },
       { icon: Sparkle, label: t("RPM 20"), text: t("Default rate limit per new API key.") },
+      {
+        icon: ShieldCheck,
+        label: t("Zero Data Retention"),
+        text: t("Your prompts stay private — Zero Data Retention for request content."),
+      },
     ],
     [t]
   );
@@ -188,6 +193,13 @@ export function HomePage() {
                 <Flame weight="fill" className="size-3.5" />
                 {t("Promo · 15× cheaper")}
               </div>
+              <Link
+                to="/privacy-policy"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+              >
+                <ShieldCheck weight="fill" className="size-3.5 text-primary" />
+                {t("Zero Data Retention")}
+              </Link>
             </div>
             <h1 className="rise-in max-w-3xl text-balance font-sans text-[clamp(2rem,5vw,3.25rem)] font-bold leading-[1.05] tracking-[-0.02em] text-foreground md:text-6xl lg:text-[4.75rem]">
               {t("Build beyond")}
@@ -469,6 +481,57 @@ export function HomePage() {
         </section>
 
         <section className="mt-24 border-t border-border/60 pt-8">
+          <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">
+                {t("Built for company review")}
+              </p>
+              <h2 className="mt-2 font-heading text-2xl font-bold">
+                {t("Evidence your security team can check in minutes.")}
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+                {t(
+                  "Zero Data Retention for request content, no training on your data, metadata-only logs, and a printable policy for procurement."
+                )}
+              </p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="shrink-0 self-start sm:self-auto">
+              <Link to="/privacy-policy">
+                {t("Open trust policy")} <ArrowUpRight weight="bold" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid gap-px overflow-hidden rounded-xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: t("No content archive"),
+                text: t("Prompts and outputs are not kept by Mind Aku after delivery."),
+              },
+              {
+                title: t("No model training"),
+                text: t("Your code and documents are not used to train or fine-tune models."),
+              },
+              {
+                title: t("Metadata-only logs"),
+                text: t("Portal logs show tokens, model, status, and spend — not transcripts."),
+              },
+              {
+                title: t("Printable for vendors"),
+                text: t("Share the policy URL or print the one-pager for internal approval."),
+              },
+            ].map((item) => (
+              <div key={item.title} className="bg-card/90 p-5 sm:p-6">
+                <div className="mb-4 flex size-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10">
+                  <ShieldCheck weight="fill" className="size-4 text-primary" />
+                </div>
+                <p className="font-heading text-base font-semibold">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-24 border-t border-border/60 pt-8">
           <div className="mb-7 flex items-end justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[.24em] text-primary">
@@ -526,6 +589,9 @@ export function HomePage() {
             </Link>
             <Link className="transition hover:text-primary" to="/terms-and-conditions">
               {t("Terms & conditions")}
+            </Link>
+            <Link className="transition hover:text-primary" to="/privacy-policy">
+              {t("Privacy & data retention")}
             </Link>
             <Link className="transition hover:text-primary" to="/kontak">
               {t("Contact")}

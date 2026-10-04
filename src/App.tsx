@@ -37,6 +37,7 @@ export default function App() {
       <Route path="/faq" element={<PublicInfoPage page="faq" />} />
       <Route path="/refund-policy" element={<PublicInfoPage page="refund" />} />
       <Route path="/terms-and-conditions" element={<PublicInfoPage page="terms" />} />
+      <Route path="/privacy-policy" element={<PublicInfoPage page="privacy" />} />
       <Route path="/kontak" element={<PublicInfoPage page="contact" />} />
       <Route path="/payments/success" element={<PaymentSuccessPage />} />
       <Route path="/payments/cancel" element={<PaymentCancelPage />} />

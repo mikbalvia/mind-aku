@@ -502,6 +502,124 @@ body {
   border-radius: 4px;
 }
 
+.public-content .trust-attestation {
+  margin: 1.25rem 0 1.75rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, var(--border));
+  background: color-mix(in oklab, var(--primary) 8%, var(--card));
+  border-radius: 0.85rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.public-content .trust-attestation-label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.public-content .trust-attestation ul {
+  margin: 0.85rem 0 0.75rem;
+}
+
+.public-content .trust-attestation-foot {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.public-content .trust-compare {
+  margin: 0.75rem 0 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.public-content .trust-compare table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.public-content .trust-compare th,
+.public-content .trust-compare td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.public-content .trust-compare th {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+.public-content .trust-compare tr:last-child td {
+  border-bottom: none;
+}
+
+.public-content .trust-no {
+  color: #f87171;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.public-content .trust-yes {
+  color: #4ade80;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.public-content .trust-local {
+  color: var(--primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.public-content .trust-flow {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.public-content .trust-flow li {
+  margin: 0.55rem 0;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-hide,
+  .whatsapp-widget {
+    display: none !important;
+  }
+
+  .public-content {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  .public-content .trust-attestation {
+    break-inside: avoid;
+    border-color: #ddd !important;
+    background: #fafafa !important;
+  }
+
+  .public-content .trust-compare {
+    break-inside: avoid;
+  }
+}
+
 /* ===================== WhatsApp widget ===================== */
 
 .whatsapp-widget {
