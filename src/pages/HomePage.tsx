@@ -392,17 +392,17 @@ export function HomePage() {
   return (
     <div className="relative min-h-screen overflow-hidden text-foreground">
       <Atmosphere />
-      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-6 md:px-10">
-        <Link to="/">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-4 sm:gap-3 sm:px-6 sm:py-6 md:px-10">
+        <Link to="/" className="min-w-0 shrink">
           <BrandLockup
             showTagline={false}
-            markClassName="size-8"
-            nameClassName="font-sans text-xl"
-            className="gap-2.5"
+            markClassName="size-7 sm:size-8"
+            nameClassName="font-sans text-lg sm:text-xl"
+            className="gap-2 sm:gap-2.5"
           />
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2">
-          <LanguageSwitcher className="mr-1" />
+        <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <LanguageSwitcher className="mr-0.5 sm:mr-1" />
           <Link
             to="/beli"
             className="hidden px-4 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground sm:block"
@@ -494,7 +494,11 @@ export function HomePage() {
                   {pickerModels.map((model, index) => {
                     const input = formatTokenPriceUsd(model.pricing?.input);
                     const output = formatTokenPriceUsd(model.pricing?.output);
+                    const cached = formatTokenPriceUsd(model.pricing?.cached);
+                    const cacheCreation = formatTokenPriceUsd(model.pricing?.cache_creation);
                     const selected = index === 0;
+                    const hasCache =
+                      model.pricing?.cached != null || model.pricing?.cache_creation != null;
                     return (
                       <div
                         key={model.id}
@@ -504,7 +508,7 @@ export function HomePage() {
                             : "rounded-xl px-3 py-2.5 text-left transition hover:bg-white/[0.04]"
                         }
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                           <div className="flex min-w-0 items-start gap-2.5">
                             <BrandIcon
                               model={model.id}
@@ -520,9 +524,16 @@ export function HomePage() {
                               </p>
                             </div>
                           </div>
-                          <span className="shrink-0 pt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-                            {t("{{input}} / {{output}} per 1M tok", { input, output })}
-                          </span>
+                          <div className="min-w-0 pl-9 font-mono text-[11px] tabular-nums text-muted-foreground sm:shrink-0 sm:pl-0 sm:pt-0.5 sm:text-right">
+                            <p className="break-words">
+                              {t("{{input}} / {{output}} per 1M tok", { input, output })}
+                            </p>
+                            {hasCache ? (
+                              <p className="mt-0.5 break-words text-[10px]">
+                                {t("Cached")} {cached} · {t("Cache write")} {cacheCreation}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     );
@@ -614,7 +625,8 @@ export function HomePage() {
                 {t("Best premium models")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {t("One balance for everything. Prices shown per 1M tokens.")} · {formatIdrPerUsdRate(idrPerUsd)}
+                {t("One balance for everything. Prices shown per 1M tokens.")} · IN / OUT /{" "}
+                {t("Cached")} / {t("Cache Creation")} · {formatIdrPerUsdRate(idrPerUsd)}
               </p>
             </div>
             <a
@@ -642,17 +654,31 @@ export function HomePage() {
                     {model.id}
                   </p>
                 </div>
-                <div className="mt-4 flex gap-4 text-sm">
-                  <div>
+                <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+                  <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("IN")}</p>
-                    <p className="mt-0.5 font-semibold tabular-nums">
+                    <p className="mt-0.5 break-all font-semibold tabular-nums">
                       {formatIdrPer1M(model.pricing?.input, idrPerUsd)}
                     </p>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("OUT")}</p>
-                    <p className="mt-0.5 font-semibold tabular-nums">
+                    <p className="mt-0.5 break-all font-semibold tabular-nums">
                       {formatIdrPer1M(model.pricing?.output, idrPerUsd)}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("Cached")}</p>
+                    <p className="mt-0.5 break-all font-semibold tabular-nums">
+                      {formatIdrPer1M(model.pricing?.cached, idrPerUsd)}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {t("Cache write")}
+                    </p>
+                    <p className="mt-0.5 break-all font-semibold tabular-nums">
+                      {formatIdrPer1M(model.pricing?.cache_creation, idrPerUsd)}
                     </p>
                   </div>
                 </div>
@@ -909,8 +935,8 @@ export function HomePage() {
               })}
             </p>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-border/60">
-            <Table>
+          <div className="overflow-x-auto overflow-hidden rounded-2xl border border-border/60">
+            <Table className="min-w-[480px]">
               <TableHeader>
                 <TableRow className="bg-card/90 hover:bg-card/90">
                   <TableHead>{t("Feature")}</TableHead>
@@ -934,7 +960,7 @@ export function HomePage() {
             </Table>
           </div>
           <div className="mt-8 flex justify-center">
-            <Button asChild size="lg" className="glow-primary">
+            <Button asChild size="lg" className="w-full glow-primary sm:w-auto">
               <Link to="/beli">
                 {t("Feel the difference — buy credit today")} <ArrowUpRight weight="bold" />
               </Link>
@@ -1117,14 +1143,14 @@ export function HomePage() {
 
                 {!shopLoading && models.length > 0 ? (
                   <div className="max-h-[420px] overflow-auto rounded-xl border border-border/60 bg-white/[0.02]">
-                    <Table>
+                    <Table className="min-w-[640px]">
                       <TableHeader>
                         <TableRow>
                           <TableHead>{t("Model")}</TableHead>
                           <TableHead className="text-right">{t("Input")}</TableHead>
                           <TableHead className="text-right">{t("Output")}</TableHead>
                           <TableHead className="text-right">{t("Cached")}</TableHead>
-                          <TableHead className="text-right">{t("Cache Creation")}</TableHead>
+                          <TableHead className="text-right">{t("Cache write")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
