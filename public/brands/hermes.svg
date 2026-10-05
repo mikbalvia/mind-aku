@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img">
+  <title>Hermes</title>
+  <rect width="24" height="24" rx="6" fill="#312e81"/>
+  <path fill="#a5b4fc" d="M12 3.5l1.2 3.2 3.4.2-2.6 2.2.9 3.3L12 10.8 9.1 12.4l.9-3.3-2.6-2.2 3.4-.2L12 3.5z"/>
+  <path fill="#c7d2fe" d="M6.5 14.2h11v1.4H6.5zm1.5 2.6h8v1.3h-8z"/>
+</svg>

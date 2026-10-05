@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Copy, ArrowSquareOut } from "@phosphor-icons/react";
+import { Check, Copy, ArrowSquareOut, ArrowRight } from "@phosphor-icons/react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth/AuthContext";
+import { BrandIcon } from "../components/BrandIcon";
 import { ClientSetupCard } from "../components/ClientSetupCard";
 import { GatewayEndpointCard } from "../components/GatewayEndpointCard";
 import { PageHeader } from "../components/page-chrome";
@@ -92,6 +93,19 @@ type VsCodeTool = {
   label: string;
   short: string;
   blurb: string;
+};
+
+const TOOL_SITES: Record<ToolId, string> = {
+  vscode: "code.visualstudio.com",
+  cursor: "cursor.com",
+  cline: "cline.bot",
+  desktop: "claude.ai",
+  claude: "code.claude.com",
+  codex: "chatgpt.com/codex",
+  openclaw: "openclaw.ai",
+  hermes: "hermes-agent.nousresearch.com",
+  opencode: "opencode.ai",
+  kilocode: "kilo.ai",
 };
 
 const tools: Record<ToolId, CliTool | DesktopTool | CurlClientTool | VsCodeTool> = {
@@ -1085,31 +1099,53 @@ export function SetupPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {TOOL_ORDER.map((id) => {
                 const item = tools[id];
                 const active = tool === id;
+                const site = TOOL_SITES[id];
                 return (
                   <button
                     key={id}
                     type="button"
                     onClick={() => selectTool(id)}
                     className={cn(
-                      "rounded-xl border px-4 py-3 text-left transition-all duration-200",
+                      "group flex flex-col rounded-2xl border p-5 text-left transition-all duration-200",
                       active
-                        ? "border-primary bg-primary/15 text-foreground shadow-[0_0_0_1px_var(--primary),0_8px_24px_-12px_rgba(249,115,22,0.5)]"
-                        : "border-border text-foreground hover:border-primary/40 hover:bg-primary/5"
+                        ? "border-primary bg-primary/10 shadow-[0_0_0_1px_var(--primary),0_12px_32px_-16px_rgba(249,115,22,0.55)]"
+                        : "border-border/70 bg-card/80 hover:border-primary/40 hover:bg-card"
                     )}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-heading text-lg text-foreground">{item.label}</p>
-                      {active ? (
-                        <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
-                          {t("Selected")}
-                        </p>
-                      ) : null}
+                    <div className="flex items-start justify-between gap-3">
+                      <BrandIcon
+                        toolId={id}
+                        className="size-11 rounded-xl"
+                        imgClassName="size-6"
+                      />
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]",
+                          active
+                            ? "bg-primary/20 text-primary"
+                            : "bg-emerald-500/15 text-emerald-400"
+                        )}
+                      >
+                        {active ? t("Selected") : t("Active")}
+                      </span>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{t(item.blurb)}</p>
+
+                    <p className="mt-4 font-heading text-lg font-semibold text-foreground">
+                      {item.label}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{site}</p>
+                    <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
+                      {t(item.blurb)}
+                    </p>
+
+                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition group-hover:gap-2">
+                      {t("See how to integrate")}
+                      <ArrowRight weight="bold" className="size-3.5" />
+                    </span>
                   </button>
                 );
               })}

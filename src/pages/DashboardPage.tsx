@@ -83,10 +83,6 @@ export function DashboardPage() {
 
       {!loading && !error ? (
         <>
-          <CommunityBanner className="mb-6 scale-in" />
-
-          <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
-
           <UsageLimitsPanel
             className="mb-6"
             variant="compact"
@@ -99,6 +95,10 @@ export function DashboardPage() {
             activeUnitIdr={config?.activeUnitIdr}
             activePeriodDays={config?.activePeriodDays}
           />
+
+          <CommunityBanner className="mb-6 scale-in" />
+
+          <GatewayEndpointCard compact className="mb-6 scale-in-delay-1" />
 
           <div className="grid gap-6 md:grid-cols-1">
             <SummaryCard
