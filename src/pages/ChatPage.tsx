@@ -402,7 +402,7 @@ export function ChatPage() {
                 ) : expiredError ? (
                   <p className="mt-2 text-sm text-muted-foreground">
                     {t(
-                      "Active period expired. Top up at least Rp 100,000 to extend 30 days. Unused balance never expires."
+                      "Active period expired. Top up at least Rp 30,000 to extend 30 days. Unused balance never expires."
                     )}{" "}
                     <Link
                       to="/payments"

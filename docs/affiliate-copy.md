@@ -10,7 +10,7 @@ Program affiliate sudah aktif.
 
 - Orang beli lewat link kamu → kamu **5%**
 - Mereka top up lagi → kamu tetap **5%** (nempel di akun mereka)
-- Pembeli: beli pertama credit **+5%** (contoh bayar Rp 100.000, credit lebih besar 5%)
+- Pembeli: beli pertama credit **+5%** (contoh bayar Rp 30.000, credit lebih besar 5%)
 
 Mulai: login portal → **Affiliate** → aktifkan → salin `/beli?ref=KODEKAMU`
 
@@ -24,7 +24,7 @@ Pakai link ini:
 
 Beli pertama credit **+5%**. Setelah itu top up kapan saja, saldo tidak hangus.
 
-Beli min Rp 100.000 (1 bulan masa aktif). Top up dari Rp 10.000.
+Beli min Rp 30.000 (1 bulan masa aktif). Top up dari Rp 10.000.
 
 ## Caption pendek
 

@@ -109,7 +109,7 @@ function PaygCard({
   topUpAllowed,
   active,
   activeUntil,
-  activeUnitIdr = 100_000,
+  activeUnitIdr = 30_000,
 }: {
   payg: PaygBalance | null | undefined;
   compact: boolean;
@@ -333,7 +333,7 @@ export function UsageLimitsPanel({
   className,
   active,
   activeUntil,
-  activeUnitIdr = 100_000,
+  activeUnitIdr = 30_000,
   activePeriodDays = 30,
 }: {
   paygBalance?: PaygBalance | null;

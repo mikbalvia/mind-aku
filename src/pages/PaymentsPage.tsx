@@ -46,7 +46,7 @@ export function PaymentsPage() {
   const locale = toIntlLocale(i18n.resolvedLanguage || i18n.language);
 
   const minTopUpIdr = config?.minTopUpIdr ?? 10_000;
-  const activeUnitIdr = config?.activeUnitIdr ?? 100_000;
+  const activeUnitIdr = config?.activeUnitIdr ?? 30_000;
 
   const activeIdr = useMemo(() => {
     if (customIdr.trim()) {
@@ -181,11 +181,11 @@ export function PaymentsPage() {
     ? t("Top-up unavailable: this key is unlimited, so pay-as-you-go balance does not apply.")
     : mockMode
       ? t(
-          "Local mock mode. Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months).",
+          "Local mock mode. Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 60,000 = 2 months).",
           { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
         )
       : t(
-          "Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months).",
+          "Top up anytime from {{min}}. Balance never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 60,000 = 2 months).",
           { min: formatIdr(minTopUpIdr), unit: formatIdr(activeUnitIdr) }
         );
 
@@ -352,7 +352,7 @@ export function PaymentsPage() {
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {config.active === false
                   ? t(
-                      "Active period expired. Top up at least {{unit}} to reactivate (+1 month per unit, e.g. Rp 200,000 = 2 months). Balance never expires — top up anytime.",
+                      "Active period expired. Top up at least {{unit}} to reactivate (+1 month per unit, e.g. Rp 60,000 = 2 months). Balance never expires — top up anytime.",
                       {
                         unit: formatIdr(activeUnitIdr),
                       }
@@ -363,7 +363,7 @@ export function PaymentsPage() {
                         { unit: formatIdr(activeUnitIdr) }
                       )
                     : t(
-                        "After payment, balance increases and never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 200,000 = 2 months). Top up anytime.",
+                        "After payment, balance increases and never expires. Each full {{unit}} adds +1 month of active period (e.g. Rp 60,000 = 2 months). Top up anytime.",
                         { unit: formatIdr(activeUnitIdr) }
                       )}
               </p>

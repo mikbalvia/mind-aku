@@ -104,7 +104,7 @@ export function BuyPage() {
     }
   }
 
-  const amountLabel = config ? formatIdr(config.amountIdr) : formatIdr(100_000);
+  const amountLabel = config ? formatIdr(config.amountIdr) : formatIdr(30_000);
   const days = config?.activePeriodDays ?? 30;
 
   return (

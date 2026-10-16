@@ -34,7 +34,7 @@ function mapHttpError(status: number, message: string): ApiError {
       lower.includes("masa aktif")
     ) {
       return new ApiError(
-        "Masa aktif habis. Top up minimal Rp 100.000 untuk perpanjang 30 hari.",
+        "Masa aktif habis. Top up minimal Rp 30.000 untuk perpanjang 30 hari.",
         401,
         "expired"
       );

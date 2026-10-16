@@ -154,8 +154,8 @@ export const GUEST_CLAIM_SECRET_PREFIX = "new-clients.guestClaim.";
  * Live home/beli values come from shop config (amount, USD credit, FX rate).
  */
 export const STARTER_CREDIT = {
-  amountIdr: 100_000,
-  usdCredit: 100,
+  amountIdr: 30_000,
+  usdCredit: 30,
   idrPerUsd: 1_000,
   requestsPerMinute: 20,
   activePeriodDays: 30,
