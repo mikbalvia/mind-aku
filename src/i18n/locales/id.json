@@ -654,7 +654,7 @@
   "Paste your Mind Aku API key": "Tempel API key Mind Aku kamu",
   "Path": "Path",
   "Path, provider, correlation…": "Path, provider, correlation…",
-  "Pay as you go": "Pay as you go",
+  "Pay as you go": "Bayar Sesuai Pemakaian",
   "Pay as you go · never resets": "Pay as you go · tidak reset",
   "Pay with QRIS": "Bayar dengan QRIS",
   "Pay-as-you-go balance": "Saldo pay as you go",
@@ -1067,7 +1067,6 @@
   "Works with Claude Code, Codex CLI, Cursor, OpenClaw, Hermes, and any OpenAI or Anthropic-compatible tool.": "Kompatibel dengan Claude Code, Codex CLI, Cursor, OpenClaw, Hermes, dan tools OpenAI/Anthropic API.",
   "Multi-model access": "Akses Multi-Model",
   "Switch between GPT, Claude, Gemini, and more from one endpoint.": "Ganti-ganti GPT, Claude, Gemini, dan lainnya lewat satu endpoint API.",
-  "Pay as you go": "Bayar Sesuai Pemakaian",
   "Top up balance and pay only for tokens you use — transparent per-request pricing.": "Top up saldo dan bayar cuma buat token yang kepake. Harga transparan per-request, tanpa langganan.",
   "OpenAI compatible": "Kompatibel OpenAI",
   "Point your existing SDK at our base URL — swap API key and URL, keep your code.": "Tinggal ganti SDK OpenAI kamu. Ganti base URL dan API key, kode yang udah ada langsung jalan.",
@@ -1175,5 +1174,9 @@
   "Open console": "Buka console",
   "Understand codebase": "Pahami codebase",
   "Fix a bug": "Perbaiki bug",
-  "Refactor & test": "Refactor & tes"
+  "Refactor & test": "Refactor & tes",
+  "Invalid admin key.": "Admin key tidak valid.",
+  "Signing in…": "Sedang masuk…",
+  "Masuk": "Masuk",
+  "Unable to reach Mind Aku. Check the base URL and CORS settings.": "Tidak bisa menghubungi Mind Aku. Periksa base URL dan pengaturan CORS."
 }

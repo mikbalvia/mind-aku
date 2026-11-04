@@ -1067,7 +1067,6 @@
   "Works with Claude Code, Codex CLI, Cursor, OpenClaw, Hermes, and any OpenAI or Anthropic-compatible tool.": "Works with Claude Code, Codex CLI, Cursor, OpenClaw, Hermes, and any OpenAI or Anthropic-compatible tool.",
   "Multi-model access": "Multi-model access",
   "Switch between GPT, Claude, Gemini, and more from one endpoint.": "Switch between GPT, Claude, Gemini, and more from one endpoint.",
-  "Pay as you go": "Pay as you go",
   "Top up balance and pay only for tokens you use — transparent per-request pricing.": "Top up balance and pay only for tokens you use — transparent per-request pricing.",
   "OpenAI compatible": "OpenAI compatible",
   "Point your existing SDK at our base URL — swap API key and URL, keep your code.": "Point your existing SDK at our base URL — swap API key and URL, keep your code.",
@@ -1175,5 +1174,9 @@
   "Open console": "Open console",
   "Understand codebase": "Understand codebase",
   "Fix a bug": "Fix a bug",
-  "Refactor & test": "Refactor & test"
+  "Refactor & test": "Refactor & test",
+  "Invalid admin key.": "Invalid admin key.",
+  "Signing in…": "Signing in…",
+  "Masuk": "Sign in",
+  "Unable to reach Mind Aku. Check the base URL and CORS settings.": "Unable to reach Mind Aku. Check the base URL and CORS settings."
 }

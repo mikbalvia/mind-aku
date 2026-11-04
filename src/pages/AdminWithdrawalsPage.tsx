@@ -67,6 +67,8 @@ export function AdminWithdrawalsPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearPortalAdminKey();
+        window.location.replace("/admin/login?error=invalid");
+        return;
       }
       setError(err instanceof ApiError ? err.message : t("Failed to load admin data."));
     } finally {
@@ -89,6 +91,8 @@ export function AdminWithdrawalsPage() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         clearPortalAdminKey();
+        window.location.replace("/admin/login?error=invalid");
+        return;
       }
       setError(err instanceof ApiError ? err.message : t("Failed to load admin data."));
     } finally {

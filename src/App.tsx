@@ -41,6 +41,7 @@ export default function App() {
       <Route path="/kontak" element={<PublicInfoPage page="contact" />} />
       <Route path="/payments/success" element={<PaymentSuccessPage />} />
       <Route path="/payments/cancel" element={<PaymentCancelPage />} />
+      <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/admin/withdrawals" element={<AdminWithdrawalsPage />} />
       <Route element={<RequireAuth />}>
